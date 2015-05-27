@@ -1,0 +1,23 @@
+{
+  "node"          : true,     // Nodejs
+  "browser"       : false,    // Browser
+  "es3"           : false,    // ES 3 false
+  "esnext"        : true,    // Ecma 6 disabled
+  "bitwise"       : true,     // Prohibit bitwise operators (&, |, ^, etc.).
+  "curly"         : true,     // Require {} for every new block or scope.
+  "eqeqeq"        : true,     // Require triple equals i.e. `===`.
+  "forin"         : true,     // Tolerate `for in` loops without `hasOwnPrototype`.
+  "immed"         : true,     // Require immediate invocations to be wrapped in parens e.g. `( function(){}() );`
+  "latedef"       : "nofunc", // Prohibit variable use before definition. Ignore late function definition using "nofunc".
+  "newcap"        : false,    // Require capitalization of all constructor functions e.g. `new F()`.
+  "noarg"         : true,     // Prohibit use of `arguments.caller` and `arguments.callee`.
+  "noempty"       : true,     // Prohibit use of empty blocks.
+  "nonew"         : true,     // Prohibit use of constructors for side-effects.
+  "plusplus"      : false,    // Prohibit use of `++` & `--`.
+  "regexp"        : true,     // Prohibit `.` and `[^...]` in regular expressions.
+  "undef"         : true,     // Require all non-global variables be declared before they are used.
+  "strict"        : true,     // Require `use strict` pragma in every file.
+  "trailing"      : true,     // Prohibit trailing whitespaces.
+  "eqnull"        : false,    // Enable if you understand what are you doing and you want to check for undefined and null with "== null"
+  "smarttabs"     : false     // Don't allow mixing tabs and spaces
+}

@@ -1,0 +1,22 @@
+{
+  "name": "api-sync",
+  "version": "0.0.1",
+  "description": "API Platform synchronization tool",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "MuleSoft",
+  "license": "ISC",
+  "preferGlobal": true,
+  "bin": {
+    "api-sync": "index.js"
+  },
+  "dependencies": {
+    "colors": "^1.1.0",
+    "lodash": "3.9.3",
+    "omelette": "0.3.1",
+    "osenv": "0.1.1",
+    "request": "2.55.0",
+    "sha": "^1.3.0"
+  }
+}
