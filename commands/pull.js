@@ -23,6 +23,16 @@ module.exports = {
       request.get(utils.getApiPlatformBaseUrl() + '/apis/' + api.id + '/versions/' + api.versionId + '/files',
         utils.getHeaders(config.authentication),
         function (err, response) {
+          if (err) {
+            return reject('Unexpected error: ' + err);
+          }
+
+          if (response.statusCode !== 200) {
+            return reject('Failed to retrieve api with id: ' +
+              api.id + ' and version: ' +
+              api.versionId + ' with message: ' +
+              JSON.parse(response.body).message);
+          }
           var files = JSON.parse(response.body);
 
           files.forEach(function (file) {
