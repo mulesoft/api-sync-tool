@@ -25,6 +25,11 @@ module.exports = {
       return configSection.directory === process.cwd();
     });
 
+    if (!configurationSection && !unsafe) {
+      console.log('Please login to Anypoint Platform (api-sync login)');
+      process.exit(0);
+    }
+
     return configurationSection;
   },
   writeConfigFile: function (config) {
