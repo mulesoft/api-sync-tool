@@ -14,8 +14,8 @@ module.exports = {
 
       var qs = {
         grant_type: 'password',
-        username: args[1],
-        password: args[2],
+        username: args._[1],
+        password: args._[2],
         client_id: 'studio',
         client_secret: 'studio123'
       };

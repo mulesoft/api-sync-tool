@@ -18,7 +18,7 @@ module.exports = {
           }
 
           if (response.statusCode !== 200) {
-            return reject(messages.remoteError(response.body));
+            return reject(messages.remoteError(response.body, response.statusCode));
           }
 
           var apis = [];

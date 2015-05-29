@@ -62,6 +62,8 @@ module.exports = {
 
     output += 'To pull content from ' + firstApi.name + ' API version ' + lastVersion.name + ', use:\n';
     output += ('> api-sync pull ' + firstApi.id + ' ' + lastVersion.id + '\n').bold;
+
+    return output;
   },
   // Errors
   unknown: function (commandName, commands) {
@@ -76,8 +78,8 @@ module.exports = {
   badCredentials: function () {
     return 'Bad credentials';
   },
-  remoteError: function (response) {
-    return 'Remote Error: ' + JSON.parse(response).message + '\n' +
-      'Status Code: ' + response.statusCode;
+  remoteError: function (responseBody, statusCode) {
+    return 'Remote Error: ' + JSON.parse(responseBody).message + '\n' +
+      'Status Code: ' + statusCode;
   }
 };
