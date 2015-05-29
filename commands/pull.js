@@ -7,13 +7,14 @@ var path = require('path');
 var sha = require('sha');
 
 var utils = require('../utils');
+var messages = require('../messages');
 var config = utils.getCurrentConfig();
 
 module.exports = {
   execute: function (args) {
     return new Promise(function (resolve, reject) {
       if (args.length < 3) {
-        return reject('Usage: apy-sync pull <apiId> <versionId>');
+        return reject(messages.pullUsage());
       }
 
       var api = parseParameters(args);
@@ -24,14 +25,11 @@ module.exports = {
         utils.getHeaders(config.authentication),
         function (err, response) {
           if (err) {
-            return reject('Unexpected error: ' + err);
+            return reject(messages.unexpected(err));
           }
 
           if (response.statusCode !== 200) {
-            return reject('Failed to retrieve api with id: ' +
-              api.id + ' and version: ' +
-              api.versionId + ' with message: ' +
-              JSON.parse(response.body).message);
+            return reject(messages.remoteError(response.body));
           }
           var files = JSON.parse(response.body);
 
@@ -41,8 +39,9 @@ module.exports = {
                 utils.getHeaders(config.authentication),
                 function (err, innerResponse) {
                   if (err) {
-                    reject('Unexpected error: ' + err);
+                    reject(messages.unexpected(err));
                   }
+
                   var fileData = JSON.parse(innerResponse.body).data;
                   fs.writeFileSync(path.join(process.cwd(), file.name), fileData);
 

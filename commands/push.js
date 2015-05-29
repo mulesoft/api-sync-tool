@@ -7,6 +7,7 @@ var sha = require('sha');
 var request = require('request');
 
 var utils = require('../utils');
+var messages = require('../messages');
 var config = utils.getCurrentConfig();
 
 function parseParameters(args) {
@@ -20,7 +21,7 @@ module.exports = {
   execute: function (args) {
     return new Promise(function (resolve, reject) {
       if (args.length < 3) {
-        reject('Usage: apy-sync push <apiId> <versionId>');
+        reject(messages.pushUsage());
       }
 
       var api = parseParameters(args);
@@ -42,7 +43,7 @@ module.exports = {
           if (existingFile.hash !== sha.getSync(file)) {
             promises.push(updateFile(existingFile, api));
           } else {
-            promises.push(Promise.resolve(file + ' has not changed, ignoring.'));
+            promises.push(Promise.resolve(messages.fileIgnored(file)));
           }
         } else {
           promises.push(createFile(file, api));
@@ -71,14 +72,14 @@ function createFile(file, api) {
       options,
       function (err, response) {
         if (err) {
-          return reject('Unexpected Error: ' + err);
+          return reject(messages.unexpected(err));
         }
 
         if (response.statusCode !== 201) {
-          return reject('Error creating file: ' + file + ' code: ' + response.statusCode);
+          return reject(messages.remoteError(response.body));
         }
 
-        return resolve('Created: ' + file);
+        return resolve(messages.fileCreated(file));
       });
   });
 }
@@ -92,14 +93,14 @@ function updateFile(file, api) {
       options,
       function (err, response) {
         if (err) {
-          return reject('Unexpected Error: ' + err);
+          return reject(messages.unexpected(err));
         }
 
         if (response.statusCode !== 200) {
-          return reject('Error updating file: ' + file.name + ' code: ' + response.statusCode + ' body: ' + response.body);
+          return reject(messages.remoteError(response.body));
         }
 
-        return resolve('Updated: ' + file.name);
+        return resolve(messages.fileUpdated(file.name));
       });
   });
 }
@@ -110,14 +111,14 @@ function deleteFile(file, api) {
       utils.getHeaders(config.authentication),
       function (err, response) {
         if (err) {
-          return reject('Unexpected Error: ' + err);
+          return reject(messages.unexpected(err));
         }
 
         if (response.statusCode !== 200) {
-          return reject('Error removing file: ' + file.name + ' code: ' + response.statusCode);
+          return reject(messages.remoteError(response.body));
         }
 
-        return resolve('Removing: ' + file.name);
+        return resolve(messages.fileDeleted(file.name));
       });
   });
 }

@@ -3,12 +3,13 @@
 var request = require('request');
 
 var utils = require('../utils');
+var messages = require('../messages');
 
 module.exports = {
   execute: function (args) {
     return new Promise(function (resolve, reject) {
       if (args.length < 3) {
-        return reject('Usage: api-sync login <username> <password>');
+        return reject(messages.loginUsage());
       }
 
       var qs = {
@@ -25,15 +26,14 @@ module.exports = {
         },
         function (err, response) {
           if (err) {
-            return reject('Unexpected Error: ' + err);
+            return reject(messages.unexpected(err));
           }
 
           if (response.statusCode !== 200) {
-            return reject('Bad credentials');
+            return reject(messages.badCredentials());
           }
 
           var config = utils.getCurrentConfig(true);
-
           if (!config) {
             config = {
               directory: process.cwd()
@@ -43,7 +43,7 @@ module.exports = {
           config.authentication = JSON.parse(response.body);
           utils.writeConfigFile(config);
 
-          return resolve('Login successful');
+          return resolve(messages.loginSuccessful());
         });
     });
   }

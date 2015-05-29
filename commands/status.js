@@ -5,9 +5,9 @@ var path = require('path');
 var _ = require('lodash');
 var sha = require('sha');
 var request = require('request');
-var colors = require('colors');
 
 var utils = require('../utils');
+var messages = require('../messages');
 var config = utils.getCurrentConfig();
 
 module.exports = {
@@ -19,7 +19,7 @@ module.exports = {
       readDir(process.cwd(), '');
 
       storedFiles.forEach(function (storedFile) {
-        output += ('- ' + storedFile.name + ' deleted\n').red;
+        output += messages.status.deleted(storedFile.name);
       });
 
       resolve(output);
@@ -45,12 +45,12 @@ module.exports = {
           if (existingFile) {
             // If content has changed
             if (existingFile.hash !== sha.getSync(file)) {
-              output += ('* ' + filePath + ' updated\n').yellow;
+              output += messages.status.changed(filePath);
             } else {
-              output += '  ' + filePath + ' has no changes\n';
+              output += messages.status.notChanged(filePath);
             }
           } else {
-            output += ('+ ' + filePath + ' new file\n').bold.green;
+            output += messages.status.new(filePath);
           }
         });
       }

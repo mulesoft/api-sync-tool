@@ -4,6 +4,7 @@ var request = require('request');
 var colors = require('colors');
 
 var utils = require('../utils');
+var messages = require('../messages');
 var config = utils.getCurrentConfig();
 
 module.exports = {
@@ -13,15 +14,14 @@ module.exports = {
         utils.getHeaders(config.authentication),
         function (err, response) {
           if (err) {
-            return reject('Unexpected Error: ' + err);
+            return reject(messages.unexpected(err));
           }
 
           if (response.statusCode !== 200) {
-            return reject('Please login again ' + response.body);
+            return reject(messages.remoteError(response.body));
           }
 
           var apis = [];
-          var output = "";
 
           var responseJson = JSON.parse(response.body);
           responseJson.apis.forEach(function (api) {
@@ -30,10 +30,8 @@ module.exports = {
               name: api.name,
               versions: []
             };
-            output += '+ ID: ' + api.id + ' Name: ' + api.name + '\n';
-            output += '  Versions:\n';
+
             api.versions.forEach(function (version) {
-              output += '    - Version ID: ' + version.id + ' Name: ' + version.name + '\n';
               anApi.versions.push({
                 id: version.id,
                 name: version.name
@@ -41,17 +39,9 @@ module.exports = {
             });
 
             apis.push(anApi);
-
-            output += '\n';
           });
 
-          var firstApi = apis[0];
-          var lastVersion = firstApi.versions[apis[0].versions.length - 1];
-
-          output += 'To pull content from ' + firstApi.name + ' API version ' + lastVersion.name + ', use:\n';
-          output += ('> api-sync pull ' + firstApi.id + ' ' + lastVersion.id + '\n').bold;
-
-          return resolve(output);
+          return resolve(messages.apis(apis));
         });
     });
   }
