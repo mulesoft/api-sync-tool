@@ -76,7 +76,7 @@ function createFile(file, api) {
         }
 
         if (response.statusCode !== 201) {
-          return reject(messages.remoteError(response.body));
+          return reject(messages.remoteError(response.body, response.statusCode));
         }
 
         return resolve(messages.fileCreated(file));
@@ -97,7 +97,7 @@ function updateFile(file, api) {
         }
 
         if (response.statusCode !== 200) {
-          return reject(messages.remoteError(response.body));
+          return reject(messages.remoteError(response.body, response.statusCode));
         }
 
         return resolve(messages.fileUpdated(file.name));
@@ -115,7 +115,7 @@ function deleteFile(file, api) {
         }
 
         if (response.statusCode !== 200) {
-          return reject(messages.remoteError(response.body));
+          return reject(messages.remoteError(response.body, response.statusCode));
         }
 
         return resolve(messages.fileDeleted(file.name));
