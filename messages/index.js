@@ -1,5 +1,6 @@
 'use strict';
 
+var _ = require('lodash');
 var colors = require('colors');
 
 module.exports = {
@@ -17,19 +18,26 @@ module.exports = {
     return 'Usage: apy-sync pull <apiId> <versionId>';
   },
   // Command results
-  status: {
-    new: function (fileName) {
-      return ('+ ' + fileName + ' new file\n').bold.green;
-    },
-    changed: function (fileName) {
-      return ('* ' + fileName + ' updated\n').yellow;
-    },
-    notChanged: function (fileName) {
-      return '  ' + fileName + ' has no changes\n';
-    },
-    deleted: function (fileName) {
-      return ('- ' + fileName + ' deleted\n').red;
-    }
+  status: function (result) {
+    var output = [];
+
+    _.forEach(result.added, function (file) {
+      output.push(('+ ' + file.path + ' new file').bold.green);
+    });
+
+    _.forEach(result.deleted, function (file) {
+      output.push(('- ' + file.path + ' deleted').red);
+    });
+
+    _.forEach(result.changed, function (file) {
+      output.push(('* ' + file.path + ' updated').yellow);
+    });
+
+    _.forEach(result.unchanged, function (file) {
+      output.push('  ' + file.path + ' has no changes');
+    });
+
+    return output.join('\n');
   },
   loginSuccessful: function () {
     return 'Login successful';

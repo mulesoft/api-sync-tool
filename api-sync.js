@@ -37,14 +37,17 @@ module.exports = function (args) {
     process.exit(1);
   }
 
+  var view = require('./views/' + commandName + 'View');
+
   var command = require('./commands/' + commandName);
-  command.execute(args)
-    .then(function (output) {
-      console.log(output);
+  view.parseInput(args)
+    .then(command.execute)
+    .then(view.displayOutput)
+    .then(function () {
       process.exit(0);
     })
     .catch(function (output) {
-      console.log(output);
+      console.error(output);
       process.exit(1);
     });
 };

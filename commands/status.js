@@ -1,59 +1,48 @@
 'use strict';
 
-var fs = require('fs');
-var path = require('path');
 var _ = require('lodash');
-var sha = require('sha');
-var request = require('request');
 
-var utils = require('../utils');
-var messages = require('../messages');
-var config = utils.getCurrentConfig();
+var fsRepository = require('../repositories/fileSystemRepository');
+var configurationRepository = require('../repositories/configurationRepository');
 
 module.exports = {
   execute: function (args) {
-    return new Promise(function (resolve, reject) {
-      var storedFiles = config.files;
-      var output = '';
+    return fsRepository.list()
+      .then(function (localFilePaths) {
+        var result = {
+          added: [],
+          deleted: [],
+          changed: [],
+          unchanged: []
+        };
 
-      readDir(process.cwd(), '');
+        var config = configurationRepository.getCurrentConfig();
+        var storedFiles = config.files;
 
-      storedFiles.forEach(function (storedFile) {
-        output += messages.status.deleted(storedFile.name);
-      });
-
-      resolve(output);
-
-      function readDir(directory, parent) {
-        var files = fs.readdirSync(directory);
-
-        files.forEach(function (file) {
-          var filePath = parent ? path.join(directory, file) : file;
-          var stats = fs.statSync(filePath);
-
-          if (stats.isDirectory()) {
-            readDir(parent ? path.join(directory, file) : file, directory);
-          }
+        localFilePaths.forEach(function (localFilePath) {
+          var localFile = fsRepository.readFile(localFilePath);
 
           // Search file in storedFiles.
-          var existingFile = _.find(storedFiles, 'name', file);
-          // Remove file from stored list if it exists.
-          storedFiles = _.filter(storedFiles, function (storedFile) {
-            return file !== storedFile.name;
-          });
+          var existingFile = _.find(storedFiles, 'name', localFile.name);
+
           // File exists
           if (existingFile) {
+            // Remove file from stored list if it exists.
+            storedFiles = _.reject(storedFiles, 'name', localFile.name);
+
             // If content has changed
-            if (existingFile.hash !== sha.getSync(file)) {
-              output += messages.status.changed(filePath);
+            if (existingFile.hash !== localFile.hash) {
+              result.changed.push(existingFile);
             } else {
-              output += messages.status.notChanged(filePath);
+              result.unchanged.push(existingFile);
             }
           } else {
-            output += messages.status.new(filePath);
+            result.added.push(localFile);
           }
         });
-      }
+        result.deleted = _.pluck(storedFiles, 'name');
+
+        return result;
     });
   }
 };
