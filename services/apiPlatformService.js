@@ -15,18 +15,48 @@ module.exports = function (apiPlatformRepository, fileSystemRepository, configur
   function pullAPIFiles(api) {
     var currentConfig = configurationRepository.getCurrentConfig();
 
-    return apiPlatformRepository.pullAPIFiles(api)
-      .then(function (files) {
-        files.forEach(function (file) {
-          return fileSystemRepository.writeFile(file);
-        });
+    var makeDirectories = function (fileEntries) {
+      var directoryPaths = _.pluck(
+        _.filter(fileEntries, 'isDirectory'),
+        'path')
+        .sort();
 
-        currentConfig.files = _.map(files, function (file) {
-          return _.omit(file, 'data');
+      return Promise.all(directoryPaths.map(fileSystemRepository.makeDirectory))
+        .then(function () {
+          return fileEntries;
         });
-        configurationRepository.updateCurrentConfiguration(currentConfig);
+    };
 
-        return files;
-      });
+    var pullFiles = function (fileEntries) {
+      var pullFile = function (fileMetadata) {
+        var writeFile = function (file) {
+          return fileSystemRepository.writeFile(file, fileMetadata.path)
+            .then(function (fileHash) {
+              fileMetadata.hash = fileHash;
+            });
+        };
+
+        return apiPlatformRepository.getFile(api, fileMetadata.id)
+          .then(writeFile);
+      };
+
+      var filesMetadata = _.reject(fileEntries, 'isDirectory');
+      return Promise.all(filesMetadata.map(pullFile))
+        .then(function () {
+          return fileEntries;
+        });
+    };
+
+    var updateFileEntries = function (fileEntries) {
+      var currentConfig = configurationRepository.getCurrentConfig();
+      currentConfig.files = fileEntries;
+      configurationRepository.updateCurrentConfiguration(currentConfig);
+      return fileEntries;
+    };
+
+    return apiPlatformRepository.getAllFileEntries(api)
+      .then(makeDirectories)
+      .then(pullFiles)
+      .then(updateFileEntries);
   }
 };

@@ -7,11 +7,16 @@ var sha = require('sha');
 
 module.exports = function () {
   return {
-    writeFile: function (file) {
-      fs.writeFileSync(path.join(process.cwd(), file.name), file.data);
-      file.hash = sha.getSync(file.name);
+    writeFile: function (data, fileName) {
+      var filePath = path.join(process.cwd(), fileName);
+      fs.writeFileSync(filePath, data);
 
-      return file;
+      return Promise.resolve(sha.getSync(filePath));
+    },
+    makeDirectory: function (directoryPath) {
+      return new Promise(function (resolve, reject) {
+        fs.mkdir(path.join(process.cwd(), directoryPath), resolve);
+      });
     },
     getFiles: function (directory) {
       return new Promise(function (resolve, reject) {
@@ -23,7 +28,7 @@ module.exports = function () {
     },
     readFile: function (filePath) {
       return {
-        name: filePath.substring(filePath.lastIndexOf(path.delimited)),
+        name: filePath.substring(filePath.lastIndexOf(path.sep)),
         hash: sha.getSync(filePath),
         path: '/' + filePath
       };
