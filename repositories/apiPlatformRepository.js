@@ -5,12 +5,27 @@ var apiPlatformUrl = 'https://anypoint.mulesoft.com/apiplatform/repository';
 module.exports = function (contextHolder, superagent) {
   return {
     getAllAPIs: getAllAPIs,
-    pullAPIFiles: pullAPIFiles
+    getAllFileEntries: getAllFileEntries,
+    getFile: getFile
   };
 
   function getAllAPIs() {
     return apiClient(superagent.get(apiPlatformUrl + '/apis'))
       .then(buildApisInformation);
+  }
+
+  function getAllFileEntries(api) {
+    return apiClient(superagent.get(apiPlatformUrl + '/apis/' + api.id + '/versions/' + api.versionId + '/files'))
+      .then(function (response) {
+        return response.body;
+      });
+  }
+
+  function getFile(api, fileId) {
+    return apiClient(superagent.get(apiPlatformUrl + '/apis/' + api.id + '/versions/' + api.versionId + '/files/' + fileId))
+      .then(function (response) {
+        return response.body.data;
+      });
   }
 
   function pullAPIFiles(api) {

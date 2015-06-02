@@ -55,9 +55,11 @@ module.exports = function () {
         var message       = actions[action].message;
         var colorPrinter  = actions[action].color;
 
-        filesChanged.forEach(function (file) {
-          output.push(colorPrinter([prefix, file.path, message].join(' ')));
-        });
+        if (filesChanged) {
+          filesChanged.forEach(function (file) {
+            output.push(colorPrinter([prefix, file.path, message].join(' ')));
+          });
+        }
       });
 
       return output.join('\n');
