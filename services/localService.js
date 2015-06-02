@@ -2,12 +2,14 @@
 
 var _ = require('lodash');
 
-var fsRepository = require('../repositories/fileSystemRepository');
-var configurationRepository = require('../repositories/configurationRepository');
+// TODO: Add logic to select appropriate repository.
+module.exports = function (fileSystemRepository, configurationRepository) {
+  return {
+    status: status
+  };
 
-module.exports = {
-  execute: function (args) {
-    return fsRepository.list()
+  function status() {
+    return fileSystemRepository.getFiles(process.cwd())
       .then(function (localFilePaths) {
         var result = {
           added: [],
@@ -20,7 +22,7 @@ module.exports = {
         var storedFiles = config.files;
 
         localFilePaths.forEach(function (localFilePath) {
-          var localFile = fsRepository.readFile(localFilePath);
+          var localFile = fileSystemRepository.readFile(localFilePath);
 
           // Search file in storedFiles.
           var existingFile = _.find(storedFiles, 'name', localFile.name);
@@ -40,7 +42,7 @@ module.exports = {
             result.added.push(localFile);
           }
         });
-        result.deleted = _.pluck(storedFiles, 'name');
+        result.deleted = storedFiles;
 
         return result;
     });
