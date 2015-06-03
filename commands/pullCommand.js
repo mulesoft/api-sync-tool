@@ -19,7 +19,7 @@ module.exports = function (apiPlatformService, messages) {
   }
 
   function print(files) {
-    console.log(_.map(files, 'name').join('\n'));
+    console.log(messages.status({added: _.reject(files, 'isDirectory')}));
   }
 
   function execute(args) {
