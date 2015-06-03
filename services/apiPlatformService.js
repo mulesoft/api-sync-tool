@@ -2,7 +2,7 @@
 
 var _ = require('lodash');
 
-module.exports = function (apiPlatformRepository, fileSystemRepository, configurationRepository) {
+module.exports = function (apiPlatformRepository, fileSystemRepository, workspaceRepository) {
   return {
     getAllAPIs: getAllAPIs,
     pullAPIFiles: pullAPIFiles
@@ -13,7 +13,7 @@ module.exports = function (apiPlatformRepository, fileSystemRepository, configur
   }
 
   function pullAPIFiles(api) {
-    var currentConfig = configurationRepository.getCurrentConfig();
+    var workspace = workspaceRepository.get();
 
     return apiPlatformRepository.pullAPIFiles(api)
       .then(function (files) {
@@ -21,10 +21,10 @@ module.exports = function (apiPlatformRepository, fileSystemRepository, configur
           return fileSystemRepository.writeFile(file);
         });
 
-        currentConfig.files = _.map(files, function (file) {
+        workspace.files = _.map(files, function (file) {
           return _.omit(file, 'data');
         });
-        configurationRepository.updateCurrentConfiguration(currentConfig);
+        workspaceRepository.update(workspace);
 
         return files;
       });

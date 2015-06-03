@@ -3,20 +3,34 @@
 var _ = require('lodash');
 var colors = require('colors/safe');
 
-module.exports = function () {
+var TOOL_NAME = 'api-sync';
+
+module.exports = function (commands) {
   return {
     // Usage
-    usage: function (commands) {
-      return 'Usage: api-sync <' + commands.join('|') + '>';
+    usage: function () {
+      return 'Usage: ' + TOOL_NAME + ' <' + commands.join('|') + '>';
     },
-    loginUsage: function () {
-      return 'Usage: api-sync login <username> <password>';
-    },
-    pushUsage: function () {
-      return 'Usage: apy-sync push <apiId> <versionId>';
-    },
-    pullUsage: function () {
-      return 'Usage: apy-sync pull <apiId> <versionId>';
+    commandUsage: function (command, parameters, commandOptions) {
+      var convertOption = function (option) {
+        return option.length === 1 ? ('-' + option) : ('--' + option + '=' + option);
+      };
+
+      var convertOptions = function (options) {
+        return _.map(options, function (option) {
+          if (_.isArray(option)) {
+            return convertOptions(option).join(' ');
+          } else {
+            return convertOption(option);
+          }
+        });
+      };
+
+      commandOptions = convertOptions(commandOptions);
+
+      return 'Usage: ' + TOOL_NAME + ' ' + command +
+        (parameters ? (' <' + parameters.join('> <') + '>') : '') +
+        (commandOptions ? ' [' + commandOptions.join(' || ') + ']' : '');
     },
     // Command results
     status: function (result) {
@@ -50,7 +64,7 @@ module.exports = function () {
       };
 
       actionOrder.forEach(function (action) {
-        var filesChanged  = result[action];
+        var filesChanged  = result[action] || [];
         var prefix        = actions[action].prefix;
         var message       = actions[action].message;
         var colorPrinter  = actions[action].color;
@@ -62,8 +76,9 @@ module.exports = function () {
 
       return output.join('\n');
     },
-    loginSuccessful: function () {
-      return 'Login successful';
+    setupSuccessful: function (config) {
+      return 'Current setup:\n- Sub-organization: ' + config.subOrg.name +
+        '\n- API: ' + config.api.name + ' ' + config.apiVersion.name;
     },
     fileIgnored: function (fileName) {
       return fileName + ' has not changed, ignoring.';
@@ -92,16 +107,22 @@ module.exports = function () {
       var lastVersion = firstApi.versions[apis[0].versions.length - 1];
 
       output += 'To pull content from ' + firstApi.name + ' API version ' + lastVersion.name + ', use:\n';
-      output += colors.bold('> api-sync pull ' + firstApi.id + ' ' + lastVersion.id + '\n');
+      output += colors.bold('> ' + TOOL_NAME + ' pull ' + firstApi.id + ' ' + lastVersion.id + '\n');
 
       return output;
     },
     // Errors
-    unknown: function (commandName, commands) {
-      return 'Unknown command: ' + commandName + '\n' + this.usage(commands);
+    setupNeeded: function () {
+      return 'Please run setup before running other commands.';
     },
-    noCommands: function (commands) {
-      return 'Error: Missing command name.\n' + this.usage(commands);
+    notFound: function (object) {
+      return object + ' was not found.';
+    },
+    unknown: function (commandName) {
+      return 'Unknown command: ' + commandName + '\n' + this.usage();
+    },
+    noCommands: function () {
+      return 'Missing command name.\n' + this.usage();
     },
     unexpected: function (err) {
       return 'Unexpected Error: ' + err;

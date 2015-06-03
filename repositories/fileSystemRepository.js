@@ -2,7 +2,6 @@
 
 var fs = require('fs');
 var path = require('path');
-var _ = require('lodash');
 var sha = require('sha');
 
 module.exports = function () {
@@ -14,7 +13,7 @@ module.exports = function () {
       return file;
     },
     getFiles: function (directory) {
-      return new Promise(function (resolve, reject) {
+      return new Promise(function (resolve) {
         var result = [];
         readDir(directory, '', result);
 
