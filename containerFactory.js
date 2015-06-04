@@ -12,6 +12,7 @@ function createContainer() {
   var entries   = [
     'application.js',
     COMMANDS_LOCATION,
+    'controllers',
     'factories',
     'repositories',
     'services',

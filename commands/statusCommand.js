@@ -2,8 +2,13 @@
 
 module.exports = function (localService, messages) {
   return {
+    validateInput: validateInput,
     execute: execute
   };
+
+  function validateInput() {
+    return Promise.resolve();
+  }
 
   function parse(args) {
     return Promise.resolve(args);

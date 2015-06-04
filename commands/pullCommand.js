@@ -9,7 +9,7 @@ module.exports = function (apiPlatformService, messages) {
 
   function parse(args) {
     if (args._.length < 3) {
-      return Promise.reject(new Error(messages.pullUsage()));
+      return Promise.reject(messages.commandUsage('pull', ['apiId', 'versionId']));
     }
 
     return Promise.resolve({

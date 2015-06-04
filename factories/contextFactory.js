@@ -1,17 +1,27 @@
 'use strict';
 
-var _ = require('lodash');
-
-module.exports = function (configurationRepository) {
+module.exports = function (workspaceRepository) {
   return {
-    create: function () {
-      var config = configurationRepository.getCurrentConfig();
-
-      return {
-        getToken: function () {
-          return config && config.authentication && config.authentication.access_token;
-        }
-      };
-    }
+    create: create
   };
+
+  function create(authentication) {
+    var accessToken;
+    if (!authentication) {
+      var workspace = workspaceRepository.get();
+      accessToken = workspace && workspace.authentication && workspace.authentication.access_token;
+    } else {
+      accessToken = authentication.access_token;
+    }
+
+    return createContext(accessToken);
+  }
+
+  function createContext(accessToken) {
+    return {
+      getToken: function () {
+        return accessToken;
+      }
+    };
+  }
 };

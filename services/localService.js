@@ -3,7 +3,7 @@
 var _ = require('lodash');
 
 // TODO: Add logic to select appropriate repository.
-module.exports = function (fileSystemRepository, configurationRepository) {
+module.exports = function (fileSystemRepository, workspaceRepository) {
   return {
     status: status
   };
@@ -18,8 +18,7 @@ module.exports = function (fileSystemRepository, configurationRepository) {
           unchanged: []
         };
 
-        var config = configurationRepository.getCurrentConfig();
-        var storedFiles = config.files;
+        var storedFiles = workspaceRepository.get().files;
 
         localFilePaths.forEach(function (localFilePath) {
           var localFile = fileSystemRepository.readFile(localFilePath);

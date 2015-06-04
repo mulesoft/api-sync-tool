@@ -2,45 +2,30 @@
 
 var omelette = require('omelette');
 
-module.exports = function (commandFactory, commands, container, contextFactory, contextHolder) {
+module.exports = function (commandFactory, commandRunner, commands) {
   return {
     run: function (args) {
       // Setup autocomplete.
-      var complete = omelette('api-sync <command>');
-
-      complete.on('command', function () {
-        this.reply(commands);
-      });
-
-      // Initialize the omelette.
-      complete.init();
+      setupAutocomplete();
 
       commandFactory.get(args)
         .then(function (command) {
-          if (command.noContext) {
-            return command.execute(args);
-          } else {
-            var context = contextFactory.create();
-
-            contextHolder.set(context);
-
-            return validate(context)
-              .then(function () {
-                return command.execute(args);
-              });
-          }
+          return commandRunner.run(command, args);
         })
         .then(successExit)
         .catch(abortExit);
     }
   };
 
-  function validate(context) {
-    if (!context.getToken()) {
-      return Promise.reject('Unauthorized');
-    }
+  function setupAutocomplete() {
+    var complete = omelette('api-sync <command>');
 
-    return Promise.resolve();
+    complete.on('command', function () {
+      this.reply(commands);
+    });
+
+    // Initialize the omelette.
+    complete.init();
   }
 
   function successExit() {
