@@ -2,10 +2,10 @@
 
 var apiPlatformUrl = 'https://anypoint.mulesoft.com/apiplatform/repository';
 
-module.exports = function (contextHolder, superagent) {
+module.exports = function (contextHolder, messages, superagent) {
   return {
     getAllAPIs: getAllAPIs,
-    pullAPIFiles: pullAPIFiles
+    getAPIFiles: getAPIFiles
   };
 
   function getAllAPIs() {
@@ -13,14 +13,36 @@ module.exports = function (contextHolder, superagent) {
       .then(buildApisInformation);
   }
 
-  function pullAPIFiles(api) {
-    return apiClient(superagent.get(apiPlatformUrl + '/apis/' + api.id + '/versions/' + api.versionId + '/files'))
-      .then(function (response) {
-        var files = response.body;
+  /**
+   * Pulls the API files compressed in a ZIP file and saves it to a stream
+   *
+   * @param {Object} organizationId The id of the organization where the API is
+   * @param {Object} apiId The API to download
+   * @param {Object} apiVersionId The version to download
+   * @param {Object} stream A stream to send to the zip file to
+   */
+  function getAPIFiles(organizationId, apiId, apiVersionId, stream) {
+    return new Promise(function (resolve, reject) {
+      apiClient(superagent.get(apiPlatformUrl + '/v2' +
+        '/organizations/' + organizationId +
+        '/apis/' + apiId +
+        '/versions/' + apiVersionId +
+        '/files/export'),
+        function (err, response) {
+          if (err) {
+            reject(err);
+          }
 
-        return Promise.all(files.map(function (file) {
-          return pullUri(api, file);
-        }));
+          var piping = response.pipe(stream);
+          piping.on('close', function () {
+            resolve();
+          });
+          // TODO: Improve the message error and move it to messages
+          // TODO: Test this event catches errors
+          piping.on('error', function () {
+            reject(new Error(messages.savingFileError()));
+          });
+        });
       });
   }
 
@@ -47,19 +69,10 @@ module.exports = function (contextHolder, superagent) {
     return apis;
   }
 
-  function pullUri(api, file) {
-    return apiClient(superagent.get(apiPlatformUrl + '/apis/' + api.id + '/versions/' + api.versionId + '/files/' + file.id))
-      .then(function (response) {
-        file.data = response.body.data;
-
-        return file;
-      });
-  }
-
-  function apiClient(request) {
+  function apiClient(request, callback) {
     return request
       .set('Authorization', 'Bearer ' + contextHolder.get().getToken())
       .set('Accept', 'application/json')
-      .end();
+      .end(callback);
   }
 };

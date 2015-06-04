@@ -18,7 +18,7 @@ module.exports = function (authenticationService, contextFactory, contextHolder,
         return authenticationService.login(user.name, user.password);
       })
       .then(function (authentication) {
-        contextHolder.set(contextFactory.create(authentication));
+        contextHolder.set(contextFactory.create(authentication, process.cwd()));
         return command.execute(args);
       });
   }

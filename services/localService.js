@@ -9,41 +9,42 @@ module.exports = function (fileSystemRepository, workspaceRepository) {
   };
 
   function status() {
-    return fileSystemRepository.getFiles(process.cwd())
-      .then(function (localFilePaths) {
-        var result = {
-          added: [],
-          deleted: [],
-          changed: [],
-          unchanged: []
-        };
+    var result = {
+      added: [],
+      deleted: [],
+      changed: [],
+      unchanged: []
+    };
 
+    return fileSystemRepository.getFilesPath()
+      .then(function (localFilePaths) {
         var storedFiles = workspaceRepository.get().files;
 
-        localFilePaths.forEach(function (localFilePath) {
-          var localFile = fileSystemRepository.readFile(localFilePath);
-
+        return Promise.all(localFilePaths.map(function (localFilePath) {
           // Search file in storedFiles.
-          var existingFile = _.find(storedFiles, 'name', localFile.name);
+          var existingFile = _.find(storedFiles, 'path', localFilePath);
 
           // File exists
           if (existingFile) {
             // Remove file from stored list if it exists.
-            storedFiles = _.reject(storedFiles, 'name', localFile.name);
+            storedFiles = _.reject(storedFiles, 'path', localFilePath);
 
             // If content has changed
-            if (existingFile.hash !== localFile.hash) {
-              result.changed.push(existingFile);
-            } else {
-              result.unchanged.push(existingFile);
-            }
+            return fileSystemRepository.getFileHash(localFilePath)
+              .then(function (hash) {
+                if (existingFile.hash !== hash) {
+                  result.changed.push(existingFile.path);
+                } else {
+                  result.unchanged.push(existingFile.path);
+                }
+              });
           } else {
-            result.added.push(localFile);
+            result.added.push(localFilePath);
           }
+        })).then(function () {
+          result.deleted = _.pluck(storedFiles, 'path');
+          return result;
         });
-        result.deleted = storedFiles;
-
-        return result;
     });
   }
 };

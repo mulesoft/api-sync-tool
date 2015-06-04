@@ -1,32 +1,50 @@
 'use strict';
 
-var _ = require('lodash');
-
-module.exports = function (apiPlatformRepository, fileSystemRepository, workspaceRepository) {
+module.exports = function (apiPlatformRepository, fileSystemRepository,
+  contextHolder, decompresser) {
   return {
     getAllAPIs: getAllAPIs,
-    pullAPIFiles: pullAPIFiles
+    getAPIFiles: getAPIFiles
   };
 
   function getAllAPIs() {
     return apiPlatformRepository.getAllAPIs();
   }
+  // TODO this functions shouldn't know that the APIPlatform is returning
+  // a compressed file. The logic of getting the API files should be in
+  // the apiPlatformRepository
+  function getAPIFiles(organizationId, apiId, apiVersionId) {
+    var compressedAPIFilePath = 'API.zip';
+    var stream = fileSystemRepository.createWriteStream(compressedAPIFilePath);
 
-  function pullAPIFiles(api) {
-    var workspace = workspaceRepository.get();
+    return apiPlatformRepository.getAPIFiles(organizationId, apiId,
+      apiVersionId, stream)
+      .then(decompressAPI)
+      .then(removeCompressedAPI)
+      .then(fileSystemRepository.getFilesPath)
+      .then(getFilesHashes);
 
-    return apiPlatformRepository.pullAPIFiles(api)
-      .then(function (files) {
-        files.forEach(function (file) {
-          return fileSystemRepository.writeFile(file);
+    function decompressAPI() {
+      return decompresser.decompressFile(contextHolder.get().getDirectoryPath(),
+        fileSystemRepository.getFileFullPath(compressedAPIFilePath));
+    }
+
+    function removeCompressedAPI() {
+      return fileSystemRepository.removeFile(compressedAPIFilePath);
+    }
+
+    function getFilesHashes(filePaths) {
+      return Promise.all(filePaths.map(function (filePath) {
+        return new Promise(function (resolve) {
+          fileSystemRepository.getFileHash(filePath)
+            .then(function (hash) {
+              resolve({
+                path: filePath,
+                hash: hash
+              });
+            });
         });
-
-        workspace.files = _.map(files, function (file) {
-          return _.omit(file, 'data');
-        });
-        workspaceRepository.update(workspace);
-
-        return files;
-      });
+      }));
+    }
   }
 };

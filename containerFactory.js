@@ -39,6 +39,9 @@ function createContainer() {
     var context = {
       getToken: function () {
         return '';
+      },
+      getDirectoryPath: function () {
+        return '';
       }
     };
 

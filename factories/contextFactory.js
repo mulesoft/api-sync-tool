@@ -5,7 +5,7 @@ module.exports = function (workspaceRepository) {
     create: create
   };
 
-  function create(authentication) {
+  function create(authentication, directoryPath) {
     var accessToken;
     if (!authentication) {
       var workspace = workspaceRepository.get();
@@ -14,13 +14,16 @@ module.exports = function (workspaceRepository) {
       accessToken = authentication.access_token;
     }
 
-    return createContext(accessToken);
+    return createContext(accessToken, directoryPath);
   }
 
-  function createContext(accessToken) {
+  function createContext(accessToken, directoryPath) {
     return {
       getToken: function () {
         return accessToken;
+      },
+      getDirectoryPath: function () {
+        return directoryPath;
       }
     };
   }
