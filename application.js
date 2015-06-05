@@ -2,7 +2,7 @@
 
 var omelette = require('omelette');
 
-module.exports = function (commandFactory, commandRunner, commands) {
+module.exports = function (commandFactory, commandRunner, commands, logger) {
   return {
     run: function (args) {
       // Setup autocomplete.
@@ -10,6 +10,7 @@ module.exports = function (commandFactory, commandRunner, commands) {
 
       commandFactory.get(args)
         .then(function (command) {
+          logger.info('Running command');
           return commandRunner.run(command, args);
         })
         .then(successExit)
@@ -29,11 +30,16 @@ module.exports = function (commandFactory, commandRunner, commands) {
   }
 
   function successExit() {
+    logger.info('Command completed successfully');
     process.exit(0);
   }
 
   function abortExit(output) {
-    console.error(output);
-    process.exit(1);
+    logger.error(output.toString());
+    // Wait for logger to finish writing logs before exit.
+    logger.onFlush(function () {
+      console.error(output);
+      process.exit(1);
+    });
   }
 };
