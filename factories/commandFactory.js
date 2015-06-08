@@ -2,7 +2,7 @@
 
 var _ = require('lodash');
 
-module.exports = function (commands, container, messages) {
+module.exports = function (commands, container, logger, messages) {
   return {
     get: get
   };
@@ -17,6 +17,7 @@ module.exports = function (commands, container, messages) {
     if (!_.includes(commands, commandName)) {
       return Promise.reject(messages.unknown(commandName));
     }
+    logger.info('Parsed input and found command: ' + args._[0]);
 
     return Promise.resolve(container.get(commandName + 'Command'));
   }
