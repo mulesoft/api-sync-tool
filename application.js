@@ -35,11 +35,12 @@ module.exports = function (commandFactory, commandRunner, commands, logger) {
   }
 
   function abortExit(output) {
-    logger.error(output.toString());
     // Wait for logger to finish writing logs before exit.
     logger.onFlush(function () {
       console.error(output);
       process.exit(1);
     });
+    logger.error(output.toString());
+    logger.flush();
   }
 };
