@@ -24,5 +24,9 @@ module.exports = function () {
     logger.transports.file.on('flush', cb);
   };
 
+  logger.flush = function () {
+    logger.transports.file.flush();
+  };
+
   return logger;
 };
