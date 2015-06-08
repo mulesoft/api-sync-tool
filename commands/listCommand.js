@@ -1,6 +1,6 @@
 'use strict';
 
-module.exports = function (apiPlatformService, console, messages) {
+module.exports = function (apiPlatformService, logger, messages) {
   return {
     execute: execute
   };
@@ -16,6 +16,6 @@ module.exports = function (apiPlatformService, console, messages) {
   }
 
   function print(apis) {
-    console.log(messages.apis(apis));
+    logger.info(messages.apis(apis));
   }
 };

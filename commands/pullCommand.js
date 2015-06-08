@@ -2,7 +2,7 @@
 
 var _ = require('lodash');
 
-module.exports = function (apiPlatformService, messages) {
+module.exports = function (apiPlatformService, logger, messages) {
   return {
     execute: execute
   };
@@ -19,7 +19,7 @@ module.exports = function (apiPlatformService, messages) {
   }
 
   function print(files) {
-    console.log(_.map(files, 'name').join('\n'));
+    logger.info(_.map(files, 'name').join('\n'));
   }
 
   function execute(args) {

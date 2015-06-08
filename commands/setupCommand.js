@@ -1,6 +1,6 @@
 'use strict';
 
-module.exports = function (console, messages, setupController, setupStrategyFactory, workspaceRepository) {
+module.exports = function (logger, messages, setupController, setupStrategyFactory, workspaceRepository) {
   return {
     validateInput: validateInput,
     execute: execute,
@@ -55,6 +55,6 @@ module.exports = function (console, messages, setupController, setupStrategyFact
   }
 
   function print(newWorkspace) {
-    console.log(messages.setupSuccessful(newWorkspace));
+    logger.info(messages.setupSuccessful(newWorkspace));
   }
 };
