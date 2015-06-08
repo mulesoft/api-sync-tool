@@ -1,12 +1,12 @@
 'use strict';
 
-module.exports = function (apiPlatformService, userOrganizationService) {
+module.exports = function (apiPlatformService, userOrganizationService, workspaceRepository) {
   return {
     setup: setup
   };
 
   function setup(strategy) {
-    var workspace = {};
+    var workspace = workspaceRepository.get();
     return userOrganizationService.getSubOrganizations()
       .then(strategy.getSubOrg)
       .then(function (subOrg) {
@@ -24,6 +24,8 @@ module.exports = function (apiPlatformService, userOrganizationService) {
       .then(strategy.getAPIVersion)
       .then(function (apiVersion) {
         workspace.apiVersion = apiVersion;
+
+        workspaceRepository.update(workspace);
         return workspace;
       });
   }
