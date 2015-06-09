@@ -13,6 +13,7 @@
     "api-sync": "index.js"
   },
   "dependencies": {
+    "adm-zip": "0.4.7",
     "colors": "^1.1.0",
     "dependable": "0.2.5",
     "inquirer": "^0.8.5",

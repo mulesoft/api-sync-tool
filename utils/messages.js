@@ -70,15 +70,15 @@ module.exports = function (commands) {
         var colorPrinter  = actions[action].color;
 
         filesChanged.forEach(function (file) {
-          output.push(colorPrinter([prefix, file.path, message].join(' ')));
+          output.push(colorPrinter([prefix, file, message].join(' ')));
         });
       });
 
       return output.join('\n');
     },
-    setupSuccessful: function (config) {
-      return 'Current setup:\n- Sub-organization: ' + config.subOrg.name +
-        '\n- API: ' + config.api.name + ' ' + config.apiVersion.name;
+    setupSuccessful: function (workspace) {
+      return 'Current setup:\n- Sub-organization: ' + workspace.subOrg.name +
+        '\n- API: ' + workspace.api.name + ' ' + workspace.apiVersion.name;
     },
     fileIgnored: function (fileName) {
       return fileName + ' has not changed, ignoring.';
@@ -136,6 +136,9 @@ module.exports = function (commands) {
     },
     invalidDirectory: function () {
       return 'Invalid directory';
+    },
+    savingFileError: function () {
+      return 'An unknown error happened when saving a file';
     }
   };
 };
