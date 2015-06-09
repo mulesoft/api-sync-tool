@@ -77,7 +77,7 @@ module.exports = function (commands) {
       return output.join('\n');
     },
     setupSuccessful: function (workspace) {
-      return 'Current setup:\n- Sub-organization: ' + workspace.subOrg.name +
+      return 'Current setup:\n- Business group: ' + workspace.bizGroup.name +
         '\n- API: ' + workspace.api.name + ' ' + workspace.apiVersion.name;
     },
     fileIgnored: function (fileName) {

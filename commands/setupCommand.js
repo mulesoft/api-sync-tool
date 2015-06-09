@@ -8,12 +8,12 @@ module.exports = function (logger, messages, setupController, setupStrategyFacto
   };
 
   function validateInput(args) {
-    if (!args.i && (!args.subOrg || !args.apiId || !args.apiVersionId)) {
+    if (!args.i && (!args.bizGroup || !args.apiId || !args.apiVersionId)) {
       return Promise.reject(messages.commandUsage('setup', null,
         [
           'i',
           [
-            'subOrg',
+            'bizGroup',
             'apiId',
             'apiVersionId'
           ]
@@ -38,7 +38,7 @@ module.exports = function (logger, messages, setupController, setupStrategyFacto
       });
     } else {
       return Promise.resolve({
-        subOrg: args.subOrg,
+        bizGroup: args.bizGroup,
         apiId: args.apiId,
         apiVersionId: args.apiVersionId
       });

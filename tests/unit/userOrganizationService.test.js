@@ -3,7 +3,8 @@
 require('should');
 var sinon = require('sinon');
 
-var containerFactory  = require('../support/testContainerFactory');
+var containerFactory = require('../support/testContainerFactory');
+var contentGenerator = require('../support/contentGenerator');
 
 var csRepositoryStub = {};
 
@@ -13,25 +14,25 @@ describe('userOrganizationService', function () {
       memberOfOrganizations: [
         {
           id: 1,
-          name: 'SubOrg',
+          name: 'bizGroup',
           another: 'property'
         }
       ]
     }));
   });
 
-  describe('getSubOrganizations', run(function (userOrganizationService) {
-    it('should return user sub organizations', function (done) {
-      userOrganizationService.getSubOrganizations()
-        .then(function (subOrgs) {
+  describe('getBusinessGroups', run(function (userOrganizationService) {
+    it('should return user business groups', function (done) {
+      userOrganizationService.getBusinessGroups()
+        .then(function (businessGroups) {
           csRepositoryStub.getUserInfo.called.should.be.true;
 
-          subOrgs.should.be.an.Array;
-          subOrgs.length.should.equal(1);
-          subOrgs[0].should.have.properties('id', 'name');
-          subOrgs[0].should.not.have.properties('another');
-          subOrgs[0].id.should.equal(1);
-          subOrgs[0].name.should.equal('SubOrg');
+          businessGroups.should.be.an.Array;
+          businessGroups.length.should.equal(1);
+          businessGroups[0].should.have.properties('id', 'name');
+          businessGroups[0].should.not.have.properties('another');
+          businessGroups[0].id.should.equal(1);
+          businessGroups[0].name.should.equal('bizGroup');
 
           done();
         })

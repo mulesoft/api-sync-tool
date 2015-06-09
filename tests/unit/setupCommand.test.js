@@ -55,7 +55,7 @@ describe('setupCommand', function () {
     });
 
     it('should pass when batch arguments are presenet', function (done) {
-      setupCommand.validateInput({subOrg: '1234', apiId: '1234', apiVersionId: '1234'})
+      setupCommand.validateInput({bizGroup: '1234', apiId: '1234', apiVersionId: '1234'})
         .then(function () {
           done();
         })
@@ -80,7 +80,7 @@ describe('setupCommand', function () {
     });
 
     it('should run the command in batch mode', function (done) {
-      setupCommand.execute({subOrg: 1234, apiId: 1234, apiVersionId: 1234})
+      setupCommand.execute({bizGroup: 1234, apiId: 1234, apiVersionId: 1234})
         .then(function () {
           setupControllerStub.setup.called.should.be.true;
           setupStrategyFactoryStub.get.called.should.be.true;

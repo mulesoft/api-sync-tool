@@ -28,7 +28,7 @@ module.exports = function (authenticationService, contextFactory, contextHolder,
       return Promise.resolve();
     } else {
       var workspace = workspaceRepository.get();
-      if (workspace.subOrg && workspace.api && workspace.apiVersion) {
+      if (workspace.bizGroup && workspace.api && workspace.apiVersion) {
         return Promise.resolve();
       } else {
         return Promise.reject(messages.setupNeeded());

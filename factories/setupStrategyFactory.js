@@ -17,8 +17,8 @@ module.exports = function (commandPrompt, messages) {
 
   function interactiveStrategy() {
     return {
-      getSubOrg: function (subOrgs) {
-        return commandPrompt.getChoice('Select your sub-organization', 'name', 'id', subOrgs);
+      getBusinessGroup: function (businessGroups) {
+        return commandPrompt.getChoice('Select your business group', 'name', 'id', businessGroups);
       },
       getAPI: function (apis) {
         return commandPrompt.getChoice('Select your API', 'name', 'id', apis);
@@ -31,16 +31,16 @@ module.exports = function (commandPrompt, messages) {
 
   function batchStrategy(parameters) {
     return {
-      getSubOrg: function (subOrgs) {
-        var subOrg = _.find(subOrgs, 'id', parameters.subOrg);
-        return subOrg ? Promise.resolve(subOrg) : Promise.reject(messages.notFound('Sub-Organization'));
+      getBusinessGroup: function (businessGroups) {
+        var businessGroup = _.find(businessGroups, 'id', parameters.bizGroup);
+        return businessGroup ? Promise.resolve(businessGroup) : Promise.reject(messages.notFound('Business Group'));
       },
       getAPI: function (apis) {
-        var api = _.find(apis, 'id', parameters.apiId);
+        var api = _.find(apis, 'name', parameters.api);
         return api ? Promise.resolve(api) : Promise.reject(messages.notFound('API'));
       },
       getAPIVersion: function (api) {
-        var apiVersion = _.find(api.versions, 'id', parameters.apiVersionId);
+        var apiVersion = _.find(api.versions, 'name', parameters.apiVersion);
         return apiVersion ? Promise.resolve(apiVersion) : Promise.reject(messages.notFound('API Version'));
       }
     };

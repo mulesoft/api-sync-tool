@@ -7,11 +7,11 @@ module.exports = function (apiPlatformService, userOrganizationService, workspac
 
   function setup(strategy) {
     var workspace = workspaceRepository.get();
-    return userOrganizationService.getSubOrganizations()
-      .then(strategy.getSubOrg)
-      .then(function (subOrg) {
-        workspace.subOrg = subOrg;
-        return apiPlatformService.getAllAPIs(subOrg.id)
+    return userOrganizationService.getBusinessGroups()
+      .then(strategy.getBusinessGroup)
+      .then(function (bizGroup) {
+        workspace.bizGroup = bizGroup;
+        return apiPlatformService.getAllAPIs(bizGroup.id)
           .then(function (apis) {
             return apis;
           });
