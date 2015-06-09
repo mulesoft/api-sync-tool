@@ -30,9 +30,6 @@ function createContainer() {
     return require('superagent-promise');
   });
 
-  // Register console as module.
-  container.register('console', console);
-
   // container itself that we need to have to
   // be able dynamically resolve route installers
   container.register('container', container);

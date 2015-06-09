@@ -9,7 +9,14 @@ module.exports = function () {
 
   var logger = new (winston.Logger)({
     transports: [
+      new (winston.transports.Console)({
+        level: 'info',
+        formatter: function (options) {
+          return options.message !== undefined ? options.message : '';
+        }
+      }),
       new (winston.transports.File)({
+        level: 'debug',
         filename: logFileName,
         json: false,
         formatter: function (options) {
@@ -20,12 +27,12 @@ module.exports = function () {
     ]
   });
 
-  logger.onFlush = function (cb) {
-    logger.transports.file.on('flush', cb);
-  };
-
-  logger.flush = function () {
-    logger.transports.file.flush();
+  logger.onComplete = function (message, cb) {
+    logger.on('logging', function (transport, level, msg) {
+      if (transport.name === 'file' && msg === message) {
+        cb();
+      }
+    });
   };
 
   return logger;

@@ -1,6 +1,6 @@
 'use strict';
 
-module.exports = function (localService, messages) {
+module.exports = function (localService, logger, messages) {
   return {
     validateInput: validateInput,
     execute: execute
@@ -15,7 +15,7 @@ module.exports = function (localService, messages) {
   }
 
   function print(result) {
-    console.log(messages.status(result));
+    logger.info(messages.status(result));
   }
 
   function execute(args) {

@@ -17,7 +17,7 @@ module.exports = function (commands, container, logger, messages) {
     if (!_.includes(commands, commandName)) {
       return Promise.reject(messages.unknown(commandName));
     }
-    logger.info('Parsed input and found command: ' + args._[0]);
+    logger.debug('Parsed input and found command: ' + args._[0]);
 
     return Promise.resolve(container.get(commandName + 'Command'));
   }

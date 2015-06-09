@@ -10,7 +10,7 @@ module.exports = function (commandFactory, commandRunner, commands, logger) {
 
       commandFactory.get(args)
         .then(function (command) {
-          logger.info('Running command');
+          logger.debug('Running command');
           return commandRunner.run(command, args);
         })
         .then(successExit)
@@ -30,17 +30,17 @@ module.exports = function (commandFactory, commandRunner, commands, logger) {
   }
 
   function successExit() {
-    logger.info('Command completed successfully');
-    process.exit(0);
+    // Log successful exit.
+    logger.debug('Command completed successfully');
   }
 
   function abortExit(output) {
-    // Wait for logger to finish writing logs before exit.
-    logger.onFlush(function () {
-      console.error(output);
+    var message = output.toString();
+    // Only exit after the last message was logged.
+    logger.onComplete(message, function () {
       process.exit(1);
     });
-    logger.error(output.toString());
-    logger.flush();
+
+    logger.error(message);
   }
 };
