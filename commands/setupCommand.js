@@ -1,6 +1,6 @@
 'use strict';
 
-module.exports = function (logger, messages, setupController, setupStrategyFactory, workspaceRepository) {
+module.exports = function (logger, messages, setupController, setupStrategyFactory) {
   return {
     validateInput: validateInput,
     execute: execute,
@@ -27,15 +27,6 @@ module.exports = function (logger, messages, setupController, setupStrategyFacto
     return parse(args)
       .then(function (parameters) {
         return setupController.setup(setupStrategyFactory.get(parameters));
-      })
-      .then(function (newWorkspace) {
-        var workspace = workspaceRepository.get();
-        workspace.api = newWorkspace.api;
-        workspace.apiVersion = newWorkspace.apiVersion;
-        workspace.subOrg = newWorkspace.subOrg;
-        workspaceRepository.update(workspace);
-
-        return newWorkspace;
       })
       .then(print);
   }
