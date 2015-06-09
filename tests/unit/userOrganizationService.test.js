@@ -4,7 +4,6 @@ require('should');
 var sinon = require('sinon');
 
 var containerFactory = require('../support/testContainerFactory');
-var contentGenerator = require('../support/contentGenerator');
 
 var csRepositoryStub = {};
 

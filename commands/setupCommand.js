@@ -8,14 +8,26 @@ module.exports = function (logger, messages, setupController, setupStrategyFacto
   };
 
   function validateInput(args) {
-    if (!args.i && (!args.bizGroup || !args.apiId || !args.apiVersionId)) {
+    if (!args.i && (!args.bizGroup || !args.api || !args.apiVersion)) {
       return Promise.reject(messages.commandUsage('setup', null,
         [
-          'i',
+          {
+            name: 'i',
+            description: messages.interactiveDescription()
+          },
           [
-            'bizGroup',
-            'apiId',
-            'apiVersionId'
+            {
+              name: 'bizGroup',
+              description: messages.businessGroupDescription()
+            },
+            {
+              name: 'api',
+              description: messages.apiDescription()
+            },
+            {
+              name: 'apiVersion',
+              description: messages.apiVersionDescription()
+            }
           ]
         ]));
     }
@@ -39,8 +51,8 @@ module.exports = function (logger, messages, setupController, setupStrategyFacto
     } else {
       return Promise.resolve({
         bizGroup: args.bizGroup,
-        apiId: args.apiId,
-        apiVersionId: args.apiVersionId
+        api: args.api,
+        apiVersion: args.apiVersion
       });
     }
   }

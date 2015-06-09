@@ -13,7 +13,9 @@ module.exports = function (commands) {
     },
     commandUsage: function (command, parameters, commandOptions) {
       var convertOption = function (option) {
-        return option.length === 1 ? ('-' + option) : ('--' + option + '=' + option);
+        return option.name.length === 1 ?
+          ('-' + option.name + ' (' + option.description + ')') :
+          ('--' + option.name + '=' + option.description);
       };
 
       var convertOptions = function (options) {
@@ -30,7 +32,7 @@ module.exports = function (commands) {
 
       return 'Usage: ' + TOOL_NAME + ' ' + command +
         (parameters ? (' <' + parameters.join('> <') + '>') : '') +
-        (commandOptions ? ' [' + commandOptions.join(' || ') + ']' : '');
+        (commandOptions ? ' [' + commandOptions.join('] [') + ']' : '');
     },
     // Command results
     status: function (result) {
@@ -75,6 +77,27 @@ module.exports = function (commands) {
       });
 
       return output.join('\n');
+    },
+    interactiveDescription: function () {
+      return 'Interactive Mode';
+    },
+    businessGroupDescription: function () {
+      return 'Business group id';
+    },
+    apiDescription: function () {
+      return 'API name';
+    },
+    apiVersionDescription: function () {
+      return 'API version';
+    },
+    businessGroupPromptMessage: function () {
+      return 'Select your business group';
+    },
+    apiPromptMessage: function () {
+      return 'Select your API';
+    },
+    apiVersionPromptMessage: function () {
+      return 'Select your API Version';
     },
     setupSuccessful: function (workspace) {
       return 'Current setup:\n- Business group: ' + workspace.bizGroup.name +

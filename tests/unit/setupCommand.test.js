@@ -16,6 +16,10 @@ var successfulMessage = 'Success message';
 
 describe('setupCommand', function () {
   beforeEach(function () {
+    messagesStub.interactiveDescription = sinon.stub().returns('interactive');
+    messagesStub.businessGroupDescription = sinon.stub().returns('bizGroup');
+    messagesStub.apiDescription = sinon.stub().returns('api');
+    messagesStub.apiVersionDescription = sinon.stub().returns('apiVersion');
     messagesStub.commandUsage = sinon.stub().returns(successfulMessage);
     messagesStub.setupSuccessful = sinon.stub().returns('Ok');
     setupControllerStub.setup = sinon.stub().returns(Promise.resolve(workspace));
@@ -35,12 +39,14 @@ describe('setupCommand', function () {
           should(messagesStub.commandUsage.firstCall.args[1]).not.be.ok;
 
           messagesStub.commandUsage.firstCall.args[2].should.be.an.Array;
-          messagesStub.commandUsage.firstCall.args[2].should.containEql('i');
 
           message.should.be.an.String;
           message.should.equal(successfulMessage);
 
           done();
+        })
+        .catch(function (err) {
+          done(err);
         });
     });
 
@@ -55,7 +61,7 @@ describe('setupCommand', function () {
     });
 
     it('should pass when batch arguments are presenet', function (done) {
-      setupCommand.validateInput({bizGroup: '1234', apiId: '1234', apiVersionId: '1234'})
+      setupCommand.validateInput({bizGroup: 1234, api: 'name', apiVersion: 'version'})
         .then(function () {
           done();
         })
@@ -76,11 +82,14 @@ describe('setupCommand', function () {
           loggerStub.info.firstCall.args[0].should.equal('Ok');
 
           done();
+        })
+        .catch(function (err) {
+          done(err);
         });
     });
 
     it('should run the command in batch mode', function (done) {
-      setupCommand.execute({bizGroup: 1234, apiId: 1234, apiVersionId: 1234})
+      setupCommand.execute({bizGroup: 1234, api: 'name', apiVersion: 'version'})
         .then(function () {
           setupControllerStub.setup.called.should.be.true;
           setupStrategyFactoryStub.get.called.should.be.true;
@@ -89,6 +98,9 @@ describe('setupCommand', function () {
           loggerStub.info.firstCall.args[0].should.equal('Ok');
 
           done();
+        })
+        .catch(function (err) {
+          done(err);
         });
     });
   }));

@@ -18,13 +18,13 @@ module.exports = function (commandPrompt, messages) {
   function interactiveStrategy() {
     return {
       getBusinessGroup: function (businessGroups) {
-        return commandPrompt.getChoice('Select your business group', 'name', 'id', businessGroups);
+        return commandPrompt.getChoice(messages.businessGroupPromptMessage(), 'name', 'id', businessGroups);
       },
       getAPI: function (apis) {
-        return commandPrompt.getChoice('Select your API', 'name', 'id', apis);
+        return commandPrompt.getChoice(messages.apiPromptMessage(), 'name', 'id', apis);
       },
       getAPIVersion: function (api) {
-        return commandPrompt.getChoice('Select your API Version', 'name', 'id', api.versions);
+        return commandPrompt.getChoice(messages.apiVersionPromptMessage(), 'name', 'id', api.versions);
       }
     };
   }
@@ -33,15 +33,15 @@ module.exports = function (commandPrompt, messages) {
     return {
       getBusinessGroup: function (businessGroups) {
         var businessGroup = _.find(businessGroups, 'id', parameters.bizGroup);
-        return businessGroup ? Promise.resolve(businessGroup) : Promise.reject(messages.notFound('Business Group'));
+        return businessGroup ? Promise.resolve(businessGroup) : Promise.reject(messages.notFound(messages.businessGroup()));
       },
       getAPI: function (apis) {
         var api = _.find(apis, 'name', parameters.api);
-        return api ? Promise.resolve(api) : Promise.reject(messages.notFound('API'));
+        return api ? Promise.resolve(api) : Promise.reject(messages.notFound(messages.api()));
       },
       getAPIVersion: function (api) {
         var apiVersion = _.find(api.versions, 'name', parameters.apiVersion);
-        return apiVersion ? Promise.resolve(apiVersion) : Promise.reject(messages.notFound('API Version'));
+        return apiVersion ? Promise.resolve(apiVersion) : Promise.reject(messages.notFound(messages.apiVersion()));
       }
     };
   }
