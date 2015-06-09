@@ -12,6 +12,8 @@ module.exports = function (apiPlatformService, workspaceRepository) {
       .then(function (files) {
         workspace.files = files;
         workspaceRepository.update(workspace);
+
+        return files;
       });
   }
 };

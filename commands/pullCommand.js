@@ -13,7 +13,7 @@ module.exports = function (logger, messages, pullController) {
   }
 
   function print(files) {
-    logger.info(_.map(files, 'name').join('\n'));
+    logger.info(messages.status({added: _.pluck(files, 'path')}));
   }
 
   function execute() {
