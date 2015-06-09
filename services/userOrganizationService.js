@@ -4,14 +4,14 @@ var _ = require('lodash');
 
 module.exports = function (csRepository) {
   return {
-    getSubOrganizations: getSubOrganizations
+    getBusinessGroups: getBusinessGroups
   };
 
-  function getSubOrganizations() {
+  function getBusinessGroups() {
     return csRepository.getUserInfo()
       .then(function (user) {
-        return _.map(user.memberOfOrganizations, function (subOrg) {
-          return _.pick(subOrg, ['id', 'name']);
+        return _.map(user.memberOfOrganizations, function (bizGroup) {
+          return _.pick(bizGroup, ['id', 'name']);
         });
       });
   }

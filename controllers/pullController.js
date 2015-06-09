@@ -7,7 +7,7 @@ module.exports = function (apiPlatformService, workspaceRepository) {
 
   function getAPIFiles() {
     var workspace = workspaceRepository.get();
-    return apiPlatformService.getAPIFiles(workspace.subOrg.id, workspace.api.id,
+    return apiPlatformService.getAPIFiles(workspace.bizGroup.id, workspace.api.id,
       workspace.apiVersion.id)
       .then(function (files) {
         workspace.files = files;

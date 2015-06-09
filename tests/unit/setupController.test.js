@@ -11,7 +11,7 @@ var userOrganizationServiceStub = {};
 var workspaceRepositoryStub = {};
 var setupStrategyStub = {};
 
-var organizations = contentGenerator.generateSubOrgs();
+var organizations = contentGenerator.generateBusinessGroups();
 var apis = contentGenerator.generateApis();
 
 var currentWorkspace = {
@@ -20,8 +20,8 @@ var currentWorkspace = {
 
 describe('setupController', function () {
   beforeEach(function () {
-    userOrganizationServiceStub.getSubOrganizations = sinon.stub().returns(Promise.resolve(organizations));
-    setupStrategyStub.getSubOrg = sinon.stub().returns(Promise.resolve(organizations[1]));
+    userOrganizationServiceStub.getBusinessGroups = sinon.stub().returns(Promise.resolve(organizations));
+    setupStrategyStub.getBusinessGroup = sinon.stub().returns(Promise.resolve(organizations[1]));
     apiPlatformServiceStub.getAllAPIs = sinon.stub().returns(Promise.resolve(apis));
     setupStrategyStub.getAPI = sinon.stub().returns(Promise.resolve(apis[0]));
     setupStrategyStub.getAPIVersion = sinon.stub().returns(Promise.resolve(apis[0].versions[0]));
@@ -34,9 +34,9 @@ describe('setupController', function () {
       setupController.setup(setupStrategyStub)
         .then(function (workspace) {
           // Verify stub calls.
-          userOrganizationServiceStub.getSubOrganizations.called.should.be.true;
-          setupStrategyStub.getSubOrg.called.should.be.true;
-          setupStrategyStub.getSubOrg.firstCall.args[0].should.be.an.Array;
+          userOrganizationServiceStub.getBusinessGroups.called.should.be.true;
+          setupStrategyStub.getBusinessGroup.called.should.be.true;
+          setupStrategyStub.getBusinessGroup.firstCall.args[0].should.be.an.Array;
 
           apiPlatformServiceStub.getAllAPIs.called.should.be.true;
           apiPlatformServiceStub.getAllAPIs.firstCall.args[0].should.equal(organizations[1].id);
@@ -54,8 +54,8 @@ describe('setupController', function () {
 
           // Assert method response.
           workspace.should.be.an.Object;
-          workspace.should.have.properties('subOrg', 'api', 'apiVersion', 'directory');
-          workspace.subOrg.id.should.equal(organizations[1].id);
+          workspace.should.have.properties('bizGroup', 'api', 'apiVersion', 'directory');
+          workspace.bizGroup.id.should.equal(organizations[1].id);
           workspace.api.id.should.equal(apis[0].id);
           workspace.apiVersion.id.should.equal(apis[0].versions[0].id);
           workspace.directory.should.equal('current');

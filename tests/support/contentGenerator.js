@@ -3,18 +3,18 @@
 var _ = require('lodash');
 
 module.exports = {
-  generateSubOrgs: generateSubOrgs,
+  generateBusinessGroups: generateBusinessGroups,
   generateApis: generateApis,
   generateWorkspace: generateWorkspace
 };
 
-function generateSubOrgs(number) {
+function generateBusinessGroups(number) {
   number = number ? number : 10;
   return _.range(1, number + 1)
     .map(function (n) {
       return {
         id: n,
-        name: 'subOrg' + n
+        name: 'bizGroup' + n
       };
     });
 }
@@ -42,7 +42,7 @@ function generateWorkspace() {
     apiVersion: {
       id: 1234
     },
-    subOrg: {
+    bizGroup: {
       id: 1234
     }
   };
