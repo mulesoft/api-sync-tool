@@ -14,7 +14,8 @@ module.exports = function (messages) {
   };
 
   /**
-   * Returns the workspace for the current working directory. If it doesn't exist, it creates a new one.
+   * Returns the workspace for the current working directory.
+   * If it doesn't exist, it creates a new one.
    *
    * @return {Object} The workspace object for the current directory.
    */
@@ -53,7 +54,8 @@ module.exports = function (messages) {
   }
 
   /**
-   * Reads the workspaces from the filesystem. If it doesn't exist, it creates a new one with an empty array.
+   * Reads the workspaces from the filesystem.
+   * If it doesn't exist, it creates a new one with an empty array.
    *
    * @return {Array} The workspaces array.
    */

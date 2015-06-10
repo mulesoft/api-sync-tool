@@ -22,6 +22,8 @@ module.exports = function (contextHolder, messages, superagent) {
    * @param {Object} stream A stream to send to the zip file to
    */
   function getAPIFiles(organizationId, apiId, apiVersionId, stream) {
+    // TODO The callback in apiClient is the only way we found to make
+    // response.pipe work. Doing it without the callback didn't work.
     return new Promise(function (resolve, reject) {
       apiClient(superagent.get(apiPlatformUrl + '/v2' +
         '/organizations/' + organizationId +
@@ -30,7 +32,7 @@ module.exports = function (contextHolder, messages, superagent) {
         '/files/export'),
         function (err, response) {
           if (err) {
-            reject(err);
+            return reject(err);
           }
 
           var piping = response.pipe(stream);
