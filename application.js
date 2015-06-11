@@ -35,12 +35,11 @@ module.exports = function (commandFactory, commandRunner, commands, logger) {
   }
 
   function abortExit(output) {
-    var message = output.toString();
     // Only exit after the last message was logged.
-    logger.onComplete(message, function () {
+    logger.onComplete(output, function () {
       process.exit(1);
     });
 
-    logger.error(message);
+    logger.error(output);
   }
 };

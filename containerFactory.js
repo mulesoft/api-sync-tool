@@ -34,6 +34,9 @@ function createContainer() {
   // be able dynamically resolve route installers
   container.register('container', container);
 
+  // Application error handling, load index.js
+  container.register('errors',   require('./utils/errors'));
+
   // This is only valid in single threaded applications
   container.register('contextHolder', function () {
     var context = {

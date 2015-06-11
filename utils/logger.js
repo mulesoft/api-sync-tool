@@ -3,6 +3,7 @@
 var winston = require('winston');
 var path = require('path');
 var osenv = require('osenv');
+var _ = require('lodash');
 
 module.exports = function () {
   var logFileName = path.join(osenv.home(), '.api-sync.log');
@@ -12,7 +13,14 @@ module.exports = function () {
       new (winston.transports.Console)({
         level: 'info',
         formatter: function (options) {
-          return options.message !== undefined ? options.message : '';
+          var message;
+          if (_.isEmpty(options.meta)) {
+            message = options.message ? options.message.toString() : '';
+          } else {
+            message = options.meta.toString();
+          }
+
+          return message;
         }
       }),
       new (winston.transports.File)({
@@ -20,8 +28,14 @@ module.exports = function () {
         filename: logFileName,
         json: false,
         formatter: function (options) {
-          return '[' + options.level.toUpperCase() + '] ' + new Date() + ': ' +
-            (options.message !== undefined ? options.message : '');
+          var message;
+          if (_.isEmpty(options.meta)) {
+            message = options.message ? options.message.toString() : '';
+          } else {
+            message = options.meta instanceof Error ? options.meta.stack : options.meta.toString();
+          }
+
+          return '[' + options.level.toUpperCase() + '] ' + new Date() + ': ' + message;
         }
       })
     ]
