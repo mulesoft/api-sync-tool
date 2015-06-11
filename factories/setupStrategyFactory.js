@@ -33,15 +33,15 @@ module.exports = function (commandPrompt, messages) {
     return {
       getBusinessGroup: function (businessGroups) {
         var businessGroup = _.find(businessGroups, 'id', parameters.bizGroup);
-        return businessGroup ? Promise.resolve(businessGroup) : Promise.reject(messages.notFound(messages.businessGroup()));
+        return businessGroup ? Promise.resolve(businessGroup) : Promise.reject(messages.notFound(messages.businessGroupDescription()));
       },
       getAPI: function (apis) {
         var api = _.find(apis, 'name', parameters.api);
-        return api ? Promise.resolve(api) : Promise.reject(messages.notFound(messages.api()));
+        return api ? Promise.resolve(api) : Promise.reject(messages.notFound(messages.apiDescription()));
       },
       getAPIVersion: function (api) {
         var apiVersion = _.find(api.versions, 'name', parameters.apiVersion);
-        return apiVersion ? Promise.resolve(apiVersion) : Promise.reject(messages.notFound(messages.apiVersion()));
+        return apiVersion ? Promise.resolve(apiVersion) : Promise.reject(messages.notFound(messages.apiVersionDescription()));
       }
     };
   }

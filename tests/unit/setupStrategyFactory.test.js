@@ -134,6 +134,81 @@ describe('setupStrategyFactory', function () {
           done(err);
         });
     });
+
+    it('should fail when selecting inexistent business group', function (done) {
+      var strategy = setupStrategyFactory.get({
+        bizGroup: 123,
+        api: 123,
+        apiVersion: 123
+      });
+
+      messagesStub.notFound = sinon.stub().returns('not found');
+      messagesStub.businessGroupDescription = sinon.stub().returns('business group');
+
+      strategy.getBusinessGroup(businessGroups)
+        .then(function () {
+          done('should have failed');
+        })
+        .catch(function () {
+          messagesStub.notFound.called.should.be.ok;
+          messagesStub.businessGroupDescription.called.should.be.ok;
+
+          done();
+        })
+        .catch(function (err) {
+          done(err);
+        });
+    });
+
+    it('should fail when selecting inexistent API', function (done) {
+      var strategy = setupStrategyFactory.get({
+        bizGroup: 1,
+        api: 123,
+        apiVersion: 123
+      });
+
+      messagesStub.notFound = sinon.stub().returns('not found');
+      messagesStub.apiDescription = sinon.stub().returns('api description');
+
+      strategy.getAPI(apis)
+        .then(function () {
+          done('should have failed');
+        })
+        .catch(function () {
+          messagesStub.notFound.called.should.be.ok;
+          messagesStub.apiDescription.called.should.be.ok;
+
+          done();
+        })
+        .catch(function (err) {
+          done(err);
+        });
+    });
+
+    it('should fail when selecting inexistent API Version', function (done) {
+      var strategy = setupStrategyFactory.get({
+        bizGroup: 1,
+        api: 1,
+        apiVersion: 123
+      });
+
+      messagesStub.notFound = sinon.stub().returns('not found');
+      messagesStub.apiVersionDescription = sinon.stub().returns('api version description');
+
+      strategy.getAPIVersion(apis[0])
+        .then(function () {
+          done('should have failed');
+        })
+        .catch(function () {
+          messagesStub.notFound.called.should.be.ok;
+          messagesStub.apiVersionDescription.called.should.be.ok;
+
+          done();
+        })
+        .catch(function (err) {
+          done(err);
+        });
+    });
   }));
 });
 
