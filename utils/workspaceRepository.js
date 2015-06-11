@@ -5,7 +5,7 @@ var path = require('path');
 var osenv = require('osenv');
 var _ = require('lodash');
 
-module.exports = function (messages) {
+module.exports = function (messages, propertiesParser, propertiesSerializer) {
   var workspaceFilePath = path.join(osenv.home(), '.api-sync');
 
   return {
@@ -59,11 +59,12 @@ module.exports = function (messages) {
    */
   function read() {
     try {
-      return JSON.parse(fs.readFileSync(workspaceFilePath));
+      return propertiesParser.parse(fs.readFileSync(workspaceFilePath));
     } catch (error) {
+      console.log(error.stack);
       write([]);
 
-      return JSON.parse(fs.readFileSync(workspaceFilePath));
+      return propertiesParser.parse(fs.readFileSync(workspaceFilePath));
     }
   }
 
@@ -73,6 +74,11 @@ module.exports = function (messages) {
    * @param {Array} workspaces The workspaces array.
    */
   function write(workspaces) {
-    fs.writeFileSync(workspaceFilePath, JSON.stringify(workspaces));
+    var content = propertiesSerializer.serialize(workspaces);
+    if (!content) {
+      fs.openSync(workspaceFilePath, 'w');
+    } else {
+      fs.writeFileSync(workspaceFilePath, content);
+    }
   }
 };

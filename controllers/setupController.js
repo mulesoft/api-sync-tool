@@ -1,5 +1,7 @@
 'use strict';
 
+var _ = require('lodash');
+
 module.exports = function (apiPlatformService, userOrganizationService, workspaceRepository) {
   return {
     setup: setup
@@ -24,6 +26,7 @@ module.exports = function (apiPlatformService, userOrganizationService, workspac
       .then(strategy.getAPIVersion)
       .then(function (apiVersion) {
         workspace.apiVersion = apiVersion;
+        workspace.api = _.pick(workspace.api, ['id', 'name']);
 
         workspaceRepository.update(workspace);
         return workspace;
