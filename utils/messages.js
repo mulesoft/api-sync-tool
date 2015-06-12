@@ -15,7 +15,7 @@ module.exports = function (commands) {
       var convertOption = function (option) {
         return option.name.length === 1 ?
           ('-' + option.name + ' (' + option.description + ')') :
-          ('--' + option.name + '=' + option.description);
+          ('--' + option.name + '=(' + option.description + ')');
       };
 
       var convertOptions = function (options) {
@@ -90,6 +90,9 @@ module.exports = function (commands) {
     apiVersionDescription: function () {
       return 'API version';
     },
+    runPullDescription: function () {
+      return 'Run pull after setup (optional)';
+    },
     businessGroupPromptMessage: function () {
       return 'Select your business group';
     },
@@ -98,6 +101,9 @@ module.exports = function (commands) {
     },
     apiVersionPromptMessage: function () {
       return 'Select your API Version';
+    },
+    runPullPromptMessage: function () {
+      return 'Do you want to pull your API files now?';
     },
     setupSuccessful: function (workspace) {
       return 'Current setup:\n- Business group: ' + workspace.bizGroup.name +

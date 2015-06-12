@@ -1,6 +1,8 @@
 'use strict';
 
-module.exports = function (logger, messages, setupController, setupStrategyFactory) {
+var _ = require('lodash');
+
+module.exports = function (logger, messages, pullController, setupController, setupStrategyFactory) {
   return {
     validateInput: validateInput,
     execute: execute,
@@ -27,6 +29,10 @@ module.exports = function (logger, messages, setupController, setupStrategyFacto
             {
               name: 'apiVersion',
               description: messages.apiVersionDescription()
+            },
+            {
+              name: 'p',
+              description: messages.runPullDescription()
             }
           ]
         ]));
@@ -36,9 +42,22 @@ module.exports = function (logger, messages, setupController, setupStrategyFacto
   }
 
   function execute(args) {
+    var commandResult = {};
     return parse(args)
       .then(function (parameters) {
         return setupController.setup(setupStrategyFactory.get(parameters));
+      })
+      .then(function (result) {
+        commandResult.workspace = result.workspace;
+
+        if (result.runPull) {
+          return pullController.getAPIFiles()
+            .then(function (files) {
+              commandResult.files = files;
+              return commandResult;
+            });
+        }
+        return commandResult;
       })
       .then(print);
   }
@@ -52,12 +71,16 @@ module.exports = function (logger, messages, setupController, setupStrategyFacto
       return Promise.resolve({
         bizGroup: args.bizGroup,
         api: args.api,
-        apiVersion: args.apiVersion
+        apiVersion: args.apiVersion,
+        runPull: !!args.p
       });
     }
   }
 
-  function print(newWorkspace) {
-    logger.info(messages.setupSuccessful(newWorkspace));
+  function print(result) {
+    logger.info(messages.setupSuccessful(result.workspace));
+    if (result.files) {
+      logger.info(messages.status({added: _.pluck(result.files, 'path')}));
+    }
   }
 };

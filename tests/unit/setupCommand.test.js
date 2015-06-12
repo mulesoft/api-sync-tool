@@ -9,9 +9,19 @@ var contentGenerator = require('../support/contentGenerator');
 var messagesStub = {};
 var loggerStub = {};
 var setupControllerStub = {};
+var pullControllerStub = {};
 var setupStrategyFactoryStub = {};
 
-var workspace = contentGenerator.generateWorkspace();
+var setupControllerResult = {
+  workspace: contentGenerator.generateWorkspace(),
+  runPull: false
+};
+var files = [
+  {
+    id: 1,
+    path: 'file.raml'
+  }
+];
 var successfulMessage = 'Success message';
 
 describe('setupCommand', function () {
@@ -20,9 +30,13 @@ describe('setupCommand', function () {
     messagesStub.businessGroupDescription = sinon.stub().returns('bizGroup');
     messagesStub.apiDescription = sinon.stub().returns('api');
     messagesStub.apiVersionDescription = sinon.stub().returns('apiVersion');
+    messagesStub.runPullDescription = sinon.stub().returns('runPull');
     messagesStub.commandUsage = sinon.stub().returns(successfulMessage);
     messagesStub.setupSuccessful = sinon.stub().returns('Ok');
-    setupControllerStub.setup = sinon.stub().returns(Promise.resolve(workspace));
+    messagesStub.status = sinon.stub().returns('status');
+
+    setupControllerStub.setup = sinon.stub().returns(Promise.resolve(setupControllerResult));
+    pullControllerStub.getAPIFiles = sinon.stub().returns(Promise.resolve(files));
     setupStrategyFactoryStub.get = sinon.stub();
     loggerStub.info = sinon.stub();
   });
@@ -42,6 +56,12 @@ describe('setupCommand', function () {
 
           message.should.be.an.String;
           message.should.equal(successfulMessage);
+
+          messagesStub.interactiveDescription.called.should.be.true;
+          messagesStub.businessGroupDescription.called.should.be.true;
+          messagesStub.apiDescription.called.should.be.true;
+          messagesStub.apiVersionDescription.called.should.be.true;
+          messagesStub.runPullDescription.called.should.be.true;
 
           done();
         })
@@ -103,6 +123,50 @@ describe('setupCommand', function () {
           done(err);
         });
     });
+
+    it('should run the command in interactive mode and call pull after it', function (done) {
+      // Change setup controller response
+      setupControllerResult.runPull = true;
+
+      setupCommand.execute({i: true})
+        .then(function () {
+          setupControllerStub.setup.called.should.be.true;
+          setupStrategyFactoryStub.get.called.should.be.true;
+          pullControllerStub.getAPIFiles.called.should.be.true;
+          messagesStub.setupSuccessful.called.should.be.true;
+          messagesStub.status.called.should.be.true;
+          loggerStub.info.called.should.be.true;
+          loggerStub.info.firstCall.args[0].should.equal('Ok');
+          loggerStub.info.secondCall.args[0].should.equal('status');
+
+          done();
+        })
+        .catch(function (err) {
+          done(err);
+        });
+    });
+
+    it('should run the command in batch mode and call pull after it', function (done) {
+      // Change setup controller response
+      setupControllerResult.runPull = true;
+
+      setupCommand.execute({bizGroup: 1234, api: 'name', apiVersion: 'version'})
+        .then(function () {
+          setupStrategyFactoryStub.get.called.should.be.true;
+          setupControllerStub.setup.called.should.be.true;
+          pullControllerStub.getAPIFiles.called.should.be.true;
+          messagesStub.setupSuccessful.called.should.be.true;
+          messagesStub.status.called.should.be.true;
+          loggerStub.info.called.should.be.true;
+          loggerStub.info.firstCall.args[0].should.equal('Ok');
+          loggerStub.info.secondCall.args[0].should.equal('status');
+
+          done();
+        })
+        .catch(function (err) {
+          done(err);
+        });
+    });
   }));
 });
 
@@ -112,6 +176,7 @@ function run(callback) {
     container.register('messages', messagesStub);
     container.register('logger', loggerStub);
     container.register('setupController', setupControllerStub);
+    container.register('pullController', pullControllerStub);
     container.register('setupStrategyFactory', setupStrategyFactoryStub);
     container.resolve(callback);
   };

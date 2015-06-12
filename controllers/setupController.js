@@ -26,7 +26,13 @@ module.exports = function (apiPlatformService, userOrganizationService, workspac
         workspace.apiVersion = apiVersion;
 
         workspaceRepository.update(workspace);
-        return workspace;
+      })
+      .then(strategy.getRunPull)
+      .then(function (runPull) {
+        return {
+          workspace: workspace,
+          runPull: runPull
+        };
       });
   }
 };
