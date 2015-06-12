@@ -85,10 +85,10 @@ module.exports = function (commands) {
       return 'Business group id';
     },
     apiDescription: function () {
-      return 'API name';
+      return 'API id';
     },
     apiVersionDescription: function () {
-      return 'API version';
+      return 'API version id';
     },
     businessGroupPromptMessage: function () {
       return 'Select your business group';

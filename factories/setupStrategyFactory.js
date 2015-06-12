@@ -36,11 +36,11 @@ module.exports = function (commandPrompt, messages) {
         return businessGroup ? Promise.resolve(businessGroup) : Promise.reject(messages.notFound(messages.businessGroupDescription()));
       },
       getAPI: function (apis) {
-        var api = _.find(apis, 'name', parameters.api);
+        var api = _.find(apis, 'id', parameters.api);
         return api ? Promise.resolve(api) : Promise.reject(messages.notFound(messages.apiDescription()));
       },
       getAPIVersion: function (api) {
-        var apiVersion = _.find(api.versions, 'name', parameters.apiVersion);
+        var apiVersion = _.find(api.versions, 'id', parameters.apiVersion);
         return apiVersion ? Promise.resolve(apiVersion) : Promise.reject(messages.notFound(messages.apiVersionDescription()));
       }
     };
