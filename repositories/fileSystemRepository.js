@@ -1,8 +1,10 @@
 'use strict';
 
+var promisify = require('promisify-node');
 var fs = require('fs');
 var path = require('path');
-var sha = require('sha');
+var sha = promisify('sha');
+var _ = require('lodash');
 
 module.exports = function (contextHolder) {
   return {
@@ -18,24 +20,19 @@ module.exports = function (contextHolder) {
   }
 
   function getFileHash(localFilePath) {
-    return new Promise(function (resolve, reject) {
-      sha.get(getFileFullPath(localFilePath), function (err, hash) {
-        if (err) {
-          reject(err);
-        }
-
-        resolve(hash);
-      });
-    });
+    return sha.get(getFileFullPath(localFilePath));
   }
 
+  /**
+   * Returns the relative paths of all files descending from a directory
+   * in the local repository. If no directory is provided it uses the root
+   * of the local repository.
+   *
+   * @param {String} directory The directory whom all
+   * descendants will be returned
+   */
   function getFilesPath(directory) {
-    return new Promise(function (resolve) {
-      var result = [];
-      readDir(getFileFullPath(directory || '/'), '', result);
-
-      return resolve(result);
-    });
+    return getDirectoryFilesPath(directory || '');
   }
 
   function createWriteStream(localFilePath) {
@@ -43,30 +40,36 @@ module.exports = function (contextHolder) {
   }
 
   function removeFile(fileLocalPath) {
-    return new Promise(function (resolve, reject) {
-      fs.unlink(getFileFullPath(fileLocalPath), function (err) {
-        if (err) {
-          reject(err);
-        }
-
-        resolve();
-      });
-    });
+    return promisify(fs.unlink)(getFileFullPath(fileLocalPath));
   }
 
-  // TODO: Make it async
-  function readDir(directory, parent, result) {
-    var files = fs.readdirSync(directory);
-
-    files.forEach(function (file) {
-      var filePath = parent ? path.join(directory, file) : file;
-      var stats = fs.statSync(filePath);
-
-      if (stats.isDirectory()) {
-        readDir(parent ? path.join(directory, file) : file, directory, result);
-      } else {
-        result.push('/' + filePath);
-      }
-    });
+  /**
+   * Returns the relative paths of all files descending from a directory
+   * in the local repository
+   *
+   * @param {String} directory The directory whom all
+   * descendants will be returned
+   */
+  function getDirectoryFilesPath(directory) {
+    return promisify(fs.readdir)(getFileFullPath(directory))
+      .then(function (filePaths) {
+        return filePaths.map(function (filePath) {
+          var fullLocalFilePath = directory + '/' + filePath;
+          return promisify(fs.stat)(getFileFullPath(fullLocalFilePath))
+            .then(function (stats) {
+              if (stats.isDirectory()) {
+                return getDirectoryFilesPath(fullLocalFilePath);
+              } else {
+                return Promise.resolve(fullLocalFilePath);
+              }
+            });
+        });
+      })
+      // TODO We should use then(Promise.all) but it doesn't work properly
+      // look for the reason and inform the rest of the team
+      .then(function (promises) {
+        return Promise.all(promises);
+      })
+      .then(_.flatten);
   }
 };
