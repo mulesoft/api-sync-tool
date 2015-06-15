@@ -5,7 +5,8 @@ var _ = require('lodash');
 
 module.exports = function () {
   return {
-    getChoice: getChoice
+    getChoice: getChoice,
+    getConfirmation: getConfirmation
   };
 
   function getChoice(message, name, value, rawOptions) {
@@ -24,6 +25,19 @@ module.exports = function () {
         choices: options
       }, function (answers) {
         return resolve(_.find(rawOptions, value, answers.answer));
+      });
+    });
+  }
+
+  function getConfirmation(message) {
+    return new Promise(function (resolve) {
+      inquirer.prompt({
+        type: 'confirm',
+        name: 'confirm',
+        message: message,
+        default: true
+      }, function (answer) {
+        return resolve(answer.confirm);
       });
     });
   }

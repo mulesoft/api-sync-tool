@@ -23,9 +23,12 @@ describe('setupStrategyFactory', function () {
       messagesStub.businessGroupPromptMessage = sinon.stub().returns('Select bizGroup');
       messagesStub.apiPromptMessage = sinon.stub().returns('Select API');
       messagesStub.apiVersionPromptMessage = sinon.stub().returns('Select API Version');
+      messagesStub.runPullPromptMessage = sinon.stub().returns('Should run pull?');
 
       commandPromptStub.getChoice = sinon.stub()
         .withArgs(sinon.match.any, 'name', 'id', sinon.match.any);
+
+      commandPromptStub.getConfirmation = sinon.stub();
     });
 
     it('should return selected business group', function (done) {
@@ -87,6 +90,25 @@ describe('setupStrategyFactory', function () {
           done(err);
         });
     });
+
+    it('should return run pull decision', function (done) {
+      // Setup return value for stub method.
+      commandPromptStub.getConfirmation.returns(Promise.resolve(true));
+
+      var strategy = setupStrategyFactory.get({isInteractive: true});
+
+      strategy.getRunPull()
+        .then(function (getRunPull) {
+          getRunPull.should.be.ok;
+          commandPromptStub.getConfirmation.called.should.be.true;
+          messagesStub.runPullPromptMessage.called.should.be.true;
+
+          done();
+        })
+        .catch(function (err) {
+          done(err);
+        });
+    });
   }));
 
   describe('batch', run(function (setupStrategyFactory) {
@@ -127,6 +149,21 @@ describe('setupStrategyFactory', function () {
         .then(function (selectedAPIVersion) {
           selectedAPIVersion.should.be.an.Object;
           selectedAPIVersion.id.should.be.equal(1);
+
+          done();
+        })
+        .catch(function (err) {
+          done(err);
+        });
+    });
+
+    it('should return run pull decision', function (done) {
+      batchParameters.runPull = true;
+      var strategy = setupStrategyFactory.get(batchParameters);
+
+      strategy.getRunPull()
+        .then(function (getRunPull) {
+          getRunPull.should.be.ok;
 
           done();
         })
