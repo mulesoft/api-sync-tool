@@ -13,8 +13,8 @@ var businessGroups = contentGenerator.generateBusinessGroups();
 var apis = contentGenerator.generateApis();
 var batchParameters = {
   bizGroup: 1,
-  api: 'api1',
-  apiVersion: 'version1'
+  api: 1,
+  apiVersion: 1
 };
 
 describe('setupStrategyFactory', function () {
