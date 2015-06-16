@@ -14,12 +14,11 @@ module.exports = function () {
         level: 'info',
         formatter: function (options) {
           var message;
-          if (_.isEmpty(options.meta)) {
-            message = options.message ? options.message.toString() : '';
-          } else {
+          if (options.meta instanceof Error || !_.isEmpty(options.meta)) {
             message = options.meta.toString();
+          } else {
+            message = options.message ? options.message.toString() : '';
           }
-
           return message;
         }
       }),
@@ -29,13 +28,16 @@ module.exports = function () {
         json: false,
         formatter: function (options) {
           var message;
-          if (_.isEmpty(options.meta)) {
-            message = options.message ? options.message.toString() : '';
+          if (options.meta instanceof Error || !_.isEmpty(options.meta)) {
+            message = options.meta instanceof Error ?
+              options.meta.stack :
+              options.meta.toString();
           } else {
-            message = options.meta instanceof Error ? options.meta.stack : options.meta.toString();
+            message = options.message ? options.message.toString() : '';
           }
 
-          return '[' + options.level.toUpperCase() + '] ' + new Date() + ': ' + message;
+          return '[' + options.level.toUpperCase() + '] ' +
+            new Date() + ': ' + message;
         }
       })
     ]
