@@ -2,7 +2,7 @@
 
 var apiPlatformUrl = 'https://anypoint.mulesoft.com/apiplatform/repository';
 
-module.exports = function (contextHolder, messages, superagent) {
+module.exports = function (contextHolder, superagent, errors) {
   return {
     getAllAPIs: getAllAPIs,
     getAPIFiles: getAPIFiles
@@ -39,10 +39,9 @@ module.exports = function (contextHolder, messages, superagent) {
           piping.on('close', function () {
             resolve();
           });
-          // TODO: Improve the message error and move it to messages
           // TODO: Test this event catches errors
           piping.on('error', function () {
-            reject(new Error(messages.savingFileError()));
+            reject(new errors.WritingFileError());
           });
         });
       });

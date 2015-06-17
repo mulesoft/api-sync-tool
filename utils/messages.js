@@ -11,7 +11,7 @@ module.exports = function (commands) {
     usage: function () {
       return 'Usage: ' + TOOL_NAME + ' <' + commands.join('|') + '>';
     },
-    commandUsage: function (command, parameters, commandOptions) {
+    commandUsage: function (command, commandOptions) {
       var convertOption = function (option) {
         return option.name.length === 1 ?
           ('-' + option.name + ' (' + option.description + ')') :
@@ -31,7 +31,6 @@ module.exports = function (commands) {
       commandOptions = convertOptions(commandOptions);
 
       return 'Usage: ' + TOOL_NAME + ' ' + command +
-        (parameters ? (' <' + parameters.join('> <') + '>') : '') +
         (commandOptions ? ' [' + commandOptions.join('] [') + ']' : '');
     },
     // Command results
@@ -135,8 +134,10 @@ module.exports = function (commands) {
       var firstApi = apis[0];
       var lastVersion = firstApi.versions[apis[0].versions.length - 1];
 
-      output += 'To pull content from ' + firstApi.name + ' API version ' + lastVersion.name + ', use:\n';
-      output += colors.bold('> ' + TOOL_NAME + ' pull ' + firstApi.id + ' ' + lastVersion.id + '\n');
+      output += 'To pull content from ' + firstApi.name + ' API version ' +
+        lastVersion.name + ', use:\n';
+      output += colors.bold('> ' + TOOL_NAME + ' pull ' + firstApi.id + ' ' +
+        lastVersion.id + '\n');
 
       return output;
     },
@@ -168,6 +169,12 @@ module.exports = function (commands) {
     },
     savingFileError: function () {
       return 'An unknown error happened when saving a file';
+    },
+    loginError: function (username) {
+      return 'Login failed for user ' + username;
+    },
+    undefinedContextFieldError: function (field) {
+      return 'Context field: ' + field + ' was not defined';
     }
   };
 };

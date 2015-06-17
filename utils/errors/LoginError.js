@@ -4,16 +4,18 @@ var util = require('util');
 
 var BaseError = require('./BaseError');
 
-/**
- * Login error.
- *
- * @param {String} username
- */
-var LoginError = module.exports = function LoginError(username) {
-  this.message = LoginError.prototype.humanMessage.replace('%user%', username);
+module.exports = function (messages) {
+  /**
+   * Login error.
+   *
+   * @param {String} username
+   */
+  var LoginError = function (username) {
+    this.message = messages.loginError(username);
+    BaseError.call(this, this.message);
+  };
 
-  BaseError.call(this, this.message);
+  util.inherits(LoginError, BaseError);
+
+  return LoginError;
 };
-
-util.inherits(LoginError, BaseError);
-LoginError.prototype.humanMessage = 'Login failed for user %user%';
