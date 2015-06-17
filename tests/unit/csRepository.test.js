@@ -5,6 +5,8 @@ var sinon = require('sinon');
 
 var containerFactory  = require('../support/testContainerFactory');
 
+var contextHolderStub = {};
+var contextStub = {};
 var superagentStub = {};
 
 describe('csRepository', function () {
@@ -23,7 +25,8 @@ describe('csRepository', function () {
       csRepository.login('juan', 'test')
         .then(function () {
           superagentStub.post.called.should.be.true;
-          superagentStub.post.firstCall.args[0].should.match(/.*\/oauth2\/token$/);
+          superagentStub.post.firstCall.args[0]
+            .should.match(/.*\/oauth2\/token$/);
 
           superagentStub.send.called.should.be.true;
           superagentStub.send.firstCall.args[0].username.should.match('juan');
@@ -44,11 +47,21 @@ describe('csRepository', function () {
   }));
 
   describe('userInfo', run(function (csRepository) {
+    beforeEach(function () {
+      contextStub.getToken = sinon.stub().returns('token');
+      contextHolderStub.get = sinon.stub().returns(contextStub);
+    });
     it('should get userInfo', function (done) {
       csRepository.getUserInfo()
         .then(function () {
+          contextHolderStub.get.calledOnce.should.be.true;
+          contextHolderStub.get.firstCall.args.length.should.equal(0);
+          contextStub.getToken.calledOnce.should.be.true;
+          contextStub.getToken.firstCall.args.length.should.equal(0);
+
           superagentStub.get.called.should.be.true;
-          superagentStub.get.firstCall.args[0].should.match(/.*\/api\/users\/me$/);
+          superagentStub.get.firstCall.args[0]
+            .should.match(/.*\/api\/users\/me$/);
 
           superagentStub.set.called.should.be.true;
           superagentStub.set.firstCall.args[0].should.match('Authorization');
@@ -68,6 +81,7 @@ describe('csRepository', function () {
 function run(callback) {
   return function () {
     var container = containerFactory.createContainer();
+    container.register('contextHolder', contextHolderStub);
     container.register('superagent', superagentStub);
     container.resolve(callback);
   };

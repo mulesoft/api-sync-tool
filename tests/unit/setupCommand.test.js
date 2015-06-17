@@ -11,6 +11,7 @@ var loggerStub = {};
 var setupControllerStub = {};
 var pullControllerStub = {};
 var setupStrategyFactoryStub = {};
+var errorsStub = {};
 
 var setupControllerResult = {
   workspace: contentGenerator.generateWorkspace(),
@@ -22,21 +23,24 @@ var files = [
     path: 'file.raml'
   }
 ];
-var successfulMessage = 'Success message';
 
 describe('setupCommand', function () {
+  var error = {error: 'error'};
   beforeEach(function () {
+    errorsStub.WrongArgumentsError = sinon.stub().returns(error);
+
     messagesStub.interactiveDescription = sinon.stub().returns('interactive');
     messagesStub.businessGroupDescription = sinon.stub().returns('bizGroup');
     messagesStub.apiDescription = sinon.stub().returns('api');
     messagesStub.apiVersionDescription = sinon.stub().returns('apiVersion');
     messagesStub.runPullDescription = sinon.stub().returns('runPull');
-    messagesStub.commandUsage = sinon.stub().returns(successfulMessage);
     messagesStub.setupSuccessful = sinon.stub().returns('Ok');
     messagesStub.status = sinon.stub().returns('status');
 
-    setupControllerStub.setup = sinon.stub().returns(Promise.resolve(setupControllerResult));
-    pullControllerStub.getAPIFiles = sinon.stub().returns(Promise.resolve(files));
+    setupControllerStub.setup =
+      sinon.stub().returns(Promise.resolve(setupControllerResult));
+    pullControllerStub.getAPIFiles =
+      sinon.stub().returns(Promise.resolve(files));
     setupStrategyFactoryStub.get = sinon.stub();
     loggerStub.info = sinon.stub();
   });
@@ -47,15 +51,17 @@ describe('setupCommand', function () {
         .then(function () {
           done('Error: test should fail');
         })
-        .catch(function (message) {
-          messagesStub.commandUsage.called.should.be.true;
-          messagesStub.commandUsage.firstCall.args[0].should.equal('setup');
-          should(messagesStub.commandUsage.firstCall.args[1]).not.be.ok;
+        .catch(function (err) {
+          errorsStub.WrongArgumentsError.called.should.be.true;
+          errorsStub.WrongArgumentsError.firstCall
+            .args.length.should.equal(2);
+          errorsStub.WrongArgumentsError.firstCall
+            .args[0].should.equal('setup');
+          errorsStub.WrongArgumentsError.firstCall
+            .args[1].should.be.an.Array;
 
-          messagesStub.commandUsage.firstCall.args[2].should.be.an.Array;
-
-          message.should.be.an.String;
-          message.should.equal(successfulMessage);
+          err.should.be.an.Object;
+          should.deepEqual(err, error);
 
           messagesStub.interactiveDescription.called.should.be.true;
           messagesStub.businessGroupDescription.called.should.be.true;
@@ -81,7 +87,8 @@ describe('setupCommand', function () {
     });
 
     it('should pass when batch arguments are presenet', function (done) {
-      setupCommand.validateInput({bizGroup: 1234, api: 'name', apiVersion: 'version'})
+      setupCommand.validateInput(
+        {bizGroup: 1234, api: 'name', apiVersion: 'version'})
         .then(function () {
           done();
         })
@@ -124,7 +131,8 @@ describe('setupCommand', function () {
         });
     });
 
-    it('should run the command in interactive mode and call pull after it', function (done) {
+    it('should run the command in interactive mode and call pull after it',
+    function (done) {
       // Change setup controller response
       setupControllerResult.runPull = true;
 
@@ -146,7 +154,8 @@ describe('setupCommand', function () {
         });
     });
 
-    it('should run the command in batch mode and call pull after it', function (done) {
+    it('should run the command in batch mode and call pull after it',
+    function (done) {
       // Change setup controller response
       setupControllerResult.runPull = true;
 
@@ -173,6 +182,7 @@ describe('setupCommand', function () {
 function run(callback) {
   return function () {
     var container = containerFactory.createContainer();
+    container.register('errors', errorsStub);
     container.register('messages', messagesStub);
     container.register('logger', loggerStub);
     container.register('setupController', setupControllerStub);

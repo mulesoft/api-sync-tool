@@ -1,6 +1,7 @@
 'use strict';
 
-module.exports = function (authenticationService, contextFactory, contextHolder, loginPrompt, messages, workspaceRepository) {
+module.exports = function (authenticationService, contextFactory,
+  contextHolder, loginPrompt, workspaceRepository, errors) {
   return {
     run: run
   };
@@ -31,7 +32,7 @@ module.exports = function (authenticationService, contextFactory, contextHolder,
       if (workspace.bizGroup && workspace.api && workspace.apiVersion) {
         return Promise.resolve();
       } else {
-        return Promise.reject(messages.setupNeeded());
+        return Promise.reject(new errors.SetupNeededError());
       }
     }
   }

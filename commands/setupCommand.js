@@ -2,7 +2,8 @@
 
 var _ = require('lodash');
 
-module.exports = function (logger, messages, pullController, setupController, setupStrategyFactory) {
+module.exports = function (logger, messages, pullController, setupController,
+  setupStrategyFactory, errors) {
   return {
     validateInput: validateInput,
     execute: execute,
@@ -11,7 +12,7 @@ module.exports = function (logger, messages, pullController, setupController, se
 
   function validateInput(args) {
     if (!args.i && (!args.bizGroup || !args.api || !args.apiVersion)) {
-      return Promise.reject(messages.commandUsage('setup', null,
+      return Promise.reject(new errors.WrongArgumentsError('setup',
         [
           {
             name: 'i',

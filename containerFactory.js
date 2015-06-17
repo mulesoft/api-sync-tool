@@ -9,67 +9,96 @@ var COMMANDS_LOCATION = 'commands';
 
 function createContainer() {
   var container = dependable.container();
-  var entries   = [
-    'application.js',
-    COMMANDS_LOCATION,
-    'controllers',
-    'factories',
-    'repositories',
-    'services',
-    'utils'
-  ];
 
-  // load each entry as a module or a directory
-  // with a list of modules inside without recursion
-  entries.forEach(function (entry) {
-    container.load(path.join(__dirname, entry));
-  });
-
-  // node_modules
-  container.register('superagent', function superagent() {
-    return require('superagent-promise');
-  });
+  loadModules();
+  loadNodeModules();
 
   // container itself that we need to have to
   // be able dynamically resolve route installers
   container.register('container', container);
 
-  // Application error handling, load index.js
-  container.register('errors',   require('./utils/errors'));
-
-  // This is only valid in single threaded applications
-  container.register('contextHolder', function () {
-    var context = {
-      getToken: function () {
-        return '';
-      },
-      getDirectoryPath: function () {
-        return '';
-      }
-    };
-
-    return {
-      set: function (newContext) {
-        context = newContext;
-      },
-      get: function () {
-        return context;
-      }
-    };
-  });
-
-  // Get available commands from fs.
-  // The idea behind this is to avoid harcoding the available commands in the code.
-  var commands = fs.readdirSync(path.join(path.resolve(__dirname), COMMANDS_LOCATION));
-
-  container.register('commands', function () {
-    return _.map(commands, function (command) {
-      // Remove Command.js from command file names.
-      return command.split('Command.')[0];
-    });
-  });
+  registerCommands();
+  registerErrors();
+  registerContext();
 
   return container;
+
+  function loadModules() {
+    var entries   = [
+      'application.js',
+      COMMANDS_LOCATION,
+      'controllers',
+      'factories',
+      'repositories',
+      'services',
+      'utils'
+    ];
+
+    // load each entry as a module or a directory
+    // with a list of modules inside without recursion
+    entries.forEach(function (entry) {
+      container.load(path.join(__dirname, entry));
+    });
+  }
+
+  function loadNodeModules() {
+    container.register('superagent', function superagent() {
+      return require('superagent-promise');
+    });
+  }
+
+  function registerCommands() {
+    // Get available commands from fs.
+    // The idea behind this is to avoid
+    // harcoding the available commands in the code.
+    var commands = fs.readdirSync(
+      path.join(path.resolve(__dirname), COMMANDS_LOCATION));
+
+    container.register('commands', function () {
+      return _.map(commands, function (command) {
+        // Remove Command.js from command file names.
+        return command.split('Command.')[0];
+      });
+    });
+  }
+
+  function registerErrors() {
+    // Application error handling, load index.js
+    var errors = require('./utils/errors');
+
+    // Register the errors so we can use them like errors.Xerror
+    errors = Object.keys(errors).reduce(function (acum, key) {
+      acum[key] = container.resolve(errors[key]);
+      return acum;
+    }, {});
+
+    container.register('errors', errors);
+  }
+
+  function registerContext() {
+    // This is only valid in single threaded applications
+    container.register('contextHolder', function (errors) {
+      var context = {
+        getToken: function () {
+          // Not resolving the constructor makes the new return undefined
+          // instead of the error
+          throw new errors.UndefinedContextFieldError('token');
+        },
+        getDirectoryPath: function () {
+          throw new errors.UndefinedContextFieldError('directoryPath');
+        }
+      };
+
+      return {
+        set: function (newContext) {
+          context = newContext;
+        },
+        get: function () {
+          return context;
+        }
+      };
+    });
+  }
 }
 
 module.exports = {

@@ -2,7 +2,7 @@
 
 var _ = require('lodash');
 
-module.exports = function (commandPrompt, messages) {
+module.exports = function (commandPrompt, messages, errors) {
   return {
     get: get
   };
@@ -18,13 +18,16 @@ module.exports = function (commandPrompt, messages) {
   function interactiveStrategy() {
     return {
       getBusinessGroup: function (businessGroups) {
-        return commandPrompt.getChoice(messages.businessGroupPromptMessage(), 'name', 'id', businessGroups);
+        return commandPrompt.getChoice(messages.businessGroupPromptMessage(),
+          'name', 'id', businessGroups);
       },
       getAPI: function (apis) {
-        return commandPrompt.getChoice(messages.apiPromptMessage(), 'name', 'id', apis);
+        return commandPrompt.getChoice(messages.apiPromptMessage(),
+          'name', 'id', apis);
       },
       getAPIVersion: function (api) {
-        return commandPrompt.getChoice(messages.apiVersionPromptMessage(), 'name', 'id', api.versions);
+        return commandPrompt.getChoice(messages.apiVersionPromptMessage(),
+          'name', 'id', api.versions);
       },
       getRunPull: function () {
         return commandPrompt.getConfirmation(messages.runPullPromptMessage());
@@ -36,15 +39,24 @@ module.exports = function (commandPrompt, messages) {
     return {
       getBusinessGroup: function (businessGroups) {
         var businessGroup = _.find(businessGroups, 'id', parameters.bizGroup);
-        return businessGroup ? Promise.resolve(businessGroup) : Promise.reject(messages.notFound(messages.businessGroupDescription()));
+        return businessGroup ?
+          Promise.resolve(businessGroup) :
+          Promise.reject(new errors.ChoiceNotFoundError(
+            messages.businessGroupDescription()));
       },
       getAPI: function (apis) {
         var api = _.find(apis, 'id', parameters.api);
-        return api ? Promise.resolve(api) : Promise.reject(messages.notFound(messages.apiDescription()));
+        return api ?
+          Promise.resolve(api) :
+          Promise.reject(new errors.ChoiceNotFoundError(
+            messages.apiDescription()));
       },
       getAPIVersion: function (api) {
         var apiVersion = _.find(api.versions, 'id', parameters.apiVersion);
-        return apiVersion ? Promise.resolve(apiVersion) : Promise.reject(messages.notFound(messages.apiVersionDescription()));
+        return apiVersion ?
+          Promise.resolve(apiVersion) :
+          Promise.reject(new errors.ChoiceNotFoundError(
+            messages.apiVersionDescription()));
       },
       getRunPull: function () {
         return Promise.resolve(parameters.runPull);

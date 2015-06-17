@@ -1,6 +1,6 @@
 'use strict';
 
-require('should');
+var should = require('should');
 var sinon = require('sinon');
 
 var containerFactory = require('../support/testContainerFactory');
@@ -8,6 +8,7 @@ var contentGenerator = require('../support/contentGenerator');
 
 var commandPromptStub = {};
 var messagesStub = {};
+var errorsStub = {};
 
 var businessGroups = contentGenerator.generateBusinessGroups();
 var apis = contentGenerator.generateApis();
@@ -18,19 +19,23 @@ var batchParameters = {
 };
 
 describe('setupStrategyFactory', function () {
+  beforeEach(function () {
+    messagesStub.businessGroupPromptMessage =
+      sinon.stub().returns('Select bizGroup');
+    messagesStub.apiPromptMessage =
+      sinon.stub().returns('Select API');
+    messagesStub.apiVersionPromptMessage =
+      sinon.stub().returns('Select API Version');
+    messagesStub.runPullPromptMessage =
+      sinon.stub().returns('Should run pull?');
+
+    commandPromptStub.getChoice = sinon.stub()
+      .withArgs(sinon.match.any, 'name', 'id', sinon.match.any);
+
+    commandPromptStub.getConfirmation = sinon.stub();
+  });
+
   describe('interactive', run(function (setupStrategyFactory) {
-    beforeEach(function () {
-      messagesStub.businessGroupPromptMessage = sinon.stub().returns('Select bizGroup');
-      messagesStub.apiPromptMessage = sinon.stub().returns('Select API');
-      messagesStub.apiVersionPromptMessage = sinon.stub().returns('Select API Version');
-      messagesStub.runPullPromptMessage = sinon.stub().returns('Should run pull?');
-
-      commandPromptStub.getChoice = sinon.stub()
-        .withArgs(sinon.match.any, 'name', 'id', sinon.match.any);
-
-      commandPromptStub.getConfirmation = sinon.stub();
-    });
-
     it('should return selected business group', function (done) {
       // Setup return value for stub method.
       commandPromptStub.getChoice.returns(Promise.resolve(businessGroups[0]));
@@ -112,6 +117,11 @@ describe('setupStrategyFactory', function () {
   }));
 
   describe('batch', run(function (setupStrategyFactory) {
+    var error = {error: 'error'};
+    beforeEach(function () {
+      errorsStub.ChoiceNotFoundError = sinon.stub().returns(error);
+    });
+
     it('should return selected business group', function (done) {
       var strategy = setupStrategyFactory.get(batchParameters);
 
@@ -179,15 +189,23 @@ describe('setupStrategyFactory', function () {
         apiVersion: 123
       });
 
-      messagesStub.notFound = sinon.stub().returns('not found');
-      messagesStub.businessGroupDescription = sinon.stub().returns('business group');
+      messagesStub.businessGroupDescription =
+        sinon.stub().returns('business group');
 
       strategy.getBusinessGroup(businessGroups)
         .then(function () {
           done('should have failed');
         })
-        .catch(function () {
-          messagesStub.notFound.called.should.be.ok;
+        .catch(function (err) {
+          errorsStub.ChoiceNotFoundError.called.should.be.true;
+          errorsStub.ChoiceNotFoundError.firstCall
+            .args.length.should.equal(1);
+          errorsStub.ChoiceNotFoundError.firstCall
+            .args[0].should.equal(messagesStub.businessGroupDescription());
+
+          err.should.be.an.Object;
+          should.deepEqual(err, error);
+
           messagesStub.businessGroupDescription.called.should.be.ok;
 
           done();
@@ -204,15 +222,22 @@ describe('setupStrategyFactory', function () {
         apiVersion: 123
       });
 
-      messagesStub.notFound = sinon.stub().returns('not found');
       messagesStub.apiDescription = sinon.stub().returns('api description');
 
       strategy.getAPI(apis)
         .then(function () {
           done('should have failed');
         })
-        .catch(function () {
-          messagesStub.notFound.called.should.be.ok;
+        .catch(function (err) {
+          errorsStub.ChoiceNotFoundError.called.should.be.true;
+          errorsStub.ChoiceNotFoundError.firstCall
+            .args.length.should.equal(1);
+          errorsStub.ChoiceNotFoundError.firstCall
+            .args[0].should.equal(messagesStub.apiDescription());
+
+          err.should.be.an.Object;
+          should.deepEqual(err, error);
+
           messagesStub.apiDescription.called.should.be.ok;
 
           done();
@@ -229,15 +254,23 @@ describe('setupStrategyFactory', function () {
         apiVersion: 123
       });
 
-      messagesStub.notFound = sinon.stub().returns('not found');
-      messagesStub.apiVersionDescription = sinon.stub().returns('api version description');
+      messagesStub.apiVersionDescription =
+        sinon.stub().returns('api version description');
 
       strategy.getAPIVersion(apis[0])
         .then(function () {
           done('should have failed');
         })
-        .catch(function () {
-          messagesStub.notFound.called.should.be.ok;
+        .catch(function (err) {
+          errorsStub.ChoiceNotFoundError.called.should.be.true;
+          errorsStub.ChoiceNotFoundError.firstCall
+            .args.length.should.equal(1);
+          errorsStub.ChoiceNotFoundError.firstCall
+            .args[0].should.equal(messagesStub.apiVersionDescription());
+
+          err.should.be.an.Object;
+          should.deepEqual(err, error);
+
           messagesStub.apiVersionDescription.called.should.be.ok;
 
           done();
@@ -254,6 +287,7 @@ function run(callback) {
     var container = containerFactory.createContainer();
     container.register('commandPrompt', commandPromptStub);
     container.register('messages', messagesStub);
+    container.register('errors', errorsStub);
     container.resolve(callback);
   };
 }
