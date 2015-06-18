@@ -36,7 +36,7 @@ module.exports = function (commands) {
     // Command results
     status: function (result) {
       var output = [];
-      var actionOrder  = ['added', 'deleted', 'changed', 'unchanged'];
+      var actionOrder  = ['added', 'changed', 'deleted', 'unchanged'];
 
       var actions = {
         added: {
@@ -44,16 +44,15 @@ module.exports = function (commands) {
           prefix:  '+',
           message: 'new file'
         },
-        deleted: {
-          color:   colors.red,
-          prefix:  '-',
-          message: 'deleted'
-        },
         changed: {
           color:   colors.yellow,
           prefix:  '*',
           message: 'updated'
-
+        },
+        deleted: {
+          color:   colors.red,
+          prefix:  '-',
+          message: 'deleted'
         },
         unchanged: {
           color: function (msg) {
@@ -76,6 +75,18 @@ module.exports = function (commands) {
       });
 
       return output.join('\n');
+    },
+    pushProgressNew: function () {
+      return 'Pushing new files...';
+    },
+    pushProgressChanged: function () {
+        return 'Pushing changed files...';
+    },
+    pushProgressDeleted: function () {
+      return 'Pushing deleted files...';
+    },
+    nothingPush: function () {
+      return 'Nothing to push';
     },
     interactiveDescription: function () {
       return 'Interactive Mode';

@@ -1,11 +1,27 @@
 'use strict';
 
-module.exports = function () {
+var _ = require('lodash');
+
+module.exports = function (logger, messages, pushController) {
   return {
-    execute: push
+    validateInput: validateInput,
+    execute: execute
   };
 
-  function push() {
-    return Promise.reject('Implement me');
+  function validateInput() {
+      return Promise.resolve();
+    }
+
+  function execute() {
+    return pushController.push()
+      .then(print);
+  }
+
+  function print(result) {
+    if (_.isEmpty(_.flatten(_.values(result)))) {
+      logger.info(messages.nothingPush());
+    } else {
+      logger.info(messages.status(result));
+    }
   }
 };

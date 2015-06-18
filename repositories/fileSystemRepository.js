@@ -8,12 +8,23 @@ var _ = require('lodash');
 
 module.exports = function (contextHolder) {
   return {
+    getFile: getFile,
     getFileFullPath: getFileFullPath,
     getFileHash: getFileHash,
     getFilesPath: getFilesPath,
     createWriteStream: createWriteStream,
     removeFile: removeFile
   };
+
+  function getFile(filePath) {
+    return promisify(fs.readFile)(getFileFullPath(filePath))
+      .then(function (data) {
+        return {
+          path: filePath,
+          data: data
+        };
+      });
+  }
 
   function getFileFullPath(fileLocalPath) {
     return path.join(contextHolder.get().getDirectoryPath(), fileLocalPath);

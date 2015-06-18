@@ -4,12 +4,17 @@ module.exports = function (apiPlatformRepository, fileSystemRepository,
   contextHolder, decompresser) {
   return {
     getAllAPIs: getAllAPIs,
-    getAPIFiles: getAPIFiles
+    getAPIFiles: getAPIFiles,
+    getAPIFilesMetadata: getAPIFilesMetadata,
+    createAPIFile: createAPIFile,
+    updateAPIFile: updateAPIFile,
+    deleteAPIFile: deleteAPIFile
   };
 
   function getAllAPIs() {
     return apiPlatformRepository.getAllAPIs();
   }
+
   // TODO this functions shouldn't know that the APIPlatform is returning
   // a compressed file. The logic of getting the API files should be in
   // the apiPlatformRepository
@@ -46,5 +51,44 @@ module.exports = function (apiPlatformRepository, fileSystemRepository,
         });
       }));
     }
+  }
+
+  function getAPIFilesMetadata(organizationId, apiId, apiVersionId) {
+    return apiPlatformRepository.getAPIFilesMetadata(organizationId, apiId,
+        apiVersionId);
+  }
+
+  function createAPIFile(organizationId, apiId, apiVersionId, newFile) {
+    return fileSystemRepository.getFile(newFile)
+      .then(function (newFileData) {
+        return apiPlatformRepository.createAPIFile(organizationId, apiId,
+            apiVersionId, newFileData);
+      })
+      .then(getFileWithHash);
+  }
+
+  function updateAPIFile(organizationId, apiId, apiVersionId, updatedFile) {
+    return fileSystemRepository.getFile(updatedFile.path)
+      .then(function (updatedFileData) {
+        updatedFile.data = updatedFileData.data.toString();
+        return apiPlatformRepository.updateAPIFile(organizationId, apiId,
+            apiVersionId, updatedFile);
+      })
+      .then(getFileWithHash);
+  }
+
+  function deleteAPIFile(organizationId, apiId, apiVersionId, deletedFile) {
+    return apiPlatformRepository.deleteAPIFile(organizationId, apiId,
+        apiVersionId, deletedFile);
+  }
+
+  function getFileWithHash(filePath) {
+    return fileSystemRepository.getFileHash(filePath)
+      .then(function (hash) {
+        return {
+          path: filePath,
+          hash: hash
+        };
+      });
   }
 };

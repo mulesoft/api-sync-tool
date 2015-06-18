@@ -5,7 +5,10 @@ var _ = require('lodash');
 module.exports = {
   generateBusinessGroups: generateBusinessGroups,
   generateApis: generateApis,
-  generateWorkspace: generateWorkspace
+  generateWorkspace: generateWorkspace,
+  generateWorkspaceWithFiles: generateWorkspaceWithFiles,
+  getWorkspaceFilesMetadata: getWorkspaceFilesMetadata,
+  getAPIFilesMetadata: getAPIFilesMetadata
 };
 
 function generateBusinessGroups(number) {
@@ -46,4 +49,32 @@ function generateWorkspace() {
       id: 1234
     }
   };
+}
+
+function generateWorkspaceWithFiles(number) {
+  var workspace = generateWorkspace();
+  workspace.files = getWorkspaceFilesMetadata(number);
+  return workspace;
+}
+
+function getWorkspaceFilesMetadata(number) {
+  number = number ? number : 10;
+  return _.range(1, number + 1)
+    .map(function (n) {
+      return {
+        path: 'api' + n + '.raml',
+        hash: 'asdf' + n
+      };
+    });
+}
+
+function getAPIFilesMetadata(number) {
+  number = number ? number : 10;
+  return _.range(1, number + 1)
+    .map(function (n) {
+      return {
+        id: n,
+        path: 'api' + n + '.raml'
+      };
+    });
 }
