@@ -1,12 +1,9 @@
 'use strict';
 
-var promisify = require('promisify-node');
-var fs = require('fs');
 var path = require('path');
-var sha = promisify('sha');
 var _ = require('lodash');
 
-module.exports = function (contextHolder) {
+module.exports = function (contextHolder, fs, promisify, sha) {
   return {
     getFile: getFile,
     getFileFullPath: getFileFullPath,
