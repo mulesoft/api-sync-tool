@@ -112,6 +112,10 @@ module.exports = function (commands) {
     apiVersionPromptMessage: function () {
       return 'Select your API Version';
     },
+    storeAuthenticationPromptMessage: function () {
+      return 'Do you want to stay logged in? This will save your access ' +
+          'token in a plain text file.';
+    },
     runPullPromptMessage: function () {
       return 'Do you want to pull your API files now?';
     },
@@ -190,8 +194,14 @@ module.exports = function (commands) {
     savingFileError: function () {
       return 'An unknown error happened when saving a file';
     },
+    authFileNotFound: function () {
+      return 'Authentication file not found.';
+    },
     loginError: function (username) {
       return 'Login failed for user ' + username;
+    },
+    badCredentialsError: function () {
+      return 'Bad credentials, please login again.';
     },
     undefinedContextFieldError: function (field) {
       return 'Context field: ' + field + ' was not defined';

@@ -3,6 +3,7 @@
 require('should');
 var sinon = require('sinon');
 
+var asserts = require('../support/asserts');
 var containerFactory  = require('../support/testContainerFactory');
 var contentGenerator = require('../support/contentGenerator');
 
@@ -151,7 +152,7 @@ describe('pushController', function () {
               .should.be.true;
 
           // All these should not
-          assertNotCalled([
+          asserts.notCalled([
             apiPlatformServiceStub.createAPIFile,
             apiPlatformServiceStub.updateAPIFile,
             apiPlatformServiceStub.deleteAPIFile,
@@ -186,7 +187,7 @@ describe('pushController', function () {
               .should.be.true;
 
           // All these should not
-          assertNotCalled([
+          asserts.notCalled([
             apiPlatformServiceStub.getAPIFilesMetadata,
             apiPlatformServiceStub.createAPIFile,
             apiPlatformServiceStub.updateAPIFile,
@@ -205,12 +206,6 @@ describe('pushController', function () {
     });
   }));
 });
-
-function assertNotCalled(methods) {
-  methods.forEach(function (method) {
-    method.called.should.not.be.true;
-  });
-}
 
 function run(callback) {
   return function () {

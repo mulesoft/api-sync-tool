@@ -1,19 +1,12 @@
 'use strict';
 
-module.exports = function (workspaceRepository) {
+module.exports = function () {
   return {
     create: create
   };
 
   function create(authentication, directoryPath) {
-    var accessToken;
-    if (!authentication) {
-      var workspace = workspaceRepository.get();
-      accessToken = workspace && workspace.authentication && workspace.authentication.access_token;
-    } else {
-      accessToken = authentication.access_token;
-    }
-
+    var accessToken = authentication ? authentication.accessToken : '';
     return createContext(accessToken, directoryPath);
   }
 

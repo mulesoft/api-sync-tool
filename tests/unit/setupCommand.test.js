@@ -20,6 +20,8 @@ var setupControllerResult = {
 
 describe('setupCommand', function () {
   var error = {error: 'error'};
+  var okMessage = 'Ok';
+
   beforeEach(function () {
     errorsStub.WrongArgumentsError = sinon.stub().returns(error);
 
@@ -28,12 +30,11 @@ describe('setupCommand', function () {
     messagesStub.apiDescription = sinon.stub().returns('api');
     messagesStub.apiVersionDescription = sinon.stub().returns('apiVersion');
     messagesStub.runPullDescription = sinon.stub().returns('runPull');
-    messagesStub.setupSuccessful = sinon.stub().returns('Ok');
+    messagesStub.setupSuccessful = sinon.stub().returns(okMessage);
 
-    setupControllerStub.setup =
-      sinon.stub().returns(Promise.resolve(setupControllerResult));
-    pullCommandStub.execute =
-      sinon.stub().returns(Promise.resolve());
+    setupControllerStub.setup = sinon.stub().returns(Promise.resolve(
+        setupControllerResult));
+    pullCommandStub.execute = sinon.stub().returns(Promise.resolve());
     setupStrategyFactoryStub.get = sinon.stub();
     loggerStub.info = sinon.stub();
   });
@@ -46,12 +47,8 @@ describe('setupCommand', function () {
         })
         .catch(function (err) {
           errorsStub.WrongArgumentsError.calledOnce.should.be.true;
-          errorsStub.WrongArgumentsError.firstCall
-            .args.length.should.equal(2);
-          errorsStub.WrongArgumentsError.firstCall
-            .args[0].should.equal('setup');
-          errorsStub.WrongArgumentsError.firstCall
-            .args[1].should.be.an.Array;
+          errorsStub.WrongArgumentsError.calledWithExactly('setup',
+              sinon.match.array).should.be.true;
 
           err.should.be.an.Object;
           should.deepEqual(err, error);
@@ -99,7 +96,7 @@ describe('setupCommand', function () {
           setupStrategyFactoryStub.get.calledOnce.should.be.true;
           messagesStub.setupSuccessful.calledOnce.should.be.true;
           loggerStub.info.calledOnce.should.be.true;
-          loggerStub.info.firstCall.calledWithExactly('Ok');
+          loggerStub.info.firstCall.calledWithExactly(okMessage);
 
           done();
         })
@@ -115,7 +112,7 @@ describe('setupCommand', function () {
           setupStrategyFactoryStub.get.calledOnce.should.be.true;
           messagesStub.setupSuccessful.calledOnce.should.be.true;
           loggerStub.info.calledOnce.should.be.true;
-          loggerStub.info.firstCall.calledWithExactly('Ok');
+          loggerStub.info.firstCall.calledWithExactly(okMessage);
 
           done();
         })
@@ -136,7 +133,7 @@ describe('setupCommand', function () {
           pullCommandStub.execute.calledOnce.should.be.true;
           messagesStub.setupSuccessful.calledOnce.should.be.true;
           loggerStub.info.calledOnce.should.be.true;
-          loggerStub.info.firstCall.calledWithExactly('ok');
+          loggerStub.info.firstCall.calledWithExactly(okMessage);
 
           done();
         })
@@ -157,7 +154,7 @@ describe('setupCommand', function () {
           pullCommandStub.execute.calledOnce.should.be.true;
           messagesStub.setupSuccessful.calledOnce.should.be.true;
           loggerStub.info.calledOnce.should.be.true;
-          loggerStub.info.firstCall.calledWithExactly('ok');
+          loggerStub.info.firstCall.calledWithExactly(okMessage);
 
           done();
         })

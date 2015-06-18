@@ -3,6 +3,7 @@
 var should = require('should');
 var sinon = require('sinon');
 
+var asserts = require('../support/asserts');
 var containerFactory  = require('../support/testContainerFactory');
 
 var localPath = '/Users/test';
@@ -29,7 +30,7 @@ describe('fileSystemRepository', function () {
       function (done) {
         try {
           var fullPath = fileSystemRepository.getFileFullPath(testFileName);
-          calledOnceWithoutParameters([
+          asserts.calledOnceWithoutParameters([
             contextHolderStub.get,
             contextStub.getDirectoryPath
           ]);
@@ -190,13 +191,6 @@ describe('fileSystemRepository', function () {
     });
   }));
 });
-
-function calledOnceWithoutParameters(stubFunctions) {
-  stubFunctions.forEach(function (stubFunction) {
-    stubFunction.calledOnce.should.be.true;
-    stubFunction.firstCall.args.length.should.equal(0);
-  });
-}
 
 function run(callback) {
   return function () {

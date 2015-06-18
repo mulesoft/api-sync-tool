@@ -5,7 +5,7 @@ var path = require('path');
 
 var apiPlatformUrl = 'https://anypoint.mulesoft.com/apiplatform/repository';
 
-module.exports = function (contextHolder, superagent, errors) {
+module.exports = function (contextHolder, errors, superagent) {
   return {
     getAllAPIs: getAllAPIs,
     getAPIFiles: getAPIFiles,
@@ -17,7 +17,10 @@ module.exports = function (contextHolder, superagent, errors) {
 
   function getAllAPIs() {
     return apiClient(superagent.get(apiPlatformUrl + '/apis'))
-      .then(buildApisInformation);
+      .then(buildApisInformation)
+      .catch(function (err) {
+        return Promise.reject(checkUnauthorized(err));
+      });
   }
 
   /**
@@ -39,7 +42,7 @@ module.exports = function (contextHolder, superagent, errors) {
         '/files/export'),
         function (err, response) {
           if (err) {
-            return reject(err);
+            return reject(checkUnauthorized(err));
           }
 
           var piping = response.pipe(stream);
@@ -62,6 +65,9 @@ module.exports = function (contextHolder, superagent, errors) {
       '/files'))
       .then(function (response) {
         return response.body;
+      })
+      .catch(function (err) {
+        return Promise.reject(checkUnauthorized(err));
       });
   }
 
@@ -82,6 +88,9 @@ module.exports = function (contextHolder, superagent, errors) {
       .send(file))
       .then(function () {
         return newFile.path;
+      })
+      .catch(function (err) {
+        return Promise.reject(checkUnauthorized(err));
       });
   }
 
@@ -105,6 +114,9 @@ module.exports = function (contextHolder, superagent, errors) {
       .send(file))
       .then(function () {
         return updatedFile.path;
+      })
+      .catch(function (err) {
+        return Promise.reject(checkUnauthorized(err));
       });
   }
 
@@ -116,6 +128,9 @@ module.exports = function (contextHolder, superagent, errors) {
       '/files/' + deletedFile.id))
       .then(function () {
         return deletedFile.path;
+      })
+      .catch(function (err) {
+        return Promise.reject(checkUnauthorized(err));
       });
   }
 
@@ -147,5 +162,13 @@ module.exports = function (contextHolder, superagent, errors) {
       .set('Authorization', 'Bearer ' + contextHolder.get().getToken())
       .set('Accept', 'application/json')
       .end(callback);
+  }
+
+  function checkUnauthorized(error) {
+    if (error.status === 401) {
+      return new errors.BadCredentialsError();
+    } else {
+      return error;
+    }
   }
 };

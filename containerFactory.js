@@ -49,6 +49,14 @@ function createContainer() {
       return require('fs');
     });
 
+    container.register('osenv', function () {
+      return require('osenv');
+    });
+
+    container.register('process', function () {
+      return process;
+    });
+
     container.register('promisify', function () {
       return promisify;
     });
