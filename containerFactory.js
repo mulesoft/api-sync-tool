@@ -44,19 +44,19 @@ function createContainer() {
   function loadNodeModules() {
     var promisify = require('promisify-node');
 
-    container.register('fs', function fs() {
+    container.register('fs', function () {
       return require('fs');
     });
 
-    container.register('promisify', function promisify() {
+    container.register('promisify', function () {
       return promisify;
     });
 
-    container.register('sha', function sha() {
+    container.register('sha', function () {
       return promisify('sha');
     });
 
-    container.register('superagent', function superagent() {
+    container.register('superagent', function () {
       return require('superagent-promise');
     });
   }
