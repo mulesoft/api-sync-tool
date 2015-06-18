@@ -1,0 +1,18 @@
+language: node_js
+node_js:
+  - "0.12"
+before_script:
+  - npm prune
+  - npm install -g gulp
+  - gulp
+
+cache:
+  directories:
+    - node_modules
+
+branches:
+  only:
+    - master
+
+notifications:
+  slack: mulesoft:PDrg7PfnydAXMTK8hyBMQz5a
