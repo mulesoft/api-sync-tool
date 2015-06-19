@@ -152,6 +152,15 @@ module.exports = function (commands) {
 
       return output;
     },
+    emptyAPIPullmessage: function () {
+      return 'The API is empty';
+    },
+    downloadingAPI: function () {
+      return 'Downloading the API...';
+    },
+    APIdownloadFinished: function () {
+      return 'API Download finished';
+    },
     // Errors
     setupNeeded: function () {
       return 'Please run setup before running other commands.';

@@ -13,7 +13,11 @@ module.exports = function (logger, messages, pullController) {
   }
 
   function print(files) {
-    logger.info(messages.status({added: _.pluck(files, 'path')}));
+    if (_.isEmpty(files)) {
+      logger.info(messages.emptyAPIPullmessage());
+    } else {
+      logger.info(messages.status({added: _.pluck(files, 'path')}));
+    }
   }
 
   function execute() {
