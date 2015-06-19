@@ -2,8 +2,9 @@
 
 var _ = require('lodash');
 
-module.exports = function (logger, messages, pullController) {
+module.exports = function (logger, messages, pullController, validateSetupStrategy) {
   return {
+    validateSetup: validateSetupStrategy,
     validateInput: validateInput,
     execute: execute
   };

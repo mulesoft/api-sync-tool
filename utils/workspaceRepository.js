@@ -5,11 +5,12 @@ var path = require('path');
 var osenv = require('osenv');
 var _ = require('lodash');
 
-module.exports = function (messages) {
+module.exports = function (errors) {
   var workspaceFilePath = path.join(osenv.home(), '.api-sync');
 
   return {
     get: get,
+    exists: exists,
     update: update
   };
 
@@ -27,11 +28,21 @@ module.exports = function (messages) {
       currentWorkspace = {
         directory: process.cwd()
       };
-      workspaces.push(currentWorkspace);
-      write(workspaces);
     }
 
     return currentWorkspace;
+  }
+
+  /**
+   * Returns if there is a workspace in the current working directory.
+   *
+   * @return {Bool}
+   */
+  function exists() {
+    var workspaces = read();
+    var currentWorkspace = _.find(workspaces, 'directory', process.cwd());
+
+    return !!currentWorkspace;
   }
 
   /**
@@ -41,7 +52,7 @@ module.exports = function (messages) {
    */
   function update(workspace) {
     if (workspace.directory !== process.cwd()) {
-      throw new Error(messages.invalidDirectory());
+      throw new errors.WrongDirectoryError();
     }
     var workspaces = read();
 

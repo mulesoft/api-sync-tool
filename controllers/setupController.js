@@ -7,6 +7,7 @@ module.exports = function (apiPlatformService, userOrganizationService, workspac
 
   function setup(strategy) {
     var workspace = workspaceRepository.get();
+
     return userOrganizationService.getBusinessGroups()
       .then(strategy.getBusinessGroup)
       .then(function (bizGroup) {

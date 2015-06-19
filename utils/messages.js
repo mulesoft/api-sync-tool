@@ -195,6 +195,12 @@ module.exports = function (commands) {
     },
     undefinedContextFieldError: function (field) {
       return 'Context field: ' + field + ' was not defined';
+    },
+    setupAlreadyDoneError: function (bizGroupName, apiName, apiVersionName) {
+      return 'This folder has the following setup \n' +
+        'bussinesGroup: ' + bizGroupName + '\n' +
+        'api: ' + apiName + '\n' +
+        'version: ' + apiVersionName;
     }
   };
 };
