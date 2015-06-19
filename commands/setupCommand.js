@@ -1,9 +1,7 @@
 'use strict';
 
-var _ = require('lodash');
-
 module.exports = function (logger, messages, pullController, setupController,
-  setupStrategyFactory, errors) {
+  setupStrategyFactory, pullCommand, errors) {
   return {
     validateInput: validateInput,
     execute: execute,
@@ -43,24 +41,21 @@ module.exports = function (logger, messages, pullController, setupController,
   }
 
   function execute(args) {
-    var commandResult = {};
+    var runPull;
     return parse(args)
       .then(function (parameters) {
         return setupController.setup(setupStrategyFactory.get(parameters));
       })
       .then(function (result) {
-        commandResult.workspace = result.workspace;
-
-        if (result.runPull) {
-          return pullController.getAPIFiles()
-            .then(function (files) {
-              commandResult.files = files;
-              return commandResult;
-            });
-        }
-        return commandResult;
+        runPull = result.runPull;
+        return result.workspace;
       })
-      .then(print);
+      .then(print)
+      .then(function () {
+        if (runPull) {
+          return pullCommand.execute();
+        }
+      });
   }
 
   function parse(args) {
@@ -78,10 +73,7 @@ module.exports = function (logger, messages, pullController, setupController,
     }
   }
 
-  function print(result) {
-    logger.info(messages.setupSuccessful(result.workspace));
-    if (result.files) {
-      logger.info(messages.status({added: _.pluck(result.files, 'path')}));
-    }
+  function print(workspace) {
+    logger.info(messages.setupSuccessful(workspace));
   }
 };

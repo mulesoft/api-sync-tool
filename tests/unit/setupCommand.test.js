@@ -9,7 +9,7 @@ var contentGenerator = require('../support/contentGenerator');
 var messagesStub = {};
 var loggerStub = {};
 var setupControllerStub = {};
-var pullControllerStub = {};
+var pullCommandStub = {};
 var setupStrategyFactoryStub = {};
 var errorsStub = {};
 
@@ -17,12 +17,6 @@ var setupControllerResult = {
   workspace: contentGenerator.generateWorkspace(),
   runPull: false
 };
-var files = [
-  {
-    id: 1,
-    path: 'file.raml'
-  }
-];
 
 describe('setupCommand', function () {
   var error = {error: 'error'};
@@ -35,12 +29,11 @@ describe('setupCommand', function () {
     messagesStub.apiVersionDescription = sinon.stub().returns('apiVersion');
     messagesStub.runPullDescription = sinon.stub().returns('runPull');
     messagesStub.setupSuccessful = sinon.stub().returns('Ok');
-    messagesStub.status = sinon.stub().returns('status');
 
     setupControllerStub.setup =
       sinon.stub().returns(Promise.resolve(setupControllerResult));
-    pullControllerStub.getAPIFiles =
-      sinon.stub().returns(Promise.resolve(files));
+    pullCommandStub.execute =
+      sinon.stub().returns(Promise.resolve());
     setupStrategyFactoryStub.get = sinon.stub();
     loggerStub.info = sinon.stub();
   });
@@ -52,7 +45,7 @@ describe('setupCommand', function () {
           done('Error: test should fail');
         })
         .catch(function (err) {
-          errorsStub.WrongArgumentsError.called.should.be.true;
+          errorsStub.WrongArgumentsError.calledOnce.should.be.true;
           errorsStub.WrongArgumentsError.firstCall
             .args.length.should.equal(2);
           errorsStub.WrongArgumentsError.firstCall
@@ -63,11 +56,11 @@ describe('setupCommand', function () {
           err.should.be.an.Object;
           should.deepEqual(err, error);
 
-          messagesStub.interactiveDescription.called.should.be.true;
-          messagesStub.businessGroupDescription.called.should.be.true;
-          messagesStub.apiDescription.called.should.be.true;
-          messagesStub.apiVersionDescription.called.should.be.true;
-          messagesStub.runPullDescription.called.should.be.true;
+          messagesStub.interactiveDescription.calledOnce.should.be.true;
+          messagesStub.businessGroupDescription.calledOnce.should.be.true;
+          messagesStub.apiDescription.calledOnce.should.be.true;
+          messagesStub.apiVersionDescription.calledOnce.should.be.true;
+          messagesStub.runPullDescription.calledOnce.should.be.true;
 
           done();
         })
@@ -102,11 +95,11 @@ describe('setupCommand', function () {
     it('should run the command in interactive mode', function (done) {
       setupCommand.execute({i: true})
         .then(function () {
-          setupControllerStub.setup.called.should.be.true;
-          setupStrategyFactoryStub.get.called.should.be.true;
-          messagesStub.setupSuccessful.called.should.be.true;
-          loggerStub.info.called.should.be.true;
-          loggerStub.info.firstCall.args[0].should.equal('Ok');
+          setupControllerStub.setup.calledOnce.should.be.true;
+          setupStrategyFactoryStub.get.calledOnce.should.be.true;
+          messagesStub.setupSuccessful.calledOnce.should.be.true;
+          loggerStub.info.calledOnce.should.be.true;
+          loggerStub.info.firstCall.calledWithExactly('Ok');
 
           done();
         })
@@ -118,11 +111,11 @@ describe('setupCommand', function () {
     it('should run the command in batch mode', function (done) {
       setupCommand.execute({bizGroup: 1234, api: 'name', apiVersion: 'version'})
         .then(function () {
-          setupControllerStub.setup.called.should.be.true;
-          setupStrategyFactoryStub.get.called.should.be.true;
-          messagesStub.setupSuccessful.called.should.be.true;
-          loggerStub.info.called.should.be.true;
-          loggerStub.info.firstCall.args[0].should.equal('Ok');
+          setupControllerStub.setup.calledOnce.should.be.true;
+          setupStrategyFactoryStub.get.calledOnce.should.be.true;
+          messagesStub.setupSuccessful.calledOnce.should.be.true;
+          loggerStub.info.calledOnce.should.be.true;
+          loggerStub.info.firstCall.calledWithExactly('Ok');
 
           done();
         })
@@ -138,14 +131,12 @@ describe('setupCommand', function () {
 
       setupCommand.execute({i: true})
         .then(function () {
-          setupControllerStub.setup.called.should.be.true;
-          setupStrategyFactoryStub.get.called.should.be.true;
-          pullControllerStub.getAPIFiles.called.should.be.true;
-          messagesStub.setupSuccessful.called.should.be.true;
-          messagesStub.status.called.should.be.true;
-          loggerStub.info.called.should.be.true;
-          loggerStub.info.firstCall.args[0].should.equal('Ok');
-          loggerStub.info.secondCall.args[0].should.equal('status');
+          setupControllerStub.setup.calledOnce.should.be.true;
+          setupStrategyFactoryStub.get.calledOnce.should.be.true;
+          pullCommandStub.execute.calledOnce.should.be.true;
+          messagesStub.setupSuccessful.calledOnce.should.be.true;
+          loggerStub.info.calledOnce.should.be.true;
+          loggerStub.info.firstCall.calledWithExactly('ok');
 
           done();
         })
@@ -161,14 +152,12 @@ describe('setupCommand', function () {
 
       setupCommand.execute({bizGroup: 1234, api: 'name', apiVersion: 'version'})
         .then(function () {
-          setupStrategyFactoryStub.get.called.should.be.true;
-          setupControllerStub.setup.called.should.be.true;
-          pullControllerStub.getAPIFiles.called.should.be.true;
-          messagesStub.setupSuccessful.called.should.be.true;
-          messagesStub.status.called.should.be.true;
-          loggerStub.info.called.should.be.true;
-          loggerStub.info.firstCall.args[0].should.equal('Ok');
-          loggerStub.info.secondCall.args[0].should.equal('status');
+          setupStrategyFactoryStub.get.calledOnce.should.be.true;
+          setupControllerStub.setup.calledOnce.should.be.true;
+          pullCommandStub.execute.calledOnce.should.be.true;
+          messagesStub.setupSuccessful.calledOnce.should.be.true;
+          loggerStub.info.calledOnce.should.be.true;
+          loggerStub.info.firstCall.calledWithExactly('ok');
 
           done();
         })
@@ -186,7 +175,7 @@ function run(callback) {
     container.register('messages', messagesStub);
     container.register('logger', loggerStub);
     container.register('setupController', setupControllerStub);
-    container.register('pullController', pullControllerStub);
+    container.register('pullCommand', pullCommandStub);
     container.register('setupStrategyFactory', setupStrategyFactoryStub);
     container.resolve(callback);
   };
