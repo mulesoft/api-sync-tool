@@ -1,7 +1,8 @@
 'use strict';
 
-module.exports = function (localService, logger, messages) {
+module.exports = function (localService, validateSetupStrategy, logger, messages) {
   return {
+    validateSetup: validateSetupStrategy,
     validateInput: validateInput,
     execute: execute
   };

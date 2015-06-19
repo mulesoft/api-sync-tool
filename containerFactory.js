@@ -31,6 +31,7 @@ function createContainer() {
       'factories',
       'repositories',
       'services',
+      'strategies',
       'utils'
     ];
 

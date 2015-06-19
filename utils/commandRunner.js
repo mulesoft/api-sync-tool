@@ -1,16 +1,15 @@
 'use strict';
 
 module.exports = function (authenticationService, contextFactory,
-  contextHolder, loginPrompt, workspaceRepository, errors) {
+  contextHolder, loginPrompt) {
   return {
     run: run
   };
 
   function run(command, args) {
-    contextHolder.set(contextFactory.create());
-
-    return validateSetup(command)
+    return command.validateSetup()
       .then(function () {
+        contextHolder.set(contextFactory.create());
         return command.validateInput(args);
       })
       // TODO: users must be able to login in a non-interactive way.
@@ -22,18 +21,5 @@ module.exports = function (authenticationService, contextFactory,
         contextHolder.set(contextFactory.create(authentication, process.cwd()));
         return command.execute(args);
       });
-  }
-
-  function validateSetup(command) {
-    if (command.noSetupNeeded) {
-      return Promise.resolve();
-    } else {
-      var workspace = workspaceRepository.get();
-      if (workspace.bizGroup && workspace.api && workspace.apiVersion) {
-        return Promise.resolve();
-      } else {
-        return Promise.reject(new errors.SetupNeededError());
-      }
-    }
   }
 };

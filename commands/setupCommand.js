@@ -1,12 +1,24 @@
 'use strict';
 
 module.exports = function (logger, messages, pullController, setupController,
-  setupStrategyFactory, pullCommand, errors) {
+  setupStrategyFactory, workspaceRepository, pullCommand, errors) {
   return {
+    validateSetup: validateSetup,
     validateInput: validateInput,
-    execute: execute,
-    noSetupNeeded: true
+    execute: execute
   };
+
+  function validateSetup() {
+    if (workspaceRepository.exists()) {
+      var workspace = workspaceRepository.get();
+      return Promise.reject(new errors.SetupAlreadyDoneError(
+        workspace.bizGroup.name,
+        workspace.api.name,
+        workspace.apiVersion.name));
+    }
+
+    return Promise.resolve();
+  }
 
   function validateInput(args) {
     if (!args.i && (!args.bizGroup || !args.api || !args.apiVersion)) {
@@ -43,9 +55,8 @@ module.exports = function (logger, messages, pullController, setupController,
   function execute(args) {
     var runPull;
     return parse(args)
-      .then(function (parameters) {
-        return setupController.setup(setupStrategyFactory.get(parameters));
-      })
+      .then(setupStrategyFactory.get)
+      .then(setupController.setup)
       .then(function (result) {
         runPull = result.runPull;
         return result.workspace;
