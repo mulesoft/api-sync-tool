@@ -2,8 +2,8 @@
 
 var _ = require('lodash');
 
-module.exports = function (apiPlatformService, localService, logger, messages,
-  workspaceRepository) {
+module.exports = function (apiFileFactory, apiPlatformService, localService,
+    logger, messages, workspaceRepository) {
   return {
     push: push
   };
@@ -15,26 +15,26 @@ module.exports = function (apiPlatformService, localService, logger, messages,
       .then(function (status) {
         return apiPlatformService.getAPIFilesMetadata(workspace.bizGroup.id,
             workspace.api.id, workspace.apiVersion.id)
-          .then(function (files) {
+          .then(function (filesMetadata) {
             return {
               status: status,
-              files: files
+              remoteFiles: filesMetadata
             };
           });
       })
       .then(function (output) {
         var status = output.status;
-        var files = output.files;
+        var remoteFiles = output.remoteFiles;
         var result = {};
 
-        return pushNewFiles(workspace, status)
+        return pushNewFiles(workspace, status.added, remoteFiles)
           .then(function (addedResult) {
             result.added = _.pluck(addedResult, 'path');
-            return pushChangedFiles(workspace, status, files);
+            return pushChangedFiles(workspace, status.changed, remoteFiles);
           })
           .then(function (changedResult) {
             result.changed = _.pluck(changedResult, 'path');
-            return pushDeletedFiles(workspace, status, files);
+            return pushDeletedFiles(workspace, status.deleted, remoteFiles);
           })
           .then(function (deletedResult) {
             result.deleted = deletedResult;
@@ -53,13 +53,17 @@ module.exports = function (apiPlatformService, localService, logger, messages,
       });
   }
 
-  function pushNewFiles(workspace, status) {
-    if (!_.isEmpty(status.added)) {
+  function pushNewFiles(workspace, addedFiles, remoteFiles) {
+    if (!_.isEmpty(addedFiles)) {
       logger.info(messages.pushProgressNew());
     }
-    return Promise.all(status.added.map(function (addedFile) {
-      return apiPlatformService.createAPIFile(workspace.bizGroup.id,
-          workspace.api.id, workspace.apiVersion.id, addedFile)
+    return Promise.all(addedFiles.map(function (addedFilePath) {
+      return apiFileFactory.create(workspace.bizGroup.id,
+        workspace.api.id, workspace.apiVersion.id, addedFilePath, remoteFiles)
+        .then(function (fileToAdd) {
+          return apiPlatformService.createAPIFile(workspace.bizGroup.id,
+            workspace.api.id, workspace.apiVersion.id, fileToAdd);
+        })
         .then(function (addedFileResult) {
           workspace.files.push(addedFileResult);
 
@@ -68,12 +72,12 @@ module.exports = function (apiPlatformService, localService, logger, messages,
     }));
   }
 
-  function pushChangedFiles(workspace, status, files) {
-    if (!_.isEmpty(status.changed)) {
+  function pushChangedFiles(workspace, changedFiles, remoteFiles) {
+    if (!_.isEmpty(changedFiles)) {
       logger.info(messages.pushProgressChanged());
     }
-    return Promise.all(status.changed.map(function (changedFile) {
-      var changedFileObject = _.find(files, 'path', changedFile);
+    return Promise.all(changedFiles.map(function (changedFile) {
+      var changedFileObject = _.find(remoteFiles, 'path', changedFile);
       return apiPlatformService.updateAPIFile(workspace.bizGroup.id,
           workspace.api.id, workspace.apiVersion.id, changedFileObject)
         .then(function (changedFileResult) {
@@ -86,12 +90,12 @@ module.exports = function (apiPlatformService, localService, logger, messages,
     }));
   }
 
-  function pushDeletedFiles(workspace, status, files) {
-    if (!_.isEmpty(status.deleted)) {
+  function pushDeletedFiles(workspace, deletedFiles, remoteFiles) {
+    if (!_.isEmpty(deletedFiles)) {
       logger.info(messages.pushProgressDeleted());
     }
-    return Promise.all(status.deleted.map(function (deletedFile) {
-      var deletedFileObject = _.find(files, 'path', deletedFile);
+    return Promise.all(deletedFiles.map(function (deletedFile) {
+      var deletedFileObject = _.find(remoteFiles, 'path', deletedFile);
       return apiPlatformService.deleteAPIFile(workspace.bizGroup.id,
           workspace.api.id, workspace.apiVersion.id, deletedFileObject)
         .then(function (deletedFileResult) {

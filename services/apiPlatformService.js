@@ -73,12 +73,15 @@ module.exports = function (apiPlatformRepository, fileSystemRepository,
   }
 
   function createAPIFile(organizationId, apiId, apiVersionId, newFile) {
-    return fileSystemRepository.getFile(newFile)
+    return fileSystemRepository.getFile(newFile.path)
       .then(function (newFileData) {
+        newFileData.parentId = newFile.parentId;
         return apiPlatformRepository.createAPIFile(organizationId, apiId,
             apiVersionId, newFileData);
       })
-      .then(getFileWithHash);
+      .then(function (createdFile) {
+        return getFileWithHash(createdFile.path);
+      });
   }
 
   function updateAPIFile(organizationId, apiId, apiVersionId, updatedFile) {
