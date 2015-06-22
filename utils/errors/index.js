@@ -1,6 +1,7 @@
 'use strict';
 
 module.exports.ChoiceNotFoundError = require('./ChoiceNotFoundError');
+module.exports.BadCredentialsError = require('./BadCredentialsError');
 module.exports.LoginError = require('./LoginError');
 module.exports.NoParametersError = require('./NoParametersError');
 module.exports.SetupAlreadyDoneError = require('./SetupAlreadyDoneError');

@@ -24,7 +24,9 @@ module.exports = function (contextHolder, superagent, errors) {
       .set('Accept', 'application/json')
       .end()
       .then(function (response) {
-        return response.body;
+        return {
+          accessToken: response.body.access_token
+        };
       })
       .catch(function (err) {
         // If the error is a credentials issue

@@ -13,7 +13,6 @@ module.exports = function (messages) {
       bizGroupName, apiName, apiVersionName);
     BaseError.call(this, this.message);
   };
-
   util.inherits(setupAlreadyDoneError, BaseError);
 
   return setupAlreadyDoneError;

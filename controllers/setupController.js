@@ -1,6 +1,7 @@
 'use strict';
 
-module.exports = function (apiPlatformService, userOrganizationService, workspaceRepository) {
+module.exports = function (apiPlatformService, userOrganizationService,
+    workspaceRepository) {
   return {
     setup: setup
   };

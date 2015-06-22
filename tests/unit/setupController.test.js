@@ -20,12 +20,19 @@ var currentWorkspace = {
 
 describe('setupController', function () {
   beforeEach(function () {
-    userOrganizationServiceStub.getBusinessGroups = sinon.stub().returns(Promise.resolve(organizations));
-    setupStrategyStub.getBusinessGroup = sinon.stub().returns(Promise.resolve(organizations[1]));
-    apiPlatformServiceStub.getAllAPIs = sinon.stub().returns(Promise.resolve(apis));
+    userOrganizationServiceStub.getBusinessGroups = sinon.stub().returns(
+        Promise.resolve(organizations));
+
+    apiPlatformServiceStub.getAllAPIs = sinon.stub().returns(Promise.resolve(
+        apis));
+
+    setupStrategyStub.getBusinessGroup = sinon.stub().returns(Promise.resolve(
+        organizations[1]));
     setupStrategyStub.getAPI = sinon.stub().returns(Promise.resolve(apis[0]));
-    setupStrategyStub.getAPIVersion = sinon.stub().returns(Promise.resolve(apis[0].versions[0]));
+    setupStrategyStub.getAPIVersion = sinon.stub().returns(Promise.resolve(
+        apis[0].versions[0]));
     setupStrategyStub.getRunPull = sinon.stub().returns(Promise.resolve(true));
+
     workspaceRepositoryStub.get = sinon.stub().returns(currentWorkspace);
     workspaceRepositoryStub.update = sinon.stub().returns({});
   });
@@ -35,29 +42,38 @@ describe('setupController', function () {
       setupController.setup(setupStrategyStub)
         .then(function (result) {
           // Verify stub calls.
-          userOrganizationServiceStub.getBusinessGroups.called.should.be.true;
-          setupStrategyStub.getBusinessGroup.called.should.be.true;
-          setupStrategyStub.getBusinessGroup.firstCall.args[0].should.be.an.Array;
+          userOrganizationServiceStub.getBusinessGroups.calledOnce
+              .should.be.true;
 
-          apiPlatformServiceStub.getAllAPIs.called.should.be.true;
-          apiPlatformServiceStub.getAllAPIs.firstCall.args[0].should.equal(organizations[1].id);
+          setupStrategyStub.getBusinessGroup.calledOnce.should.be.true;
+          setupStrategyStub.getBusinessGroup.calledWithExactly(organizations)
+              .should.be.true;
 
-          setupStrategyStub.getAPI.called.should.be.true;
-          setupStrategyStub.getAPI.firstCall.args[0].should.be.an.Array;
+          apiPlatformServiceStub.getAllAPIs.calledOnce.should.be.true;
+          apiPlatformServiceStub.getAllAPIs
+              .calledWithExactly(organizations[1].id).should.be.true;
 
-          setupStrategyStub.getAPIVersion.called.should.be.true;
-          setupStrategyStub.getAPIVersion.firstCall.args[0].should.be.an.Object;
+          setupStrategyStub.getAPI.calledOnce.should.be.true;
+          setupStrategyStub.getAPI.calledWithExactly(apis).should.be.true;
 
-          workspaceRepositoryStub.get.called.should.be.true;
+          setupStrategyStub.getAPIVersion.calledOnce.should.be.true;
+          setupStrategyStub.getAPIVersion.calledWithExactly(apis[0])
+              .should.be.true;
 
-          workspaceRepositoryStub.update.called.should.be.true;
-          workspaceRepositoryStub.update.firstCall.args[0].should.be.an.Object;
+          setupStrategyStub.getRunPull.calledOnce.should.be.true;
+
+          workspaceRepositoryStub.get.calledOnce.should.be.true;
+
+          workspaceRepositoryStub.update.calledOnce.should.be.true;
+          workspaceRepositoryStub.update.calledWithExactly(currentWorkspace)
+              .should.be.true;
 
           // Assert method response.
           result.should.be.an.Object;
 
           result.workspace.should.be.an.Object;
-          result.workspace.should.have.properties('bizGroup', 'api', 'apiVersion', 'directory');
+          result.workspace.should.have.properties('bizGroup', 'api',
+              'apiVersion', 'directory');
           result.workspace.bizGroup.id.should.equal(organizations[1].id);
           result.workspace.api.id.should.equal(apis[0].id);
           result.workspace.apiVersion.id.should.equal(apis[0].versions[0].id);
