@@ -127,7 +127,6 @@ describe('authenticationRepository', function () {
           fsStub.readFileSync.calledOnce.should.be.true;
           fsStub.writeFileSync.calledOnce.should.be.true;
 
-          console.log(osenvStub.home);
           osenvStub.home.calledTwice.should.be.true;
 
           authentication.should.be.an.Object;
