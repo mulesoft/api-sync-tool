@@ -3,7 +3,7 @@
 var _ = require('lodash');
 var path = require('path');
 
-var apiPlatformUrl = 'https://anypoint.mulesoft.com/apiplatform/repository';
+var apiPlatformUrl = 'https://anypoint.mulesoft.com/apiplatform/repository/v2';
 
 module.exports = function (contextHolder, errors, superagent) {
   return {
@@ -16,8 +16,10 @@ module.exports = function (contextHolder, errors, superagent) {
     deleteAPIFile: deleteAPIFile
   };
 
-  function getAllAPIs() {
-    return apiClient(superagent.get(apiPlatformUrl + '/apis'))
+  function getAllAPIs(organizationId) {
+    return apiClient(sort(superagent.get(apiPlatformUrl +
+      '/organizations/' + organizationId +
+      '/apis/')))
       .then(buildApisInformation)
       .catch(function (err) {
         return Promise.reject(checkUnauthorized(err));
@@ -36,7 +38,7 @@ module.exports = function (contextHolder, errors, superagent) {
     // TODO The callback in apiClient is the only way we found to make
     // response.pipe work. Doing it without the callback didn't work.
     return new Promise(function (resolve, reject) {
-      apiClient(superagent.get(apiPlatformUrl + '/v2' +
+      apiClient(superagent.get(apiPlatformUrl +
         '/organizations/' + organizationId +
         '/apis/' + apiId +
         '/versions/' + apiVersionId +
@@ -59,7 +61,7 @@ module.exports = function (contextHolder, errors, superagent) {
   }
 
   function getAPIFilesMetadata(organizationId, apiId, apiVersionId) {
-    return apiClient(superagent.get(apiPlatformUrl + '/v2' +
+    return apiClient(superagent.get(apiPlatformUrl +
       '/organizations/' + organizationId +
       '/apis/' + apiId +
       '/versions/' + apiVersionId +
@@ -96,7 +98,7 @@ module.exports = function (contextHolder, errors, superagent) {
   }
 
   function createResource(organizationId, apiId, apiVersionId, newEntry) {
-    return apiClient(superagent.post(apiPlatformUrl + '/v2' +
+    return apiClient(superagent.post(apiPlatformUrl +
       '/organizations/' + organizationId +
       '/apis/' + apiId +
       '/versions/' + apiVersionId +
@@ -127,7 +129,7 @@ module.exports = function (contextHolder, errors, superagent) {
       'parentId'
     ]);
 
-    return apiClient(superagent.put(apiPlatformUrl + '/v2' +
+    return apiClient(superagent.put(apiPlatformUrl +
       '/organizations/' + organizationId +
       '/apis/' + apiId +
       '/versions/' + apiVersionId +
@@ -143,7 +145,7 @@ module.exports = function (contextHolder, errors, superagent) {
   }
 
   function deleteAPIFile(organizationId, apiId, apiVersionId, deletedFile) {
-    return apiClient(superagent.del(apiPlatformUrl + '/v2' +
+    return apiClient(superagent.del(apiPlatformUrl +
       '/organizations/' + organizationId +
       '/apis/' + apiId +
       '/versions/' + apiVersionId +
@@ -184,6 +186,10 @@ module.exports = function (contextHolder, errors, superagent) {
       .set('Authorization', 'Bearer ' + contextHolder.get().getToken())
       .set('Accept', 'application/json')
       .end(callback);
+  }
+
+  function sort(request) {
+    return request.query({sort: 'name', ascending: true});
   }
 
   function checkUnauthorized(error) {
