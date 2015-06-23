@@ -13,8 +13,8 @@ module.exports = function (apiPlatformRepository, fileSystemRepository,
     deleteAPIFile: deleteAPIFile
   };
 
-  function getAllAPIs() {
-    return apiPlatformRepository.getAllAPIs();
+  function getAllAPIs(organizationId) {
+    return apiPlatformRepository.getAllAPIs(organizationId);
   }
 
   // TODO this functions shouldn't know that the APIPlatform is returning

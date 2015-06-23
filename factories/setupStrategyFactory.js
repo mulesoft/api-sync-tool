@@ -25,9 +25,9 @@ module.exports = function (commandPrompt, messages, errors) {
         return commandPrompt.getChoice(messages.apiPromptMessage(),
           'name', 'id', apis);
       },
-      getAPIVersion: function (api) {
+      getAPIVersion: function (apiVersions) {
         return commandPrompt.getChoice(messages.apiVersionPromptMessage(),
-          'name', 'id', api.versions);
+          'name', 'id', apiVersions);
       },
       getRunPull: function () {
         return commandPrompt.getConfirmation(messages.runPullPromptMessage());
@@ -51,8 +51,8 @@ module.exports = function (commandPrompt, messages, errors) {
           Promise.reject(new errors.ChoiceNotFoundError(
             messages.apiDescription()));
       },
-      getAPIVersion: function (api) {
-        var apiVersion = _.find(api.versions, 'id', parameters.apiVersion);
+      getAPIVersion: function (apiVersions) {
+        var apiVersion = _.find(apiVersions, 'id', parameters.apiVersion);
         return apiVersion ?
           Promise.resolve(apiVersion) :
           Promise.reject(new errors.ChoiceNotFoundError(
