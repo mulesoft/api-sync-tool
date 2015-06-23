@@ -1,5 +1,7 @@
 'use strict';
 
+var _ = require('lodash');
+
 module.exports = function (apiPlatformService, userOrganizationService,
     workspaceRepository) {
   return {
@@ -10,19 +12,19 @@ module.exports = function (apiPlatformService, userOrganizationService,
     var workspace = workspaceRepository.get();
 
     return userOrganizationService.getBusinessGroups()
+      .then(sortByName)
       .then(strategy.getBusinessGroup)
       .then(function (bizGroup) {
         workspace.bizGroup = bizGroup;
-        return apiPlatformService.getAllAPIs(bizGroup.id)
-          .then(function (apis) {
-            return apis;
-          });
+        return apiPlatformService.getAllAPIs(bizGroup.id);
       })
+      .then(sortByName)
       .then(strategy.getAPI)
       .then(function (api) {
         workspace.api = api;
-        return api;
+        return api.versions;
       })
+      .then(sortByName)
       .then(strategy.getAPIVersion)
       .then(function (apiVersion) {
         workspace.apiVersion = apiVersion;
@@ -38,3 +40,7 @@ module.exports = function (apiPlatformService, userOrganizationService,
       });
   }
 };
+
+function sortByName(objects) {
+  return _.sortBy(objects, 'name');
+}
