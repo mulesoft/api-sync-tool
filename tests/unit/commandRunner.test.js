@@ -56,7 +56,7 @@ describe('commandRunner', function () {
       commandRunner.run(commandStub, args)
         .then(function () {
           asserts.calledOnceWithoutParameters([commandStub.validateSetup]);
-          asserts.calledOnceWithExactly(commandStub.validateInput, args);
+          asserts.calledOnceWithExactly(commandStub.validateInput, [args]);
 
           done();
         })
@@ -71,7 +71,7 @@ describe('commandRunner', function () {
           authenticationRepositoryStub.get.calledOnce.should.be.true;
           asserts.calledOnceWithExactly(
             contextFactoryStub.create, [authentication, process.cwd]);
-          asserts.calledOnceWithExactly(contextHolderStub.set, userContext);
+          asserts.calledOnceWithExactly(contextHolderStub.set, [userContext]);
 
           done();
         })
@@ -83,7 +83,7 @@ describe('commandRunner', function () {
     it('runs command', function (done) {
       commandRunner.run(commandStub, args)
         .then(function () {
-          asserts.calledOnceWithExactly(commandStub.execute, args);
+          asserts.calledOnceWithExactly(commandStub.execute, [args]);
 
           done();
         })
@@ -123,7 +123,7 @@ describe('commandRunner', function () {
           authenticationRepositoryStub.get.calledTwice.should.be.true;
           authenticationRepositoryStub.get.secondCall.args.length === 0;
           asserts.calledOnceWithExactly(authenticationRepositoryStub.update,
-            authentication);
+            [authentication]);
 
           done();
         })
@@ -163,7 +163,7 @@ describe('commandRunner', function () {
         commandRunner.run(commandStub, args)
           .then(function () {
             asserts.calledOnceWithExactly(authenticationRepositoryStub.update,
-              {dir: 'dir'});
+              [{dir: 'dir'}]);
             commandStub.validateSetup.calledTwice.should.be.true;
             commandStub.execute.calledTwice.should.be.true;
 

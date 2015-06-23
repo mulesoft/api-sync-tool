@@ -3,6 +3,7 @@
 var should = require('should');
 var sinon = require('sinon');
 
+var asserts = require('../support/asserts');
 var containerFactory = require('../support/testContainerFactory');
 var contentGenerator = require('../support/contentGenerator');
 
@@ -18,16 +19,21 @@ var batchParameters = {
   apiVersion: 1
 };
 
+var businessGroupPromptMessage = 'Select bizGroup';
+var apiPromptMessage = 'Select API';
+var apiVersionPromptMessage = 'Select API Version';
+var runPullPromptMessage = 'Should run pull?';
+
 describe('setupStrategyFactory', function () {
   beforeEach(function () {
     messagesStub.businessGroupPromptMessage =
-      sinon.stub().returns('Select bizGroup');
+      sinon.stub().returns(businessGroupPromptMessage);
     messagesStub.apiPromptMessage =
-      sinon.stub().returns('Select API');
+      sinon.stub().returns(apiPromptMessage);
     messagesStub.apiVersionPromptMessage =
-      sinon.stub().returns('Select API Version');
+      sinon.stub().returns(apiVersionPromptMessage);
     messagesStub.runPullPromptMessage =
-      sinon.stub().returns('Should run pull?');
+      sinon.stub().returns(runPullPromptMessage);
 
     commandPromptStub.getChoice = sinon.stub()
       .withArgs(sinon.match.any, 'name', 'id', sinon.match.any);
@@ -47,7 +53,12 @@ describe('setupStrategyFactory', function () {
           selectedBusinessGroup.should.be.an.Object;
           selectedBusinessGroup.id.should.be.equal(1);
 
-          commandPromptStub.getChoice.called.should.be.true;
+          asserts.calledOnceWithExactly(commandPromptStub.getChoice, [
+            businessGroupPromptMessage,
+            'name', 'id', businessGroups
+          ]);
+          asserts.calledOnceWithoutParameters([
+            messagesStub.businessGroupPromptMessage]);
 
           done();
         })
@@ -67,7 +78,11 @@ describe('setupStrategyFactory', function () {
           selectedAPI.should.be.an.Object;
           selectedAPI.id.should.be.equal(1);
 
-          commandPromptStub.getChoice.called.should.be.true;
+          asserts.calledOnceWithExactly(commandPromptStub.getChoice, [
+            apiPromptMessage,
+            'name', 'id', apis
+          ]);
+          asserts.calledOnceWithoutParameters([messagesStub.apiPromptMessage]);
 
           done();
         })
@@ -82,12 +97,17 @@ describe('setupStrategyFactory', function () {
 
       var strategy = setupStrategyFactory.get({isInteractive: true});
 
-      strategy.getAPIVersion(apis[0])
+      strategy.getAPIVersion(apis[0].versions)
         .then(function (selectedAPIVersion) {
           selectedAPIVersion.should.be.an.Object;
           selectedAPIVersion.id.should.be.equal(1);
 
-          commandPromptStub.getChoice.called.should.be.true;
+          asserts.calledOnceWithExactly(commandPromptStub.getChoice, [
+            apiVersionPromptMessage,
+            'name', 'id', apis[0].versions
+          ]);
+          asserts.calledOnceWithoutParameters([
+            messagesStub.apiVersionPromptMessage]);
 
           done();
         })
@@ -105,8 +125,10 @@ describe('setupStrategyFactory', function () {
       strategy.getRunPull()
         .then(function (getRunPull) {
           getRunPull.should.be.ok;
-          commandPromptStub.getConfirmation.called.should.be.true;
-          messagesStub.runPullPromptMessage.called.should.be.true;
+          asserts.calledOnceWithExactly(commandPromptStub.getConfirmation, [
+            runPullPromptMessage]);
+          asserts.calledOnceWithoutParameters([
+            messagesStub.runPullPromptMessage]);
 
           done();
         })
@@ -155,7 +177,7 @@ describe('setupStrategyFactory', function () {
     it('should return selected API Version', function (done) {
       var strategy = setupStrategyFactory.get(batchParameters);
 
-      strategy.getAPIVersion(apis[0])
+      strategy.getAPIVersion(apis[0].versions)
         .then(function (selectedAPIVersion) {
           selectedAPIVersion.should.be.an.Object;
           selectedAPIVersion.id.should.be.equal(1);
