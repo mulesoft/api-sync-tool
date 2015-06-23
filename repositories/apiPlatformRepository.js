@@ -10,6 +10,7 @@ module.exports = function (contextHolder, errors, superagent) {
     getAllAPIs: getAllAPIs,
     getAPIFiles: getAPIFiles,
     getAPIFilesMetadata: getAPIFilesMetadata,
+    createAPIDir: createAPIDir,
     createAPIFile: createAPIFile,
     updateAPIFile: updateAPIFile,
     deleteAPIFile: deleteAPIFile
@@ -71,23 +72,43 @@ module.exports = function (contextHolder, errors, superagent) {
       });
   }
 
+  function createAPIDir(organizationId, apiId, apiVersionId, newDir) {
+    var dir = {
+      name: path.basename(newDir.path),
+      parentId: newDir.parentId,
+      isDirectory: true,
+      path: newDir.path
+    };
+
+    return createResource(organizationId, apiId, apiVersionId, dir);
+  }
+
   function createAPIFile(organizationId, apiId, apiVersionId, newFile) {
     var file = {
       name: path.basename(newFile.path),
-      path: newFile.path,
+      parentId: newFile.parentId,
       data: newFile.data.toString(),
-      isDirectory: false
+      isDirectory: false,
+      path: newFile.path
     };
 
+    return createResource(organizationId, apiId, apiVersionId, file);
+  }
+
+  function createResource(organizationId, apiId, apiVersionId, newEntry) {
     return apiClient(superagent.post(apiPlatformUrl + '/v2' +
       '/organizations/' + organizationId +
       '/apis/' + apiId +
       '/versions/' + apiVersionId +
       '/files')
       .set('Content-Type', 'application/json')
-      .send(file))
-      .then(function () {
-        return newFile.path;
+      .send(newEntry))
+      .then(function (response) {
+        var createdEntry = response.body;
+        return {
+          path: newEntry.path,
+          id: createdEntry.id
+        };
       })
       .catch(function (err) {
         return Promise.reject(checkUnauthorized(err));
@@ -102,7 +123,8 @@ module.exports = function (contextHolder, errors, superagent) {
       'data',
       'isDirectory',
       'apiVersionId',
-      'organizationId'
+      'organizationId',
+      'parentId'
     ]);
 
     return apiClient(superagent.put(apiPlatformUrl + '/v2' +

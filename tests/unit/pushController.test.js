@@ -7,6 +7,7 @@ var asserts = require('../support/asserts');
 var containerFactory  = require('../support/testContainerFactory');
 var contentGenerator = require('../support/contentGenerator');
 
+var apiFactoryStub = {};
 var apiPlatformServiceStub = {};
 var localServiceStub = {};
 var loggerStub = {};
@@ -27,6 +28,8 @@ describe('pushController', function () {
 
     apiPlatformServiceStub.getAPIFilesMetadata = sinon.stub().returns(
       Promise.resolve(apiFilesMetadata));
+
+    apiFactoryStub.create = sinon.stub().returns({});
 
     apiPlatformServiceStub.createAPIFile = sinon.stub().returns(
       Promise.resolve(currentWorkspace.files[0]));
@@ -73,7 +76,10 @@ describe('pushController', function () {
             currentWorkspace.bizGroup.id,
             currentWorkspace.api.id,
             currentWorkspace.apiVersion.id,
-            currentWorkspace.files[0].path
+            sinon.match({
+              path: currentWorkspace.files[0].path,
+              parentId: null
+            })
           ).should.be.true;
 
           apiPlatformServiceStub.updateAPIFile.calledOnce.should.be.true;
@@ -210,6 +216,7 @@ describe('pushController', function () {
 function run(callback) {
   return function () {
     var container = containerFactory.createContainer();
+    container.register('apimFactory', apiFactoryStub);
     container.register('apiPlatformService', apiPlatformServiceStub);
     container.register('localService', localServiceStub);
     container.register('workspaceRepository', workspaceRepositoryStub);
