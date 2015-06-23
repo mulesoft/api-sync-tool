@@ -2,6 +2,7 @@
 
 module.exports = {
   notCalled: notCalled,
+  calledOnceWithExactly: calledOnceWithExactly,
   calledOnceWithoutParameters: calledOnceWithoutParameters
 };
 
@@ -16,4 +17,9 @@ function calledOnceWithoutParameters(stubFunctions) {
     stubFunction.calledOnce.should.be.true;
     stubFunction.firstCall.args.length.should.equal(0);
   });
+}
+
+function calledOnceWithExactly(stubFunction, args) {
+  stubFunction.calledOnce.should.be.true;
+  stubFunction.firstCall.calledWithExactly.apply(stubFunction.firstCall, args);
 }
