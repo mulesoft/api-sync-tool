@@ -62,7 +62,7 @@ describe('setupController', function () {
             sortByName(apis[0].versions)]);
 
           asserts.calledOnceWithExactly(setupStrategyStub.getRunPull, [
-            {}]);
+            undefined]);
 
           asserts.calledOnceWithoutParameters([
             workspaceRepositoryStub.get]);

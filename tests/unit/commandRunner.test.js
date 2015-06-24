@@ -14,9 +14,12 @@ var contextHolderStub = {};
 var errorsStub = {};
 var loginPromptStub = {};
 var messagesStub = {};
+var processStub = {};
 
+var cwd = 'pepe';
 var commandStub = {};
 var args = {arg: 1};
+var newAuthentication = {accessToken: 2};
 var authentication = {dir: 'dir', accessToken: 1};
 var userContext = {context: 1};
 var user = {name: 'pepe', password: 1234};
@@ -36,19 +39,18 @@ describe('commandRunner', function () {
       .getUserCredentials = sinon.stub().returns(Promise.resolve(user));
 
     authenticationServiceStub.login =
-      sinon.stub().returns(Promise.resolve(authentication));
-
-    authenticationServiceStub.login =
-      sinon.stub().returns(Promise.resolve(authentication));
+      sinon.stub().returns(Promise.resolve(newAuthentication));
 
     contextFactoryStub.create =
-      sinon.stub().returns(Promise.resolve(userContext));
+      sinon.stub().returns(userContext);
 
     contextHolderStub.set = sinon.stub().returns(Promise.resolve());
     commandPromptStub.getConfirmation = sinon.stub().returns(Promise.resolve());
     errorsStub.BadCredentialsError = sinon.stub().returns(Promise.resolve());
     messagesStub.storeAuthenticationPromptMessage =
       sinon.stub().returns(Promise.resolve());
+
+    processStub.cwd = sinon.stub().returns(cwd);
   });
 
   describe('command runs successfully', run(function (commandRunner) {
@@ -70,7 +72,7 @@ describe('commandRunner', function () {
         .then(function () {
           authenticationRepositoryStub.get.calledOnce.should.be.true;
           asserts.calledOnceWithExactly(
-            contextFactoryStub.create, [authentication, process.cwd]);
+            contextFactoryStub.create, [authentication, cwd]);
           asserts.calledOnceWithExactly(contextHolderStub.set, [userContext]);
 
           done();
@@ -123,7 +125,7 @@ describe('commandRunner', function () {
           authenticationRepositoryStub.get.calledTwice.should.be.true;
           authenticationRepositoryStub.get.secondCall.args.length === 0;
           asserts.calledOnceWithExactly(authenticationRepositoryStub.update,
-            [authentication]);
+            [newAuthentication]);
 
           done();
         })
@@ -213,6 +215,7 @@ function run(callback) {
     container.register('errors', errorsStub);
     container.register('loginPrompt', loginPromptStub);
     container.register('messages', messagesStub);
+    container.register('process', processStub);
     container.resolve(callback);
   };
 }

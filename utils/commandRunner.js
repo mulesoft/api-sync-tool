@@ -2,7 +2,7 @@
 
 module.exports = function (authenticationService, authenticationRepository,
     commandPrompt, contextFactory, contextHolder, errors, loginPrompt,
-    messages) {
+    messages, process) {
   return {
     run: run
   };
@@ -55,6 +55,7 @@ module.exports = function (authenticationService, authenticationRepository,
           return authenticationRepository.get()
             .then(function (authentication) {
               authentication.accessToken = newAuthentication.accessToken;
+
               return authenticationRepository.update(authentication);
             });
         }

@@ -21,5 +21,6 @@ function calledOnceWithoutParameters(stubFunctions) {
 
 function calledOnceWithExactly(stubFunction, args) {
   stubFunction.calledOnce.should.be.true;
-  stubFunction.firstCall.calledWithExactly.apply(stubFunction.firstCall, args);
+  stubFunction.firstCall.calledWithExactly.apply(stubFunction.firstCall, args)
+    .should.be.true;
 }
