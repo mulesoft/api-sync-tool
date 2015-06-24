@@ -5,11 +5,31 @@ var colors = require('colors/safe');
 
 var TOOL_NAME = 'api-sync';
 
-module.exports = function (commands) {
+module.exports = function () {
   return {
-    // Usage
-    usage: function () {
-      return 'Usage: ' + TOOL_NAME + ' <' + commands.join('|') + '>';
+    generalUsage: function () {
+      return 'Usage:\n' +
+        '  first choose an API: \n' +
+        '    ' + TOOL_NAME + ' setup   an interactive wizard\n' +
+        '  or if you know your API details\n' +
+        '    ' + TOOL_NAME + ' setup --bizGroup=(Business group id) --api=(API id) --apiVersion=(API version id) -p (Run pull after setup)\n\n' +
+        '  then\n' +
+        '    ' + TOOL_NAME + ' pull    ' + this.pullHelp() + '\n' +
+        '    ' + TOOL_NAME + ' push    ' + this.pushHelp() + '\n' +
+        '    ' + TOOL_NAME + ' status  ' + this.statusHelp() + '\n' +
+        '  ' + this.helpParameter();
+    },
+    pullHelp: function () {
+      return 'download the files from APIPlatform';
+    },
+    pushHelp: function () {
+      return 'upload your files to APIPlatform';
+    },
+    statusHelp: function () {
+      return 'show the files status';
+    },
+    helpParameter: function () {
+      return 'for a detailed description of a command, add /?';
     },
     commandUsage: function (command, commandOptions) {
       var convertOption = function (option) {
@@ -87,9 +107,6 @@ module.exports = function (commands) {
     },
     nothingPush: function () {
       return 'Nothing to push';
-    },
-    interactiveDescription: function () {
-      return 'Interactive Mode';
     },
     businessGroupDescription: function () {
       return 'Business group id';
@@ -173,10 +190,7 @@ module.exports = function (commands) {
       return object + ' was not found.';
     },
     unknown: function (commandName) {
-      return 'Unknown command: ' + commandName + '\n' + this.usage();
-    },
-    noCommands: function () {
-      return 'Missing command name.\n' + this.usage();
+      return 'Unknown command: ' + commandName + '\n' + this.generalUsage();
     },
     unexpected: function (err) {
       return 'Unexpected Error: ' + err;

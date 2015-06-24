@@ -1,5 +1,7 @@
 'use strict';
 
+var _ = require('lodash');
+
 module.exports = function (logger, messages, pullController, setupController,
   setupStrategyFactory, workspaceRepository, pullCommand, errors) {
   return {
@@ -21,35 +23,11 @@ module.exports = function (logger, messages, pullController, setupController,
   }
 
   function validateInput(args) {
-    if (!args.i && (!args.bizGroup || !args.api || !args.apiVersion)) {
-      return Promise.reject(new errors.WrongArgumentsError('setup',
-        [
-          {
-            name: 'i',
-            description: messages.interactiveDescription()
-          },
-          [
-            {
-              name: 'bizGroup',
-              description: messages.businessGroupDescription()
-            },
-            {
-              name: 'api',
-              description: messages.apiDescription()
-            },
-            {
-              name: 'apiVersion',
-              description: messages.apiVersionDescription()
-            },
-            {
-              name: 'p',
-              description: messages.runPullDescription()
-            }
-          ]
-        ]));
+    if (useInteractiveMode(args) || (args.bizGroup && args.api && args.apiVersion)) {
+      return Promise.resolve();
     }
 
-    return Promise.resolve();
+    return Promise.reject(new errors.WrongArgumentsError('setup', usage()));
   }
 
   function execute(args) {
@@ -70,9 +48,9 @@ module.exports = function (logger, messages, pullController, setupController,
   }
 
   function parse(args) {
-    if (args.i) {
+    if (useInteractiveMode(args)) {
       return Promise.resolve({
-        isInteractive: args.i
+        isInteractive: true
       });
     } else {
       return Promise.resolve({
@@ -86,5 +64,32 @@ module.exports = function (logger, messages, pullController, setupController,
 
   function print(workspace) {
     logger.info(messages.setupSuccessful(workspace));
+  }
+
+  function useInteractiveMode(args) {
+    return args._.length === 1 && _.keys(args).length === 1;
+  }
+
+  function usage() {
+    return [
+      [
+        {
+          name: 'bizGroup',
+          description: messages.businessGroupDescription()
+        },
+        {
+          name: 'api',
+          description: messages.apiDescription()
+        },
+        {
+          name: 'apiVersion',
+          description: messages.apiVersionDescription()
+        },
+        {
+          name: 'p',
+          description: messages.runPullDescription()
+        }
+      ]
+    ];
   }
 };

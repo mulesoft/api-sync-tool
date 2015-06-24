@@ -3,6 +3,7 @@
 var should = require('should');
 var sinon = require('sinon');
 
+var asserts = require('../support/asserts');
 var containerFactory  = require('../support/testContainerFactory');
 var contentGenerator = require('../support/contentGenerator');
 
@@ -12,6 +13,7 @@ var setupControllerStub = {};
 var pullCommandStub = {};
 var setupStrategyFactoryStub = {};
 var errorsStub = {};
+var emptyArguments = {_: ['setup']};
 
 var setupControllerResult = {
   workspace: contentGenerator.generateWorkspace(),
@@ -40,24 +42,25 @@ describe('setupCommand', function () {
   });
 
   describe('validateInput', run(function (setupCommand) {
-    it('should fail when no arguments are specified', function (done) {
-      setupCommand.validateInput({})
+    it('should fail when there are arguments but not the batch mode ones',
+        function (done) {
+      setupCommand.validateInput({_: ['setup'], bizGroup: 1234, pepe: 1})
         .then(function () {
           done('Error: test should fail');
         })
         .catch(function (err) {
-          errorsStub.WrongArgumentsError.calledOnce.should.be.true;
-          errorsStub.WrongArgumentsError.calledWithExactly('setup',
-              sinon.match.array).should.be.true;
+          asserts.calledOnceWithExactly(
+            errorsStub.WrongArgumentsError, ['setup', sinon.match.array]);
 
           err.should.be.an.Object;
           should.deepEqual(err, error);
 
-          messagesStub.interactiveDescription.calledOnce.should.be.true;
-          messagesStub.businessGroupDescription.calledOnce.should.be.true;
-          messagesStub.apiDescription.calledOnce.should.be.true;
-          messagesStub.apiVersionDescription.calledOnce.should.be.true;
-          messagesStub.runPullDescription.calledOnce.should.be.true;
+          asserts.calledOnceWithoutParameters([
+            messagesStub.businessGroupDescription,
+            messagesStub.apiDescription,
+            messagesStub.apiVersionDescription,
+            messagesStub.runPullDescription
+          ]);
 
           done();
         })
@@ -66,9 +69,11 @@ describe('setupCommand', function () {
         });
     });
 
-    it('should pass when interactive argument is present', function (done) {
-      setupCommand.validateInput({i: true})
-        .then(function () {
+    it('should pass when no argument is present', function (done) {
+      setupCommand.validateInput(emptyArguments)
+        .then(function (result) {
+          should.not.exist(result);
+
           done();
         })
         .catch(function (err) {
@@ -78,8 +83,10 @@ describe('setupCommand', function () {
 
     it('should pass when batch arguments are presenet', function (done) {
       setupCommand.validateInput(
-        {bizGroup: 1234, api: 'name', apiVersion: 'version'})
-        .then(function () {
+        {_: ['setup'], bizGroup: 1234, api: 'name', apiVersion: 'version'})
+        .then(function (result) {
+          should.not.exist(result);
+
           done();
         })
         .catch(function (err) {
@@ -89,14 +96,16 @@ describe('setupCommand', function () {
   }));
 
   describe('execute', run(function (setupCommand) {
-    it('should run the command in interactive mode', function (done) {
-      setupCommand.execute({i: true})
+    it('should use interactive mode when there are no parameters',
+        function (done) {
+      setupCommand.execute({_: ['setup'],
+          bizGroup: 1234, api: 'name', apiVersion: 'version', p: true})
         .then(function () {
-          setupControllerStub.setup.calledOnce.should.be.true;
-          setupStrategyFactoryStub.get.calledOnce.should.be.true;
-          messagesStub.setupSuccessful.calledOnce.should.be.true;
-          loggerStub.info.calledOnce.should.be.true;
-          loggerStub.info.firstCall.calledWithExactly(okMessage);
+          asserts.calledOnceWithExactly(setupStrategyFactoryStub.get, [{
+            bizGroup: 1234,
+            api: 'name',
+            apiVersion: 'version',
+            runPull: true}]);
 
           done();
         })
@@ -105,14 +114,12 @@ describe('setupCommand', function () {
         });
     });
 
-    it('should run the command in batch mode', function (done) {
-      setupCommand.execute({bizGroup: 1234, api: 'name', apiVersion: 'version'})
+    it('should parse use batch mode when there are parameters',
+        function (done) {
+      setupCommand.execute({_: ['setup']})
         .then(function () {
-          setupControllerStub.setup.calledOnce.should.be.true;
-          setupStrategyFactoryStub.get.calledOnce.should.be.true;
-          messagesStub.setupSuccessful.calledOnce.should.be.true;
-          loggerStub.info.calledOnce.should.be.true;
-          loggerStub.info.firstCall.calledWithExactly(okMessage);
+          asserts.calledOnceWithExactly(setupStrategyFactoryStub.get,
+            [{isInteractive: true}]);
 
           done();
         })
@@ -121,19 +128,30 @@ describe('setupCommand', function () {
         });
     });
 
-    it('should run the command in interactive mode and call pull after it',
+    it('should run the command', function (done) {
+      setupCommand.execute({_: ['setup']})
+        .then(function () {
+          setupControllerStub.setup.calledOnce.should.be.true;
+
+          asserts.calledOnceWithExactly(messagesStub.setupSuccessful,
+            [setupControllerResult.workspace]);
+          asserts.calledOnceWithExactly(loggerStub.info, [okMessage]);
+
+          done();
+        })
+        .catch(function (err) {
+          done(err);
+        });
+    });
+
+    it('should run pull when asked',
     function (done) {
       // Change setup controller response
       setupControllerResult.runPull = true;
 
-      setupCommand.execute({i: true})
+      setupCommand.execute({_: ['setup']})
         .then(function () {
-          setupControllerStub.setup.calledOnce.should.be.true;
-          setupStrategyFactoryStub.get.calledOnce.should.be.true;
-          pullCommandStub.execute.calledOnce.should.be.true;
-          messagesStub.setupSuccessful.calledOnce.should.be.true;
-          loggerStub.info.calledOnce.should.be.true;
-          loggerStub.info.firstCall.calledWithExactly(okMessage);
+          asserts.calledOnceWithoutParameters([pullCommandStub.execute]);
 
           done();
         })
@@ -142,19 +160,14 @@ describe('setupCommand', function () {
         });
     });
 
-    it('should run the command in batch mode and call pull after it',
+    it('shouldn\'t run pull if not asked',
     function (done) {
       // Change setup controller response
-      setupControllerResult.runPull = true;
+      setupControllerResult.runPull = false;
 
-      setupCommand.execute({bizGroup: 1234, api: 'name', apiVersion: 'version'})
+      setupCommand.execute({_: ['setup']})
         .then(function () {
-          setupStrategyFactoryStub.get.calledOnce.should.be.true;
-          setupControllerStub.setup.calledOnce.should.be.true;
-          pullCommandStub.execute.calledOnce.should.be.true;
-          messagesStub.setupSuccessful.calledOnce.should.be.true;
-          loggerStub.info.calledOnce.should.be.true;
-          loggerStub.info.firstCall.calledWithExactly(okMessage);
+          pullCommandStub.execute.called.should.be.false;
 
           done();
         })

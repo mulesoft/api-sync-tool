@@ -2,13 +2,14 @@
 
 var inquirer = require('inquirer');
 
-module.exports = function () {
+module.exports = function (logger) {
   return {
     getUserCredentials: getUserCredentials
   };
 
   function getUserCredentials() {
     return new Promise(function (resolve) {
+      logger.info('Enter your APIPlatform username and password');
       inquirer.prompt([{
         type: 'input',
         name: 'name',
