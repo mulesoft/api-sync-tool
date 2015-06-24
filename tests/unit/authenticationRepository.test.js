@@ -18,6 +18,9 @@ describe('authenticationRepository', function () {
   var expectedPath = '/Users/test';
   var expectedAccessToken = 'adsasd3245678';
 
+  var authFilePath = path.join(expectedPath, '.api-sync-auth');
+  var fileEncoding = {encoding: 'utf8'};
+
   var unexpectedPath = '/fail';
 
   var propertiesString = '[directory0]\n' +
@@ -53,9 +56,8 @@ describe('authenticationRepository', function () {
             osenvStub.home
           ]);
 
-          fsStub.readFileSync.calledOnce.should.be.true;
-          fsStub.readFileSync.calledWithExactly(path.join(
-              expectedPath + '.api-sync-auth'));
+          asserts.calledOnceWithExactly(fsStub.readFileSync, [authFilePath,
+            fileEncoding]);
 
           authentication.should.be.an.Object;
           should.deepEqual(authenticationObject, authentication);
@@ -75,9 +77,8 @@ describe('authenticationRepository', function () {
         .then(function (authentication) {
           osenvStub.home.calledOnce.should.be.true;
 
-          fsStub.readFileSync.calledOnce.should.be.true;
-          fsStub.readFileSync.calledWithExactly(path.join(
-              expectedPath + '.api-sync-auth'));
+          asserts.calledOnceWithExactly(fsStub.readFileSync, [authFilePath,
+            fileEncoding]);
 
           authentication.should.be.an.Object;
           authentication.directory.should.equal(expectedPath);
@@ -89,16 +90,16 @@ describe('authenticationRepository', function () {
         });
     });
 
-    it('should not create authentication file when there is no file', function (done) {
+    it('should not create authentication file when there is no file',
+        function (done) {
       fsStub.readFileSync.onFirstCall().throws();
 
       authenticationRepository.get()
         .then(function (authentication) {
           osenvStub.home.called.should.be.true;
 
-          fsStub.readFileSync.calledOnce.should.be.true;
-          fsStub.readFileSync.calledWithExactly(path.join(
-              expectedPath + '.api-sync-auth'));
+          asserts.calledOnceWithExactly(fsStub.readFileSync, [authFilePath,
+            fileEncoding]);
 
           asserts.notCalled([fsStub.writeFileSync]);
 
@@ -124,8 +125,10 @@ describe('authenticationRepository', function () {
 
       authenticationRepository.update(authenticationObject)
         .then(function (authentication) {
-          fsStub.readFileSync.calledOnce.should.be.true;
-          fsStub.writeFileSync.calledOnce.should.be.true;
+          asserts.calledOnceWithExactly(fsStub.readFileSync, [authFilePath,
+            fileEncoding]);
+          asserts.calledOnceWithExactly(fsStub.writeFileSync, [authFilePath,
+            sinon.match.string, fileEncoding]);
 
           osenvStub.home.calledTwice.should.be.true;
 
@@ -153,6 +156,26 @@ describe('authenticationRepository', function () {
           err.should.be.an.WritingFileError;
 
           asserts.notCalled([fsStub.readFileSync, fsStub.writeFileSync]);
+
+          done();
+        })
+        .catch(function (err) {
+          done(err);
+        });
+    });
+  }));
+
+  describe('del', run(function (authenticationRepository) {
+    it('should delete the authentication', function (done) {
+      fsStub.readFileSync.returns(propertiesString);
+      processStub.cwd.returns(expectedPath);
+
+      authenticationRepository.del()
+        .then(function () {
+          asserts.calledOnceWithExactly(fsStub.readFileSync, [authFilePath,
+            fileEncoding]);
+          asserts.calledOnceWithExactly(fsStub.writeFileSync, [authFilePath,
+            '', fileEncoding]);
 
           done();
         })

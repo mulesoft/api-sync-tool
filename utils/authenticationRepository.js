@@ -7,7 +7,8 @@ var properties = require('properties');
 module.exports = function (errors, fs, logger, messages, osenv, process) {
   return {
     get: get,
-    update: update
+    update: update,
+    del: del
   };
 
   /**
@@ -45,6 +46,17 @@ module.exports = function (errors, fs, logger, messages, osenv, process) {
     write(authentications);
 
     return Promise.resolve(authentication);
+  }
+
+  /**
+   * Remove authentication for current directory.
+   */
+  function del() {
+    var authentications = read();
+
+    write(_.reject(authentications, 'directory', process.cwd()));
+
+    return Promise.resolve();
   }
 
   /**
