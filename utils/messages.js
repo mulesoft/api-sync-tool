@@ -123,6 +123,9 @@ module.exports = function () {
     runPullDescription: function () {
       return 'Run pull after setup (optional)';
     },
+    loginPromptMessage: function () {
+      return 'Enter your APIPlatform username and password';
+    },
     businessGroupPromptMessage: function () {
       return 'Select your business group';
     },
@@ -133,11 +136,11 @@ module.exports = function () {
       return 'Select your API Version';
     },
     storeAuthenticationPromptMessage: function () {
-      return 'Do you want to stay logged in? This will save your access ' +
-          'token in a plain text file.';
+      return 'Do you want to stay logged in? ' +
+        '(More info in http://bit.ly/1BDMOXB)';
     },
     runPullPromptMessage: function () {
-      return 'Do you want to pull your API files now?';
+      return 'Do you want to pull your API definition files now?';
     },
     setupSuccessful: function (workspace) {
       return 'Current setup:\n- Business group: ' + workspace.bizGroup.name +
@@ -180,10 +183,10 @@ module.exports = function () {
       return 'The API is empty';
     },
     downloadingAPI: function () {
-      return 'Downloading the API...';
+      return 'Downloading the API definition files...';
     },
     APIdownloadFinished: function () {
-      return 'API Download finished';
+      return 'API definition files download finished';
     },
     // Errors
     setupNeeded: function () {
