@@ -2,15 +2,18 @@
   "name": "api-sync",
   "version": "0.0.1",
   "description": "API Platform synchronization tool",
-  "repository": "https://github.com/mulesoft/api-sync-tool",
+  "repository": "mulesoft/api-sync-tool",
   "scripts": {
     "test": "gulp"
+  },
+  "engines": {
+    "node": ">= 0.12"
   },
   "author": "MuleSoft",
   "license": "ISC",
   "preferGlobal": true,
   "bin": {
-    "api-sync": "index.js"
+    "api-sync": "./bin/index.js"
   },
   "dependencies": {
     "adm-zip": "0.4.7",
