@@ -3,6 +3,8 @@
 var should = require('should');
 var sinon = require('sinon');
 
+var path = require('path');
+
 var asserts = require('../support/asserts');
 var containerFactory  = require('../support/testContainerFactory');
 
@@ -24,6 +26,34 @@ describe('fileSystemRepository', function () {
     contextStub.getDirectoryPath = sinon.stub().returns(localPath);
     contextHolderStub.get = sinon.stub().returns(contextStub);
   });
+
+  describe('getFile', run(function (fileSystemRepository) {
+    it('should return the specified file', function (done) {
+      var filePath = 'pepe';
+      var fileData = 'data';
+
+      fsStub.readFile = sinon.stub().returns(Promise.resolve(fileData));
+
+      fileSystemRepository.getFile(filePath)
+        .then(function (result) {
+          asserts.calledOnceWithoutParameters([
+            contextHolderStub.get,
+            contextStub.getDirectoryPath
+          ]);
+          asserts.calledOnceWithExactly(fsStub.readFile,
+            [path.join(localPath, filePath)]);
+
+          result.should.be.an.Object;
+          result.path.should.equal(filePath);
+          result.data.should.equal(fileData);
+
+          done();
+        })
+        .catch(function (err) {
+          done(err);
+        });
+    });
+  }));
 
   describe('getFileFullPath', run(function (fileSystemRepository) {
     it('should return the full path of a file in the local repository',
