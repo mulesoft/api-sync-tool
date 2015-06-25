@@ -1,17 +1,14 @@
 'use strict';
 
-var fs = require('fs');
-var path = require('path');
-var osenv = require('osenv');
 var _ = require('lodash');
+var path = require('path');
 
-module.exports = function (errors) {
-  var workspaceFilePath = path.join(osenv.home(), '.api-sync');
-
+module.exports = function (errors, fs, osenv, process) {
   return {
     get: get,
     exists: exists,
-    update: update
+    update: update,
+    del: del
   };
 
   /**
@@ -65,18 +62,30 @@ module.exports = function (errors) {
   }
 
   /**
+   * Remove workspace for current directory.
+   */
+   function del() {
+     var workspaces = read();
+
+     write(_.reject(workspaces, 'directory', process.cwd()));
+
+     return Promise.resolve();
+   }
+
+  /**
    * Reads the workspaces from the filesystem.
    * If it doesn't exist, it creates a new one with an empty array.
    *
    * @return {Array} The workspaces array.
    */
   function read() {
+    var workspaceFilePath = getWorkspaceFilePath();
     try {
-      return JSON.parse(fs.readFileSync(workspaceFilePath));
+      return JSON.parse(fs.readFileSync(workspaceFilePath, {encoding: 'utf8'}));
     } catch (error) {
       write([]);
 
-      return JSON.parse(fs.readFileSync(workspaceFilePath));
+      return JSON.parse(fs.readFileSync(workspaceFilePath, {encoding: 'utf8'}));
     }
   }
 
@@ -86,6 +95,11 @@ module.exports = function (errors) {
    * @param {Array} workspaces The workspaces array.
    */
   function write(workspaces) {
-    fs.writeFileSync(workspaceFilePath, JSON.stringify(workspaces));
+    fs.writeFileSync(getWorkspaceFilePath(), JSON.stringify(workspaces),
+      {encoding: 'utf8'});
+  }
+
+  function getWorkspaceFilePath() {
+    return path.join(osenv.home(), '.api-sync');
   }
 };

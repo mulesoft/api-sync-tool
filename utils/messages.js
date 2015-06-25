@@ -96,6 +96,9 @@ module.exports = function () {
 
       return output.join('\n');
     },
+    cleanup: function () {
+      return 'Cleanup successful';
+    },
     pushProgressNew: function () {
       return 'Pushing new files...';
     },
