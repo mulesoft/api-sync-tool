@@ -30,18 +30,20 @@ gulp.task('mocha', function (done) {
   process.env.NODE_ENV = 'test';
 
   gulp.src([
-      './commands/*.js',
-      './controllers/*.js',
-      './factories/*.js',
-      './repositories/*.js',
-      './services/*.js',
-      './utils/*.js'
+      './lib/commands/*.js',
+      './lib/controllers/*.js',
+      './lib/factories/*.js',
+      './lib/repositories/*.js',
+      './lib/services/*.js',
+      './lib/utils/*.js'
     ])
     .pipe(istanbul())
     .pipe(istanbul.hookRequire())
     .on('finish', function () {
       var parameterIndex = process.argv.indexOf('--file');
-      var testFiles = (parameterIndex !== -1) ? './tests/' + process.argv[parameterIndex + 1] : './tests/unit/*.test.js';
+      var testFiles = (parameterIndex !== -1) ?
+        './tests/' + process.argv[parameterIndex + 1] :
+        './tests/unit/*.test.js';
       gulp.src(['./tests/support/*.js', testFiles], {read: false})
         .pipe(mocha({reporter: 'spec'}))
         .pipe(istanbul.writeReports())
