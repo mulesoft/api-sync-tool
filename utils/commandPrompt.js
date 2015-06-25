@@ -1,9 +1,8 @@
 'use strict';
 
-var inquirer = require('inquirer');
 var _ = require('lodash');
 
-module.exports = function () {
+module.exports = function (inquirer) {
   return {
     getChoice: getChoice,
     getConfirmation: getConfirmation

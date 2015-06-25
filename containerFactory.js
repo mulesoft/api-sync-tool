@@ -49,6 +49,18 @@ function createContainer() {
       return require('fs');
     });
 
+    container.register('inquirer', function () {
+      var inquirer = require('inquirer');
+      // @HACK: Remove ? prefix from inquirer prompt.
+      _.keys(inquirer.prompt.prompts).forEach(function (prompt) {
+        inquirer.prompt.prompts[prompt].prototype.prefix = function (str) {
+          return str;
+        };
+      });
+
+      return inquirer;
+    });
+
     container.register('osenv', function () {
       return require('osenv');
     });
