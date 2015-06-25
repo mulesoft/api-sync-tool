@@ -2,7 +2,10 @@
   "name": "api-sync",
   "version": "0.0.1",
   "description": "API Platform synchronization tool",
-  "repository": "mulesoft/api-sync-tool",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mulesoft/api-sync-tool.git"
+  },
   "scripts": {
     "test": "gulp"
   },
@@ -10,38 +13,43 @@
     "node": ">= 0.12"
   },
   "author": "MuleSoft",
-  "license": "ISC",
+  "license": "CPAL-1.0",
   "preferGlobal": true,
   "bin": {
-    "api-sync": "./bin/index.js"
+    "api-sync": "bin/index.js"
   },
+  "files": [
+    "bin/",
+    "lib/",
+    "LICENSE"
+  ],
   "dependencies": {
     "adm-zip": "0.4.7",
-    "colors": "^1.1.0",
+    "colors": "^1.1.2",
     "dependable": "0.2.5",
     "inquirer": "^0.8.5",
     "lodash": "3.9.3",
     "minimist": "^1.1.1",
     "omelette": "0.3.1",
-    "osenv": "0.1.1",
-    "promise": "^7.0.1",
+    "osenv": "0.1.2",
+    "promise": "^7.0.3",
     "promisify-node": "0.1.5",
     "properties": "^1.2.1",
     "sha": "^1.3.0",
     "superagent": "^1.2.0",
-    "superagent-promise": "^0.2.0",
+    "superagent-promise": "^1.0.0",
     "winston": "^1.0.0"
   },
   "devDependencies": {
     "gulp": "^3.9.0",
-    "gulp-istanbul": "^0.9.0",
+    "gulp-istanbul": "^0.10.0",
     "gulp-jscs": "^1.6.0",
     "gulp-jshint": "^1.11.0",
-    "gulp-mocha": "^2.1.1",
-    "jshint-stylish": "^2.0.0",
+    "gulp-mocha": "^2.1.2",
+    "jshint-stylish": "^2.0.1",
     "mocha": "^2.2.5",
-    "run-sequence": "^1.1.0",
-    "should": "^6.0.3",
-    "sinon": "^1.14.1"
+    "run-sequence": "^1.1.1",
+    "should": "^7.0.1",
+    "sinon": "^1.15.3"
   }
 }
