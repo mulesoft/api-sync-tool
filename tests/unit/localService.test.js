@@ -26,7 +26,8 @@ describe('localService', function () {
       Promise.resolve(fileList));
     fileSystemRepositoryStub.getFileHash = sinon.stub();
 
-    workspaceRepositoryStub.get = sinon.stub().returns(currentWorkspace);
+    workspaceRepositoryStub.get = sinon.stub().returns(
+      Promise.resolve(currentWorkspace));
   });
 
   describe('status', run(function (localService) {

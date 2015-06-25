@@ -11,8 +11,8 @@ var workspaceRepositoryStub = {};
 
 describe('cleanupController', function () {
   beforeEach(function () {
-    authenticationRepositoryStub.del = sinon.stub();
-    workspaceRepositoryStub.del = sinon.stub();
+    authenticationRepositoryStub.del = sinon.stub().returns(Promise.resolve());
+    workspaceRepositoryStub.del = sinon.stub().returns(Promise.resolve());
   });
 
   describe('cleanup', run(function (cleanupController) {
