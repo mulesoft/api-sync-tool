@@ -29,14 +29,7 @@ gulp.task('jscs', function () {
 gulp.task('mocha', function (done) {
   process.env.NODE_ENV = 'test';
 
-  gulp.src([
-      './lib/commands/*.js',
-      './lib/controllers/*.js',
-      './lib/factories/*.js',
-      './lib/repositories/*.js',
-      './lib/services/*.js',
-      './lib/utils/*.js'
-    ])
+  gulp.src(['./lib/**/*.js'])
     .pipe(istanbul())
     .pipe(istanbul.hookRequire())
     .on('finish', function () {
