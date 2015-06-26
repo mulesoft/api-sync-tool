@@ -10,6 +10,7 @@ var asserts = require('../support/asserts');
 var contextHolderStub = {};
 var errorsStub = {};
 var superagentStub = {};
+var superagentCallbacksStub = {};
 var contextStub = {};
 var token = '1234567asdf';
 var workspace = contentGenerator.generateWorkspace();
@@ -27,7 +28,8 @@ describe('apiPlatformRepository', function () {
 
     errorsStub.LoginError = sinon.stub();
     errorsStub.BadCredentialsError = sinon.stub();
-    errorsStub.WritingFileError = sinon.stub();
+    errorsStub.DownloadFileError = sinon.stub();
+    errorsStub.WriteFileError = sinon.stub();
 
     contextStub.getToken = sinon.stub().returns(token);
     contextHolderStub.get = sinon.stub().returns(contextStub);
@@ -102,28 +104,32 @@ describe('apiPlatformRepository', function () {
   }));
 
   describe('getAPIFiles', run(function (apiPlatformRepository) {
-    var responseStub = {};
-    var pipingStub = {};
+    var streamStub = {};
     beforeEach(function () {
-      responseStub.pipe = sinon.stub().returns(pipingStub);
-      pipingStub.on = sinon.stub();
+      superagentCallbacksStub.get = sinon.stub().returnsThis();
+      superagentCallbacksStub.set = sinon.stub().returnsThis();
+      superagentCallbacksStub.pipe = sinon.stub().returnsThis();
+      superagentCallbacksStub.on = sinon.stub().returnsThis();
+      streamStub.on = sinon.stub().returns();
     });
 
     it('should return all API Files', function (done) {
-      superagentStub.end.callsArgWith(0, null, responseStub);
-
-      pipingStub.on.onFirstCall().callsArg(1);
+      streamStub.on.onFirstCall().callsArg(1);
 
       apiPlatformRepository.getAPIFiles(workspace.bizGroup.id, workspace.api.id,
-          workspace.apiVersion.id)
+          workspace.apiVersion.id, streamStub)
         .then(function () {
-          asserts.calledOnceWithExactly(superagentStub.get, [
+          asserts.calledOnceWithExactly(superagentCallbacksStub.get, [
             sinon.match('/organizations/' + workspace.bizGroup.id + '/apis/' +
               workspace.api.id + '/versions/' + workspace.apiVersion.id +
               '/files/export')
           ]);
 
-          assertReadAPICalls();
+          checkEventsRegister();
+          assertReadAPICallbacksCalls();
+          asserts.calledOnceWithExactly(superagentCallbacksStub.pipe, [
+            streamStub
+          ]);
 
           done();
         })
@@ -132,58 +138,104 @@ describe('apiPlatformRepository', function () {
         });
     });
 
-    it('should fail when response has error', function (done) {
-      superagentStub.end.callsArgWith(0, 'error');
+    it('should fail if writing the file to disk fails', function (done) {
+      streamStub.on.onSecondCall().callsArg(1);
 
       apiPlatformRepository.getAPIFiles(workspace.bizGroup.id, workspace.api.id,
-          workspace.apiVersion.id)
-        .then(function () {
-          done('Should have failed');
-        })
-        .catch(function (err) {
-          asserts.calledOnceWithExactly(superagentStub.get, [
-            sinon.match('/organizations/' + workspace.bizGroup.id + '/apis/' +
-              workspace.api.id + '/versions/' + workspace.apiVersion.id +
-              '/files/export')
-          ]);
-
-          assertReadAPICalls();
-
-          err.should.equal('error');
-
-          done();
-        })
-        .catch(function (err) {
-          done(err);
-        });
-    });
-
-    it('should fail when there is a writing error', function (done) {
-      superagentStub.end.callsArgWith(0, null, responseStub);
-      pipingStub.on.onSecondCall().callsArg(1);
-
-      apiPlatformRepository.getAPIFiles(workspace.bizGroup.id, workspace.api.id,
-          workspace.apiVersion.id)
+          workspace.apiVersion.id, streamStub)
         .then(function () {
           done('Should have failed');
         })
         .catch(function () {
-          asserts.calledOnceWithExactly(superagentStub.get, [
+          asserts.calledOnceWithExactly(superagentCallbacksStub.get, [
             sinon.match('/organizations/' + workspace.bizGroup.id + '/apis/' +
               workspace.api.id + '/versions/' + workspace.apiVersion.id +
               '/files/export')
           ]);
 
-          assertReadAPICalls();
+          checkEventsRegister();
+          assertReadAPICallbacksCalls();
+          asserts.calledOnceWithExactly(superagentCallbacksStub.pipe, [
+            streamStub
+          ]);
 
-          errorsStub.WritingFileError.calledWithNew().should.be.true;
+          errorsStub.WriteFileError.calledWithNew().should.be.true;
 
           done();
-        })
-        .catch(function (err) {
-          done(err);
         });
     });
+
+    it('should fail if the authentication fails', function (done) {
+      superagentCallbacksStub.res = {statusCode: 401};
+      superagentCallbacksStub.on.onSecondCall()
+        .callsArgOn(1, superagentCallbacksStub);
+
+      apiPlatformRepository.getAPIFiles(workspace.bizGroup.id, workspace.api.id,
+          workspace.apiVersion.id, streamStub)
+        .then(function () {
+          done('Should have failed');
+        })
+        .catch(function () {
+          asserts.calledOnceWithExactly(superagentCallbacksStub.get, [
+            sinon.match('/organizations/' + workspace.bizGroup.id + '/apis/' +
+              workspace.api.id + '/versions/' + workspace.apiVersion.id +
+              '/files/export')
+          ]);
+
+          checkEventsRegister();
+          assertReadAPICallbacksCalls();
+          asserts.calledOnceWithExactly(superagentCallbacksStub.pipe, [
+            streamStub
+          ]);
+
+          errorsStub.BadCredentialsError.calledWithNew().should.be.true;
+
+          done();
+        });
+    });
+
+    it('should fail if the get fails', function (done) {
+      superagentCallbacksStub.res = {statusCode: 1};
+      superagentCallbacksStub.on.onSecondCall()
+        .callsArgOn(1, superagentCallbacksStub);
+
+      apiPlatformRepository.getAPIFiles(workspace.bizGroup.id, workspace.api.id,
+          workspace.apiVersion.id, streamStub)
+        .then(function () {
+          done('Should have failed');
+        })
+        .catch(function () {
+          asserts.calledOnceWithExactly(superagentCallbacksStub.get, [
+            sinon.match('/organizations/' + workspace.bizGroup.id + '/apis/' +
+              workspace.api.id + '/versions/' + workspace.apiVersion.id +
+              '/files/export')
+          ]);
+
+          checkEventsRegister();
+          assertReadAPICallbacksCalls();
+          asserts.calledOnceWithExactly(superagentCallbacksStub.pipe, [
+            streamStub
+          ]);
+
+          errorsStub.DownloadFileError.calledWithNew().should.be.true;
+
+          done();
+        });
+    });
+
+    function checkEventsRegister() {
+      streamStub.on.calledTwice.should.be.true;
+      streamStub.on.firstCall.calledWithExactly('finish', sinon.match.func)
+        .should.be.true;
+      streamStub.on.secondCall.calledWithExactly('error', sinon.match.func)
+          .should.be.true;
+
+      superagentCallbacksStub.on.calledTwice.should.be.true;
+      superagentCallbacksStub.on.firstCall
+        .calledWithExactly('error', sinon.match.func).should.be.true;
+      superagentCallbacksStub.on.secondCall
+        .calledWithExactly('end', sinon.match.func).should.be.true;
+    }
   }));
 
   describe('getAPIFilesMetadata', run(function (apiPlatformRepository) {
@@ -501,6 +553,14 @@ function assertReadAPICalls() {
   superagentStub.end.calledOnce.should.be.true;
 }
 
+function assertReadAPICallbacksCalls() {
+  superagentCallbacksStub.set.calledTwice.should.be.true;
+  superagentCallbacksStub.set.firstCall.calledWithExactly(
+    'Authorization', 'Bearer ' + token).should.be.true;
+    superagentCallbacksStub.set.secondCall.calledWithExactly(
+    'Accept', 'application/json').should.be.true;
+}
+
 function assertWriteAPICalls(args) {
   superagentStub.set.calledThrice.should.be.true;
   superagentStub.set.firstCall.calledWithExactly(
@@ -520,6 +580,7 @@ function run(callback) {
     var container = containerFactory.createContainer();
     container.register('contextHolder', contextHolderStub);
     container.register('superagent', superagentStub);
+    container.register('superagentCallbacks', superagentCallbacksStub);
     container.register('errors', errorsStub);
     container.resolve(callback);
   };
