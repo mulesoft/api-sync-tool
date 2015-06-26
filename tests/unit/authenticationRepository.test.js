@@ -12,6 +12,7 @@ var loggerStub = {};
 var messagesStub = {};
 var osenvStub = {};
 var processStub = {};
+var errorsStub = {};
 
 describe('authenticationRepository', function () {
   var notFoundMessage = 'not found';
@@ -43,6 +44,8 @@ describe('authenticationRepository', function () {
     messagesStub.authFileNotFound = sinon.stub().returns(notFoundMessage);
 
     osenvStub.home = sinon.stub().returns(expectedPath);
+
+    errorsStub.WriteFileError = sinon.stub().returns();
   });
 
   describe('get', run(function (authenticationRepository) {
@@ -151,9 +154,9 @@ describe('authenticationRepository', function () {
         .then(function () {
           done('This test should have failed');
         })
-        .catch(function (err) {
+        .catch(function () {
           processStub.cwd.calledOnce.should.be.true;
-          err.should.be.an.WritingFileError;
+          errorsStub.WriteFileError.calledWithNew().should.be.true;
 
           asserts.notCalled([fsStub.readFileSync, fsStub.writeFileSync]);
 
@@ -189,6 +192,7 @@ describe('authenticationRepository', function () {
 function run(callback) {
   return function () {
     var container = containerFactory.createContainer();
+    container.register('errors', errorsStub);
     container.register('fs', fsStub);
     container.register('logger', loggerStub);
     container.register('messages', messagesStub);
