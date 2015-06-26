@@ -23,7 +23,8 @@ describe('pushController', function () {
   var apiFilesMetadata = contentGenerator.getAPIFilesMetadata();
 
   beforeEach(function () {
-    workspaceRepositoryStub.get = sinon.stub().returns(currentWorkspace);
+    workspaceRepositoryStub.get = sinon.stub().returns(
+      Promise.resolve(currentWorkspace));
     localServiceStub.status = sinon.stub();
 
     apiPlatformServiceStub.getAPIFilesMetadata = sinon.stub().returns(
@@ -38,7 +39,7 @@ describe('pushController', function () {
     apiPlatformServiceStub.deleteAPIFile = sinon.stub().returns(
       Promise.resolve(currentWorkspace.files[2].path));
 
-    workspaceRepositoryStub.update = sinon.stub().returns({});
+    workspaceRepositoryStub.update = sinon.stub().returns(Promise.resolve());
     loggerStub.info = sinon.stub();
 
     messagesStub.pushProgressNew = sinon.stub().returns(newMessage);

@@ -37,8 +37,9 @@ describe('setupController', function () {
     setupStrategyStub.getRunPull =
       sinon.stub().returns(Promise.resolve(true));
 
-    workspaceRepositoryStub.get = sinon.stub().returns(currentWorkspace);
-    workspaceRepositoryStub.update = sinon.stub().returns({});
+    workspaceRepositoryStub.get = sinon.stub().returns(
+      Promise.resolve(currentWorkspace));
+    workspaceRepositoryStub.update = sinon.stub().returns(Promise.resolve());
   });
 
   describe('setup', run(function (setupController) {
