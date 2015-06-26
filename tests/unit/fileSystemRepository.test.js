@@ -112,6 +112,18 @@ describe('fileSystemRepository', function () {
           'folder2'
         ];
         fs[localPath + '/folder1/folder2'] = [];
+        fs[localPath + '/ignoreFilesFolder'] = [
+          '.gitignore',
+          'one.file',
+          '.git',
+          'valid'
+        ];
+        fs[localPath + '/ignoreFilesFolder/valid'] = [
+          'valid.raml'
+        ];
+        fs[localPath + '/ignoreFilesFolder/.git'] = [
+          'gitmetadata'
+        ];
         setFs(fs);
       });
 
@@ -142,6 +154,22 @@ describe('fileSystemRepository', function () {
               done(err);
             });
       });
+
+      it('should return the file tree in a directory ignoring paths starting with a dot',
+        function (done) {
+          fileSystemRepository.getFilesPath('/ignoreFilesFolder')
+            .then(function (filePaths) {
+              should.deepEqual(filePaths, [
+                '/ignoreFilesFolder/one.file',
+                '/ignoreFilesFolder/valid/valid.raml'
+              ]);
+
+              done();
+            })
+            .catch(function (err) {
+              done(err);
+            });
+        });
     }));
 
     describe('with empty workspace', run(function (fileSystemRepository) {
