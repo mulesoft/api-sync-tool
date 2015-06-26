@@ -13,10 +13,14 @@ var setupControllerStub = {};
 var pullCommandStub = {};
 var setupStrategyFactoryStub = {};
 var errorsStub = {};
+var workspaceRepositoryStub = {};
+
 var emptyArguments = {_: ['setup']};
 
+var currentWorkspace = contentGenerator.generateWorkspace();
+
 var setupControllerResult = {
-  workspace: contentGenerator.generateWorkspace(),
+  workspace: currentWorkspace,
   runPull: false
 };
 
@@ -26,6 +30,7 @@ describe('setupCommand', function () {
 
   beforeEach(function () {
     errorsStub.WrongArgumentsError = sinon.stub().returns(error);
+    errorsStub.SetupAlreadyDoneError = sinon.stub();
 
     messagesStub.interactiveDescription = sinon.stub().returns('interactive');
     messagesStub.businessGroupDescription = sinon.stub().returns('bizGroup');
@@ -39,7 +44,46 @@ describe('setupCommand', function () {
     pullCommandStub.execute = sinon.stub().returns(Promise.resolve());
     setupStrategyFactoryStub.get = sinon.stub();
     loggerStub.info = sinon.stub();
+
+    workspaceRepositoryStub.exists = sinon.stub();
+    workspaceRepositoryStub.get = sinon.stub();
   });
+
+  describe('validateSetup', run(function (setupCommand) {
+    it('should pass if setup does not exist', function (done) {
+      workspaceRepositoryStub.exists.returns(Promise.resolve(false));
+
+      setupCommand.validateSetup()
+        .then(function () {
+          asserts.calledOnceWithoutParameters([workspaceRepositoryStub.exists]);
+          done();
+        })
+        .catch(function (err) {
+          done(err);
+        });
+    });
+
+    it('should fail if setup exists', function (done) {
+      workspaceRepositoryStub.exists.returns(Promise.resolve(true));
+      workspaceRepositoryStub.get.returns(Promise.resolve(currentWorkspace));
+
+      setupCommand.validateSetup()
+        .then(function () {
+          done('Test should have failed');
+        })
+        .catch(function () {
+          asserts.calledOnceWithoutParameters([workspaceRepositoryStub.exists,
+            workspaceRepositoryStub.get]);
+
+            errorsStub.SetupAlreadyDoneError.calledWithNew().should.be.true;
+
+          done();
+        })
+        .catch(function (err) {
+          done(err);
+        });
+    });
+  }));
 
   describe('validateInput', run(function (setupCommand) {
     it('should fail when there are arguments but not the batch mode ones',
@@ -187,6 +231,7 @@ function run(callback) {
     container.register('setupController', setupControllerStub);
     container.register('pullCommand', pullCommandStub);
     container.register('setupStrategyFactory', setupStrategyFactoryStub);
+    container.register('workspaceRepository', workspaceRepositoryStub);
     container.resolve(callback);
   };
 }
