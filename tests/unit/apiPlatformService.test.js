@@ -21,11 +21,18 @@ describe('apiPlatformService', function () {
   var apiFiles = [
     {
       name: 'api.raml',
-      path: '/api.raml'
+      path: '/api.raml',
+      isDirectory: false
     },
     {
       name: 'schema.json',
-      path: '/schema.json'
+      path: '/schema.json',
+      isDirectory: false
+    },
+    {
+      name: 'temp',
+      path: '/temp',
+      isDirectory: true
     }
   ];
 
@@ -114,7 +121,7 @@ describe('apiPlatformService', function () {
           fileSystemRepositoryStub.getFileHash.calledTwice.should.be.true;
 
           result.should.be.an.Array;
-          result.length.should.equal(apiFiles.length);
+          result.length.should.equal(2);
           result[0].path.should.equal(apiFiles[0].path);
           result[0].hash.should.equal(fileHash);
           result[1].path.should.equal(apiFiles[1].path);
