@@ -41,7 +41,7 @@ describe('fileSystemRepository', function () {
             contextStub.getDirectoryPath
           ]);
           asserts.calledOnceWithExactly(fsStub.readFile,
-            [path.join(localPath, filePath)]);
+            [path.join(localPath, filePath), 'utf8']);
 
           result.should.be.an.Object();
           result.path.should.equal(filePath);

@@ -43,6 +43,10 @@ describe('pushController', function () {
     messagesStub.pushProgressNew = sinon.stub().returns(newMessage);
     messagesStub.pushProgressChanged = sinon.stub().returns(changedMessage);
     messagesStub.pushProgressDeleted = sinon.stub().returns(deletedMessage);
+    messagesStub.newDirectoriesEmpty = sinon.stub();
+    messagesStub.creatingDirectory = sinon.stub();
+    messagesStub.uploadingFile = sinon.stub();
+    messagesStub.deletingFile = sinon.stub();
   });
 
   describe('push', run(function (pushController) {
@@ -150,14 +154,6 @@ describe('pushController', function () {
           workspaceRepositoryStub.update.calledOnce.should.be.true();
           workspaceRepositoryStub.update.calledWithExactly(
               currentWorkspace).should.be.true();
-
-          loggerStub.info.calledThrice.should.be.true();
-          loggerStub.info.firstCall.calledWithExactly(newMessage)
-              .should.be.true();
-          loggerStub.info.secondCall.calledWithExactly(changedMessage)
-              .should.be.true();
-          loggerStub.info.thirdCall.calledWithExactly(deletedMessage)
-              .should.be.true();
 
           messagesStub.pushProgressNew.calledOnce.should.be.true();
           messagesStub.pushProgressNew.firstCall.args.length.should.equal(0);

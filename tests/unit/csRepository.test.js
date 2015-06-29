@@ -1,6 +1,6 @@
 'use strict';
 
-require('should');
+var should = require('should');
 var sinon = require('sinon');
 
 var containerFactory  = require('../support/testContainerFactory');
@@ -22,6 +22,7 @@ describe('csRepository', function () {
     superagentStub.set = sinon.stub().returnsThis();
     superagentStub.end = sinon.stub();
 
+    errorsStub.BadCredentialsError = sinon.stub();
     errorsStub.LoginError = sinon.stub();
   });
 
@@ -159,6 +160,55 @@ describe('csRepository', function () {
               sinon.match(/Bearer.*/)).should.be.true();
 
           superagentStub.end.calledOnce.should.be.true();
+
+          done();
+        })
+        .catch(function (err) {
+          done(err);
+        });
+    });
+
+    it('should manage errors correctly', function (done) {
+      superagentStub.end.returns(Promise.reject({
+        status: 401
+      }));
+
+      csRepository.getUserInfo()
+        .then(function () {
+          done('Should have failed');
+        })
+        .catch(function () {
+          superagentStub.get.calledOnce.should.be.true();
+          superagentStub.get.calledWithExactly(
+            sinon.match(/.*\/api\/users\/me$/)).should.be.true();
+
+          superagentStub.end.calledOnce.should.be.true();
+
+          errorsStub.BadCredentialsError.calledWithNew().should.be.true();
+
+          done();
+        })
+        .catch(function (err) {
+          done(err);
+        });
+    });
+
+    it('should manage unknown errors correctly', function (done) {
+      var customError = {
+        status: 400
+      };
+      superagentStub.end.returns(Promise.reject(customError));
+
+      csRepository.getUserInfo()
+        .then(function () {
+          done('Should have failed');
+        })
+        .catch(function (error) {
+          superagentStub.get.calledOnce.should.be.true();
+          superagentStub.get.calledWithExactly(
+            sinon.match(/.*\/api\/users\/me$/)).should.be.true();
+
+          should.deepEqual(error, customError);
 
           done();
         })

@@ -12,7 +12,7 @@ var errorsStub = {};
 
 var workspace = contentGenerator.generateWorkspace();
 
-describe('validateSetupStrategy', run(function (validateSetupStrategy) {
+describe('validateSetupDoneStrategy', run(function (validateSetupDoneStrategy) {
   beforeEach(function () {
     workspaceRepositoryStub.get = sinon.stub();
     errorsStub.SetupNeededError = sinon.stub();
@@ -21,7 +21,7 @@ describe('validateSetupStrategy', run(function (validateSetupStrategy) {
   it('should pass validation for initialized workspace', function (done) {
     workspaceRepositoryStub.get.returns(Promise.resolve(workspace));
 
-    validateSetupStrategy()
+    validateSetupDoneStrategy()
       .then(function () {
         asserts.calledOnceWithoutParameters([workspaceRepositoryStub.get]);
 
@@ -35,7 +35,7 @@ describe('validateSetupStrategy', run(function (validateSetupStrategy) {
   it('should fail validation for new workspace', function (done) {
     workspaceRepositoryStub.get.returns(Promise.resolve({}));
 
-    validateSetupStrategy()
+    validateSetupDoneStrategy()
       .then(function () {
         done('should have failed');
       })

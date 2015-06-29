@@ -12,6 +12,8 @@ var fileSystemRepositoryStub = {};
 var contextHolderStub = {};
 var decompresserStub = {};
 var contextStub = {};
+var loggerStub = {};
+var messagesStub = {};
 var streamStub = {};
 
 var workspace = contentGenerator.generateWorkspace();
@@ -40,6 +42,81 @@ describe('apiPlatformService', function () {
     contextStub.getDirectoryPath = sinon.stub().returns(directory);
     contextHolderStub.get = sinon.stub().returns(contextStub);
   });
+
+  describe('createAPI', run(function (apiPlatformService) {
+    var organizationId = 1;
+    var apiName = 'api';
+    var versionName = 'version';
+    var rootRamlPath = 'api.raml';
+    var newApi = {
+      organizationId: organizationId,
+      id: 1,
+      version: {
+        id: 2
+      }
+    };
+
+    var fileData = 'abc';
+    var apiCreated = 'apiCreated';
+    var uploadingRootRaml = 'uploadingRootRaml';
+    var rootRamlUploaded = 'rootRamlUploaded';
+
+    beforeEach(function () {
+      apiPlatformRepositoryStub.createAPI =
+        sinon.stub().returns(Promise.resolve(newApi));
+      apiPlatformRepositoryStub.addRootRaml =
+        sinon.stub().returns(Promise.resolve());
+      fileSystemRepositoryStub.getFile =
+        sinon.stub().returns(Promise.resolve(fileData));
+
+      loggerStub.info = sinon.stub();
+
+      messagesStub.apiCreated = sinon.stub().returns(apiCreated);
+      messagesStub.uploadingRootRaml = sinon.stub().returns(uploadingRootRaml);
+      messagesStub.rootRamlUploaded = sinon.stub().returns(rootRamlUploaded);
+    });
+
+    it('should create an API and set the rootRaml', function (done) {
+      apiPlatformService.createAPI(organizationId, apiName, versionName,
+          rootRamlPath)
+        .then(function (api) {
+          asserts.calledOnceWithExactly(apiPlatformRepositoryStub.createAPI, [
+            organizationId,
+            apiName,
+            versionName
+          ]);
+
+          asserts.calledOnceWithExactly(fileSystemRepositoryStub.getFile, [
+            rootRamlPath]);
+
+          asserts.calledOnceWithExactly(apiPlatformRepositoryStub.addRootRaml, [
+            newApi.organizationId,
+            newApi.id,
+            newApi.version.id,
+            fileData
+          ]);
+
+          asserts.calledOnceWithoutParameters([
+            messagesStub.apiCreated,
+            messagesStub.uploadingRootRaml
+          ]);
+          asserts.calledOnceWithExactly(messagesStub.rootRamlUploaded,
+            [rootRamlPath]);
+
+          loggerStub.info.calledThrice.should.be.true();
+          loggerStub.info.firstCall.calledWithExactly(apiCreated);
+          loggerStub.info.secondCall.calledWithExactly(uploadingRootRaml);
+          loggerStub.info.thirdCall.calledWithExactly(rootRamlUploaded);
+
+          should.deepEqual(api, newApi);
+
+          done();
+        })
+        .catch(function (err) {
+          done(err);
+        });
+    });
+  }));
 
   describe('getAllAPIs', run(function (apiPlatformService) {
     var apis = [
@@ -345,6 +422,8 @@ function run(callback) {
     container.register('fileSystemRepository', fileSystemRepositoryStub);
     container.register('contextHolder', contextHolderStub);
     container.register('decompresser', decompresserStub);
+    container.register('logger', loggerStub);
+    container.register('messages', messagesStub);
     container.resolve(callback);
   };
 }

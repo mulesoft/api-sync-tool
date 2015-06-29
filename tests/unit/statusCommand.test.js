@@ -9,7 +9,7 @@ var containerFactory  = require('../support/testContainerFactory');
 var loggerStub = {};
 var messagesStub = {};
 var localServiceStub = {};
-var validateSetupStrategyStub = {};
+var validateSetupDoneStrategyStub = {};
 
 var successfulMessage = 'Success';
 var nothingMessage = 'Nothing';
@@ -20,12 +20,12 @@ describe('statusCommand', function () {
     messagesStub.nothingStatus = sinon.stub().returns(nothingMessage);
     localServiceStub.status = sinon.stub();
     loggerStub.info = sinon.stub();
-    validateSetupStrategyStub.validate = sinon.stub();
+    validateSetupDoneStrategyStub.validate = sinon.stub();
   });
 
   describe('validateSetup', run(function (statusCommand) {
     it('should be a dependency', function (done) {
-      validateSetupStrategyStub.should.equal(statusCommand.validateSetup);
+      validateSetupDoneStrategyStub.should.equal(statusCommand.validateSetup);
 
       done();
     });
@@ -34,6 +34,18 @@ describe('statusCommand', function () {
   describe('validateInput', run(function (statusCommand) {
     it('should run validation and do nothing', function (done) {
       statusCommand.validateInput()
+        .then(function () {
+          done();
+        })
+        .catch(function (err) {
+          done(err);
+        });
+    });
+  }));
+
+  describe('parseArgs', run(function (statusCommand) {
+    it('should parse args and do nothing', function (done) {
+      statusCommand.parseArgs()
         .then(function () {
           done();
         })
@@ -100,7 +112,7 @@ function run(callback) {
     container.register('messages', messagesStub);
     container.register('logger', loggerStub);
     container.register('localService', localServiceStub);
-    container.register('validateSetupStrategy', validateSetupStrategyStub);
+    container.register('validateSetupDoneStrategy', validateSetupDoneStrategyStub);
     container.resolve(callback);
   };
 }
