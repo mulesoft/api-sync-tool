@@ -1,6 +1,6 @@
 'use strict';
 
-require('should');
+var should = require('should');
 var sinon = require('sinon');
 
 var containerFactory  = require('../support/testContainerFactory');
@@ -114,6 +114,13 @@ describe('apiPlatformRepository', function () {
     });
 
     it('should return all API Files', function (done) {
+      superagentCallbacksStub.on.onSecondCall().callsArgOn(1,
+        {
+          res: {
+            statusCode: 200
+          }
+        }
+      ).returnsThis();
       streamStub.on.onFirstCall().callsArg(1);
 
       apiPlatformRepository.getAPIFiles(workspace.bizGroup.id, workspace.api.id,
@@ -130,6 +137,36 @@ describe('apiPlatformRepository', function () {
           asserts.calledOnceWithExactly(superagentCallbacksStub.pipe, [
             streamStub
           ]);
+
+          done();
+        })
+        .catch(function (err) {
+          done(err);
+        });
+    });
+
+    it('should fail if downloading the file to disk fails', function (done) {
+      superagentCallbacksStub.on.onFirstCall().callsArg(1).returnsThis();
+
+      apiPlatformRepository.getAPIFiles(workspace.bizGroup.id, workspace.api.id,
+          workspace.apiVersion.id, streamStub)
+        .then(function () {
+          done('Should have failed');
+        })
+        .catch(function () {
+          asserts.calledOnceWithExactly(superagentCallbacksStub.get, [
+            sinon.match('/organizations/' + workspace.bizGroup.id + '/apis/' +
+              workspace.api.id + '/versions/' + workspace.apiVersion.id +
+              '/files/export')
+          ]);
+
+          checkEventsRegister();
+          assertReadAPICallbacksCalls();
+          asserts.calledOnceWithExactly(superagentCallbacksStub.pipe, [
+            streamStub
+          ]);
+
+          errorsStub.WriteFileError.calledWithNew().should.be.true;
 
           done();
         })
@@ -162,6 +199,9 @@ describe('apiPlatformRepository', function () {
           errorsStub.WriteFileError.calledWithNew().should.be.true;
 
           done();
+        })
+        .catch(function (err) {
+          done(err);
         });
     });
 
@@ -191,13 +231,19 @@ describe('apiPlatformRepository', function () {
           errorsStub.BadCredentialsError.calledWithNew().should.be.true;
 
           done();
+        })
+        .catch(function (err) {
+          done(err);
         });
     });
 
     it('should fail if the get fails', function (done) {
-      superagentCallbacksStub.res = {statusCode: 1};
       superagentCallbacksStub.on.onSecondCall()
-        .callsArgOn(1, superagentCallbacksStub);
+        .callsArgOn(1, {
+          res: {
+            statusCode: 1
+          }
+        });
 
       apiPlatformRepository.getAPIFiles(workspace.bizGroup.id, workspace.api.id,
           workspace.apiVersion.id, streamStub)
@@ -220,6 +266,9 @@ describe('apiPlatformRepository', function () {
           errorsStub.DownloadFileError.calledWithNew().should.be.true;
 
           done();
+        })
+        .catch(function (err) {
+          done(err);
         });
     });
 
@@ -533,6 +582,44 @@ describe('apiPlatformRepository', function () {
           assertReadAPICalls();
 
           errorsStub.BadCredentialsError.calledWithNew().should.be.true;
+
+          done();
+        })
+        .catch(function (err) {
+          done(err);
+        });
+    });
+  }));
+
+  describe('checkUnauthorized', run(function (apiPlatformRepository) {
+    var file = {
+      id: 123,
+      path: '/test',
+      parentId: null,
+      data: 'content'
+    };
+
+    it('should manage unknown errors correctly', function (done) {
+      var customError = {
+        status: 400
+      };
+      superagentStub.end.returns(Promise.reject(customError));
+
+      apiPlatformRepository.deleteAPIFile(workspace.bizGroup.id,
+          workspace.api.id, workspace.apiVersion.id, file)
+        .then(function () {
+          done('Should have failed');
+        })
+        .catch(function (error) {
+          asserts.calledOnceWithExactly(superagentStub.del, [
+            sinon.match('/organizations/' + workspace.bizGroup.id + '/apis/' +
+              workspace.api.id + '/versions/' + workspace.apiVersion.id +
+              '/files/' + file.id)
+          ]);
+
+          assertReadAPICalls();
+
+          should.deepEqual(error, customError);
 
           done();
         })
