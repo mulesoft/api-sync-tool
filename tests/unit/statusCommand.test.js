@@ -12,18 +12,13 @@ var localServiceStub = {};
 var validateSetupStrategyStub = {};
 
 var successfulMessage = 'Success';
-
-var result = {
-  added: [],
-  changed: [],
-  unchanged: [],
-  deleted: []
-};
+var nothingMessage = 'Nothing';
 
 describe('statusCommand', function () {
   beforeEach(function () {
     messagesStub.status = sinon.stub().returns(successfulMessage);
-    localServiceStub.status = sinon.stub().returns(Promise.resolve(result));
+    messagesStub.nothingStatus = sinon.stub().returns(nothingMessage);
+    localServiceStub.status = sinon.stub();
     loggerStub.info = sinon.stub();
     validateSetupStrategyStub.validate = sinon.stub();
   });
@@ -49,12 +44,47 @@ describe('statusCommand', function () {
   }));
 
   describe('execute', run(function (statusCommand) {
-    it('should execute push and log a successful result', function (done) {
+    it('should execute status and log changes', function (done) {
+      var result = {
+        added: [{
+          name: 'api.raml',
+          path: '/api.raml'
+        }],
+        changed: [],
+        unchanged: [],
+        deleted: []
+      };
+      localServiceStub.status.returns(Promise.resolve(result));
+
       statusCommand.execute()
         .then(function () {
           asserts.calledOnceWithoutParameters([localServiceStub.status]);
           asserts.calledOnceWithExactly(messagesStub.status, [result]);
           asserts.calledOnceWithExactly(loggerStub.info, [successfulMessage]);
+          done();
+        })
+        .catch(function (err) {
+          done(err);
+        });
+    });
+
+    it('should execute status and log an empty result', function (done) {
+      var result = {
+        added: [],
+        changed: [],
+        unchanged: [{
+          name: 'api.raml',
+          path: '/api.raml'
+        }],
+        deleted: []
+      };
+      localServiceStub.status.returns(Promise.resolve(result));
+
+      statusCommand.execute()
+        .then(function () {
+          asserts.calledOnceWithoutParameters([localServiceStub.status,
+            messagesStub.nothingStatus]);
+          asserts.calledOnceWithExactly(loggerStub.info, [nothingMessage]);
           done();
         })
         .catch(function (err) {
