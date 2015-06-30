@@ -76,7 +76,8 @@ describe('apiPlatformService', function () {
     var fileHash = 'hash';
     var compressedAPIFilePath = 'API.zip';
 
-    it('should download API Files and store metadata in workspace', function (done) {
+    it('should download API Files and store metadata in workspace',
+        function (done) {
       apiPlatformRepositoryStub.getAPIFilesMetadata = sinon.stub().returns(
         Promise.resolve(apiFiles));
       fileSystemRepositoryStub.createWriteStream = sinon.stub().returns(
@@ -177,6 +178,32 @@ describe('apiPlatformService', function () {
           .catch(function (err) {
             done(err);
           });
+    });
+  }));
+
+  describe('createAPIDirectory', run(function (apiPlatformService) {
+    var newDir = {path: 'x'};
+    apiPlatformRepositoryStub.createAPIDirectory = sinon.stub()
+      .returns(Promise.resolve(newDir));
+
+    it('should pass the call to apiPlatformRepository', function (done) {
+      apiPlatformService.createAPIDirectory(workspace.bizGroup.id,
+          workspace.api.id, workspace.apiVersion.id, newDir)
+        .then(function (output) {
+          should.deepEqual(output, newDir);
+          asserts.calledOnceWithExactly(
+            apiPlatformRepositoryStub.createAPIDirectory, [
+              workspace.bizGroup.id,
+              workspace.api.id,
+              workspace.apiVersion.id,
+              newDir
+            ]);
+
+          done();
+        })
+        .catch(function (err) {
+          done(err);
+        });
     });
   }));
 

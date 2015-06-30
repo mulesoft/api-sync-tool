@@ -1,10 +1,11 @@
 'use strict';
 
-require('should');
+var should = require('should');
 var sinon = require('sinon');
 
 var containerFactory  = require('../support/testContainerFactory');
 var contentGenerator  = require('../support/contentGenerator');
+var asserts = require('../support/asserts');
 
 var fileSystemRepositoryStub = {};
 var workspaceRepositoryStub = {};
@@ -29,6 +30,26 @@ describe('localService', function () {
     workspaceRepositoryStub.get = sinon.stub().returns(
       Promise.resolve(currentWorkspace));
   });
+
+  describe('getDirectoriesPath', run(function (localService) {
+    it('should pass the call to fileSystemRepository', function (done) {
+      var dirs = [{path: 'x'}];
+      fileSystemRepositoryStub.getDirectoriesPath = sinon.stub()
+        .returns(Promise.resolve(dirs));
+      localService.getDirectoriesPath()
+        .then(function (output) {
+          asserts.calledOnceWithoutParameters([
+            fileSystemRepositoryStub.getDirectoriesPath
+          ]);
+          should.deepEqual(output, dirs);
+
+          done();
+        })
+        .catch(function (err) {
+          done(err);
+        });
+    });
+  }));
 
   describe('status', run(function (localService) {
     it('should return the current local status', function (done) {
