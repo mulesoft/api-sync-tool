@@ -289,9 +289,30 @@ describe('apiPlatformRepository', function () {
 
   describe('getAPIFilesMetadata', run(function (apiPlatformRepository) {
     it('should return all API files metadata', function (done) {
+      var apiFilesMetadata = [
+        {
+          path: '/api.raml',
+          name: 'api.raml',
+          isDirectory: false
+        },
+        {
+          path: '/api.raml.meta',
+          name: 'api.raml.meta',
+          isDirectory: false
+        },
+        {
+          path: '/schema.json',
+          name: 'schema.json',
+          isDirectory: false
+        },
+        {
+          path: '/schema.json.meta',
+          name: 'schema.json.meta',
+          isDirectory: false
+        }
+      ];
       superagentStub.end.returns(Promise.resolve({
-        body: []
-      }));
+        body: apiFilesMetadata}));
 
       apiPlatformRepository.getAPIFilesMetadata(workspace.bizGroup.id,
           workspace.api.id, workspace.apiVersion.id)
@@ -305,6 +326,9 @@ describe('apiPlatformRepository', function () {
           assertReadAPICalls();
 
           allFiles.should.be.an.Array;
+          allFiles.length.should.equal(2);
+          should.deepEqual(allFiles[0], apiFilesMetadata[0]);
+          should.deepEqual(allFiles[1], apiFilesMetadata[2]);
 
           done();
         })
