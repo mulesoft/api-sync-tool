@@ -97,6 +97,87 @@ describe('fileSystemRepository', function () {
     });
   }));
 
+  describe('getDirectoriesPath', function () {
+    describe('without empty workspace', run(function (fileSystemRepository) {
+      beforeEach(function () {
+        var fs = {};
+        fs[localPath] = [
+          'api1.raml',
+          'api2.raml',
+          'folder1',
+          '.ignorefolder',
+          'ignoreFilesFolder'
+        ];
+        fs[localPath + '/folder1'] = [
+          'api3.raml',
+          'api4.raml',
+          'folder2'
+        ];
+        fs[localPath + '/folder1/folder2'] = [];
+        fs[localPath + '/ignoreFilesFolder'] = [
+          '.gitignore',
+          'one.file',
+          '.git',
+          'valid'
+        ];
+        fs[localPath + '/ignoreFilesFolder/valid'] = [
+          'valid.raml'
+        ];
+        fs[localPath + '/ignoreFilesFolder/.git'] = [
+          'gitmetadata'
+        ];
+        fs[localPath + '/.ignorefolder'] = [
+          'ignorefolder2'
+        ];
+        fs[localPath + '/.ignorefolder/ignorefolder2'] = [
+          'ignoreFile'
+        ];
+        setFs(fs);
+      });
+
+      it('should return the directories tree in the base directory leaving out dot folders',
+        function (done) {
+          fileSystemRepository.getDirectoriesPath()
+            .then(function (directoriesPaths) {
+              should.deepEqual(directoriesPaths, [
+                '/folder1/folder2',
+                '/folder1',
+                '/ignoreFilesFolder/valid',
+                '/ignoreFilesFolder']);
+              done();
+            })
+            .catch(function (err) {
+              done(err);
+            });
+      });
+
+      it('should return the file tree in a directory',
+        function (done) {
+          fileSystemRepository.getDirectoriesPath('/folder1')
+            .then(function (directoriesPaths) {
+              should.deepEqual(directoriesPaths, ['/folder1/folder2']);
+              done();
+            })
+            .catch(function (err) {
+              done(err);
+            });
+      });
+
+      it('should return the file tree in a directory ignoring paths starting with a dot',
+        function (done) {
+          fileSystemRepository.getDirectoriesPath('/ignoreFilesFolder')
+            .then(function (directoriesPaths) {
+              should.deepEqual(directoriesPaths, ['/ignoreFilesFolder/valid']);
+
+              done();
+            })
+            .catch(function (err) {
+              done(err);
+            });
+        });
+    }));
+  });
+
   describe('getFilesPath', function () {
     describe('without empty workspace', run(function (fileSystemRepository) {
       beforeEach(function () {
@@ -104,7 +185,8 @@ describe('fileSystemRepository', function () {
         fs[localPath] = [
           'api1.raml',
           'api2.raml',
-          'folder1'
+          'folder1',
+          'ignoreFilesFolder'
         ];
         fs[localPath + '/folder1'] = [
           'api3.raml',
@@ -134,7 +216,10 @@ describe('fileSystemRepository', function () {
               should.deepEqual(filePaths, ['/api1.raml',
                 '/api2.raml',
                 '/folder1/api3.raml',
-                '/folder1/api4.raml']);
+                '/folder1/api4.raml',
+                '/ignoreFilesFolder/one.file',
+                '/ignoreFilesFolder/valid/valid.raml'
+              ]);
               done();
             })
             .catch(function (err) {
@@ -191,20 +276,20 @@ describe('fileSystemRepository', function () {
           });
       });
     }));
-
-    function setFs(fs) {
-      fsStub.readdir = function (dir) {
-        return Promise.resolve(fs[dir]);
-      };
-      fsStub.stat = function (filePath) {
-        return Promise.resolve({
-          isDirectory: function () {
-            return filePath in fs;
-          }
-        });
-      };
-    }
   });
+
+  function setFs(fs) {
+    fsStub.readdir = function (dir) {
+      return Promise.resolve(fs[dir]);
+    };
+    fsStub.stat = function (filePath) {
+      return Promise.resolve({
+        isDirectory: function () {
+          return filePath in fs;
+        }
+      });
+    };
+  }
 
   describe('createWriteStream', run(function (fileSystemRepository) {
     beforeEach(function () {

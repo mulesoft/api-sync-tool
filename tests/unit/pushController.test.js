@@ -1,13 +1,13 @@
 'use strict';
 
-require('should');
+var should = require('should');
 var sinon = require('sinon');
+var _ = require('lodash');
 
 var asserts = require('../support/asserts');
 var containerFactory  = require('../support/testContainerFactory');
 var contentGenerator = require('../support/contentGenerator');
 
-var apiFactoryStub = {};
 var apiPlatformServiceStub = {};
 var localServiceStub = {};
 var loggerStub = {};
@@ -29,8 +29,6 @@ describe('pushController', function () {
 
     apiPlatformServiceStub.getAPIFilesMetadata = sinon.stub().returns(
       Promise.resolve(apiFilesMetadata));
-
-    apiFactoryStub.create = sinon.stub().returns({});
 
     apiPlatformServiceStub.createAPIFile = sinon.stub().returns(
       Promise.resolve(currentWorkspace.files[0]));
@@ -55,10 +53,49 @@ describe('pushController', function () {
         deleted: [currentWorkspace.files[2].path]
       };
       localServiceStub.status.returns(Promise.resolve(status));
+      localServiceStub.getDirectoriesPath = sinon.stub()
+        .returns(Promise.resolve([
+          '/folder2',
+          '/folder1',
+          '/folder2/folder21'
+        ]));
+
+      var firstDirectoryResult = {
+        path: '/folder1',
+        id: 100
+      };
+      var secondDirectoryResult = {
+        path: '/folder2',
+        id: 101
+      };
+      var thirdDirectoryResult = {
+        path: '/folder2/folder21',
+        id: 102
+      };
+
+      var firstDirectory = {
+        path: '/folder1',
+        parentId: null
+      };
+      var secondDirectory = {
+        path: '/folder2',
+        parentId: null
+      };
+      var thirdDirectory = {
+        path: '/folder2/folder21',
+        parentId: 101
+      };
+
+      apiPlatformServiceStub.createAPIDirectory = sinon.stub();
+      apiPlatformServiceStub.createAPIDirectory
+        .onFirstCall().returns(Promise.resolve(firstDirectoryResult));
+      apiPlatformServiceStub.createAPIDirectory
+        .onSecondCall().returns(Promise.resolve(secondDirectoryResult));
+      apiPlatformServiceStub.createAPIDirectory
+        .onThirdCall().returns(Promise.resolve(thirdDirectoryResult));
 
       pushController.push()
-        .then(function () {
-          // Verify stub calls.
+        .then(function (output) {
           workspaceRepositoryStub.get.calledOnce.should.be.true;
           workspaceRepositoryStub.get.firstCall.args.length.should.equal(0);
 
@@ -71,6 +108,17 @@ describe('pushController', function () {
             currentWorkspace.api.id,
             currentWorkspace.apiVersion.id
           ).should.be.true;
+
+          asserts.calledOnceWithoutParameters([
+            localServiceStub.getDirectoriesPath]);
+
+          apiPlatformServiceStub.createAPIDirectory.calledThrice;
+          apiPlatformServiceStub.createAPIDirectory
+            .firstCall.calledWithExactly(firstDirectory);
+          apiPlatformServiceStub.createAPIDirectory
+            .secondCall.calledWithExactly(secondDirectory);
+          apiPlatformServiceStub.createAPIDirectory
+            .thirdCall.calledWithExactly(thirdDirectory);
 
           apiPlatformServiceStub.createAPIFile.calledOnce.should.be.true;
           apiPlatformServiceStub.createAPIFile.calledWithExactly(
@@ -122,6 +170,9 @@ describe('pushController', function () {
           messagesStub.pushProgressDeleted.firstCall.args.length.should
               .equal(0);
 
+          should.deepEqual(output, _.set(status, 'addedDirectories',
+            ['/folder1', '/folder2', '/folder2/folder21']));
+
           done();
         })
         .catch(function (err) {
@@ -136,11 +187,12 @@ describe('pushController', function () {
         deleted: []
       };
       localServiceStub.status.returns(Promise.resolve(status));
+      localServiceStub.getDirectoriesPath = sinon.stub()
+        .returns(Promise.resolve([]));
+      apiPlatformServiceStub.createAPIDirectory = sinon.stub();
 
       pushController.push()
-        .then(function () {
-          // Verify stub calls.
-          // These methods should be called.
+        .then(function (output) {
           workspaceRepositoryStub.get.calledOnce.should.be.true;
           workspaceRepositoryStub.get.firstCall.args.length.should.equal(0);
 
@@ -158,7 +210,6 @@ describe('pushController', function () {
           workspaceRepositoryStub.update.calledWithExactly(currentWorkspace)
               .should.be.true;
 
-          // All these should not
           asserts.notCalled([
             apiPlatformServiceStub.createAPIFile,
             apiPlatformServiceStub.updateAPIFile,
@@ -166,8 +217,11 @@ describe('pushController', function () {
             loggerStub.info,
             messagesStub.pushProgressNew,
             messagesStub.pushProgressChanged,
-            messagesStub.pushProgressDeleted
+            messagesStub.pushProgressDeleted,
+            apiPlatformServiceStub.createAPIDirectory
           ]);
+
+          should.deepEqual(output, _.set(status, 'addedDirectories', []));
 
           done();
         })
@@ -178,11 +232,11 @@ describe('pushController', function () {
 
     it('should update workspace even when something fails', function (done) {
       localServiceStub.status.returns(Promise.reject());
+      localServiceStub.getDirectoriesPath = sinon.stub();
+      apiPlatformServiceStub.createAPIDirectory = sinon.stub();
 
       pushController.push()
         .then(function () {
-          // Verify stub calls.
-          // These methods should be called.
           workspaceRepositoryStub.get.calledOnce.should.be.true;
           workspaceRepositoryStub.get.firstCall.args.length.should.equal(0);
 
@@ -193,7 +247,6 @@ describe('pushController', function () {
           workspaceRepositoryStub.update.calledWithExactly(currentWorkspace)
               .should.be.true;
 
-          // All these should not
           asserts.notCalled([
             apiPlatformServiceStub.getAPIFilesMetadata,
             apiPlatformServiceStub.createAPIFile,
@@ -202,7 +255,9 @@ describe('pushController', function () {
             loggerStub.info,
             messagesStub.pushProgressNew,
             messagesStub.pushProgressChanged,
-            messagesStub.pushProgressDeleted
+            messagesStub.pushProgressDeleted,
+            localServiceStub.getDirectoriesPath,
+            apiPlatformServiceStub.createAPIDirectory
           ]);
 
           done();
@@ -217,7 +272,6 @@ describe('pushController', function () {
 function run(callback) {
   return function () {
     var container = containerFactory.createContainer();
-    container.register('apimFactory', apiFactoryStub);
     container.register('apiPlatformService', apiPlatformServiceStub);
     container.register('localService', localServiceStub);
     container.register('workspaceRepository', workspaceRepositoryStub);

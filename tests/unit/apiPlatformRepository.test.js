@@ -387,7 +387,7 @@ describe('apiPlatformRepository', function () {
         }
       }));
 
-      apiPlatformRepository.createAPIDir(workspace.bizGroup.id,
+      apiPlatformRepository.createAPIDirectory(workspace.bizGroup.id,
           workspace.api.id, workspace.apiVersion.id, newDir)
         .then(function (createdDir) {
           asserts.calledOnceWithExactly(superagentStub.post, [
@@ -451,7 +451,7 @@ describe('apiPlatformRepository', function () {
         status: 401
       }));
 
-      apiPlatformRepository.createAPIDir(workspace.bizGroup.id,
+      apiPlatformRepository.createAPIDirectory(workspace.bizGroup.id,
           workspace.api.id, workspace.apiVersion.id, newDir)
         .then(function () {
           done('Should have failed');
