@@ -16,14 +16,17 @@ var validateSetupDoneStrategyStub = {};
 var statusMessage = 'status';
 var emptyMessage = 'empty';
 
-var results = [
-  {
-    path: '/api.raml',
-    hash: 'asd1231das'
-  }
-];
+var results = {
+  files: [
+    {
+      path: '/api.raml',
+      hash: 'asd1231das'
+    }
+  ],
+  directories: []
+};
 
-describe('cleanupCommand', function () {
+describe('pullCommand', function () {
   beforeEach(function () {
     pullControllerStub.getAPIFiles = sinon.stub();
     messagesStub.status = sinon.stub().returns(statusMessage);
@@ -89,7 +92,10 @@ describe('cleanupCommand', function () {
           .then(function () {
             asserts.calledOnceWithoutParameters([pullControllerStub.getAPIFiles]);
             asserts.calledOnceWithExactly(messagesStub.status,
-              [{added: [results[0].path]}]);
+              [{
+                addedDirectories: [],
+                added: [results.files[0].path]
+              }]);
 
             asserts.calledOnceWithExactly(loggerStub.info, [statusMessage]);
 
