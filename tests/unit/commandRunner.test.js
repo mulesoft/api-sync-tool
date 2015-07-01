@@ -23,6 +23,7 @@ var newAuthentication = {accessToken: 2};
 var authentication = {dir: 'dir', accessToken: 1};
 var userContext = {context: 1};
 var user = {name: 'pepe', password: 1234};
+var expiredToken = 'expired token';
 
 describe('commandRunner', function () {
   beforeEach(function () {
@@ -159,6 +160,8 @@ describe('commandRunner', function () {
           .onFirstCall().returns(Promise.reject(new String('pepe')))
           .onSecondCall().returns(Promise.resolve())
         /* jshint ignore:end */
+
+        messagesStub.expiredTokenMessage = sinon.stub().returns(expiredToken);
       });
 
       it('deletes authentication and tries all again', function (done) {
@@ -168,6 +171,9 @@ describe('commandRunner', function () {
               [{dir: 'dir'}]);
             commandStub.validateSetup.calledTwice.should.be.true;
             commandStub.execute.calledTwice.should.be.true;
+
+            asserts.calledOnceWithoutParameters(
+              [messagesStub.expiredTokenMessage]);
 
             done();
           })
