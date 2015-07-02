@@ -24,9 +24,9 @@ describe('userOrganizationService', function () {
     it('should return user business groups', function (done) {
       userOrganizationService.getBusinessGroups()
         .then(function (businessGroups) {
-          csRepositoryStub.getUserInfo.called.should.be.true;
+          csRepositoryStub.getUserInfo.called.should.be.true();
 
-          businessGroups.should.be.an.Array;
+          businessGroups.should.be.an.Array();
           businessGroups.length.should.equal(1);
           businessGroups[0].should.have.properties('id', 'name');
           businessGroups[0].should.not.have.properties('another');

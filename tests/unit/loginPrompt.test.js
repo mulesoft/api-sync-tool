@@ -47,7 +47,7 @@ describe('loginPrompt', function () {
             messagesStub.loginPromptMessage]);
           asserts.calledOnceWithExactly(loggerStub.info, [loginMessage]);
 
-          result.should.be.an.Object;
+          result.should.be.an.Object();
           should.deepEqual(result, userCredentials);
 
           done();

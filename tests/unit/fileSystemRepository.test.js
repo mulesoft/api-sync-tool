@@ -43,7 +43,7 @@ describe('fileSystemRepository', function () {
           asserts.calledOnceWithExactly(fsStub.readFile,
             [path.join(localPath, filePath)]);
 
-          result.should.be.an.Object;
+          result.should.be.an.Object();
           result.path.should.equal(filePath);
           result.data.should.equal(fileData);
 
@@ -83,7 +83,7 @@ describe('fileSystemRepository', function () {
       function (done) {
         fileSystemRepository.getFileHash(testFileName)
           .then(function (hash) {
-            shaStub.get.calledOnce.should.be.true;
+            shaStub.get.calledOnce.should.be.true();
             shaStub.get.firstCall
               .calledWithExactly(fileSystemRepository
                 .getFileFullPath(testFileName));
@@ -301,7 +301,7 @@ describe('fileSystemRepository', function () {
       try {
         var stream = fileSystemRepository.createWriteStream(filePath);
         stream.should.equal('stream');
-        fsStub.createWriteStream.calledOnce.should.be.true;
+        fsStub.createWriteStream.calledOnce.should.be.true();
         fsStub.createWriteStream.firstCall.calledWithExactly(
           localPath + '/' + filePath);
 
@@ -322,7 +322,7 @@ describe('fileSystemRepository', function () {
       fileSystemRepository.removeFile(filePath)
         .then(function (result) {
           result.should.equal('removed');
-          fsStub.unlink.calledOnce.should.be.true;
+          fsStub.unlink.calledOnce.should.be.true();
           fsStub.unlink.firstCall.calledWithExactly(
             localPath + '/' + filePath);
 

@@ -14,7 +14,7 @@ describe('contextFactory', function () {
 
     it('should create a context with the specified attributes', function () {
       var context = contextFactory.create(authentication, directoryPath);
-      context.should.be.an.Object;
+      context.should.be.an.Object();
       context.getToken().should.equal(authentication.accessToken);
       context.getDirectoryPath().should.equal(directoryPath);
       should.deepEqual(_.keys(context), ['getToken', 'getDirectoryPath']);
@@ -22,7 +22,7 @@ describe('contextFactory', function () {
 
     it('should create a context without token if no authentication is passed', function () {
       var context = contextFactory.create(null, directoryPath);
-      context.should.be.an.Object;
+      context.should.be.an.Object();
       context.getToken().should.equal('');
       context.getDirectoryPath().should.equal(directoryPath);
       should.deepEqual(_.keys(context), ['getToken', 'getDirectoryPath']);

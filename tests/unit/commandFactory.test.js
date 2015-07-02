@@ -30,7 +30,8 @@ describe('commandFactory', function () {
       containerStub.get.returns(commandStub);
       commandFactory.get({_: [commandName]})
         .then(function (command) {
-          asserts.calledOnceWithExactly(containerStub.get, [commandName]);
+          asserts.calledOnceWithExactly(containerStub.get,
+            [sinon.match(commandName)]);
           asserts.calledOnceWithExactly(loggerStub.debug,
             [sinon.match(commandName)]);
           should.deepEqual(command, commandStub);
@@ -49,7 +50,7 @@ describe('commandFactory', function () {
           done('should have failed!');
         })
         .catch(function () {
-          errorsStub.NoParametersError.calledWithNew().should.be.true;
+          errorsStub.NoParametersError.calledWithNew().should.be.true();
 
           done();
         })
@@ -65,7 +66,7 @@ describe('commandFactory', function () {
           done('should have failed!');
         })
         .catch(function () {
-          errorsStub.UnknownCommandError.calledWithNew().should.be.true;
+          errorsStub.UnknownCommandError.calledWithNew().should.be.true();
           errorsStub.UnknownCommandError.calledWithExactly(unknownCommandName +
             'Command');
 

@@ -119,9 +119,9 @@ describe('apiPlatformService', function () {
           asserts.calledOnceWithExactly(fileSystemRepositoryStub.removeFile,
             [compressedAPIFilePath]);
 
-          fileSystemRepositoryStub.getFileHash.calledTwice.should.be.true;
+          fileSystemRepositoryStub.getFileHash.calledTwice.should.be.true();
 
-          result.should.be.an.Array;
+          result.should.be.an.Array();
           result.length.should.equal(2);
           result[0].path.should.equal(apiFiles[0].path);
           result[0].hash.should.equal(fileHash);
@@ -146,7 +146,7 @@ describe('apiPlatformService', function () {
             apiPlatformRepositoryStub.getAPIFilesMetadata,
             [workspace.bizGroup.id, workspace.api.id, workspace.apiVersion.id]);
 
-          result.should.be.an.Array;
+          result.should.be.an.Array();
           result.length.should.equal(0);
 
           done();

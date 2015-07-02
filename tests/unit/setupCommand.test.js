@@ -75,7 +75,7 @@ describe('setupCommand', function () {
           asserts.calledOnceWithoutParameters([workspaceRepositoryStub.exists,
             workspaceRepositoryStub.get]);
 
-            errorsStub.SetupAlreadyDoneError.calledWithNew().should.be.true;
+            errorsStub.SetupAlreadyDoneError.calledWithNew().should.be.true();
 
           done();
         })
@@ -96,7 +96,7 @@ describe('setupCommand', function () {
           asserts.calledOnceWithExactly(
             errorsStub.WrongArgumentsError, ['setup', sinon.match.array]);
 
-          err.should.be.an.Object;
+          err.should.be.an.Object();
           should.deepEqual(err, error);
 
           asserts.calledOnceWithoutParameters([
@@ -175,7 +175,7 @@ describe('setupCommand', function () {
     it('should run the command', function (done) {
       setupCommand.execute({_: ['setup']})
         .then(function () {
-          setupControllerStub.setup.calledOnce.should.be.true;
+          setupControllerStub.setup.calledOnce.should.be.true();
 
           asserts.calledOnceWithExactly(messagesStub.setupSuccessful,
             [setupControllerResult.workspace]);
@@ -211,7 +211,7 @@ describe('setupCommand', function () {
 
       setupCommand.execute({_: ['setup']})
         .then(function () {
-          pullCommandStub.execute.called.should.be.false;
+          pullCommandStub.execute.called.should.be.false();
 
           done();
         })

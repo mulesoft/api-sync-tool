@@ -71,7 +71,7 @@ describe('commandRunner', function () {
     it('gets stored authentication', function (done) {
       commandRunner.run(commandStub, args)
         .then(function () {
-          authenticationRepositoryStub.get.calledOnce.should.be.true;
+          authenticationRepositoryStub.get.calledOnce.should.be.true();
           asserts.calledOnceWithExactly(
             contextFactoryStub.create, [authentication, cwd]);
           asserts.calledOnceWithExactly(contextHolderStub.set, [userContext]);
@@ -123,8 +123,9 @@ describe('commandRunner', function () {
         .getConfirmation = sinon.stub().returns(Promise.resolve(true));
       commandRunner.run(commandStub, args)
         .then(function () {
-          authenticationRepositoryStub.get.calledTwice.should.be.true;
-          authenticationRepositoryStub.get.secondCall.args.length === 0;
+          authenticationRepositoryStub.get.calledTwice.should.be.true();
+          authenticationRepositoryStub.get.secondCall.args.length
+            .should.equal(0);
           asserts.calledOnceWithExactly(authenticationRepositoryStub.update,
             [newAuthentication]);
 
@@ -140,7 +141,7 @@ describe('commandRunner', function () {
         .getConfirmation = sinon.stub().returns(Promise.resolve(false));
       commandRunner.run(commandStub, args)
         .then(function () {
-          authenticationRepositoryStub.get.calledOnce.should.be.true;
+          authenticationRepositoryStub.get.calledOnce.should.be.true();
 
           done();
         })
@@ -169,8 +170,8 @@ describe('commandRunner', function () {
           .then(function () {
             asserts.calledOnceWithExactly(authenticationRepositoryStub.update,
               [{dir: 'dir'}]);
-            commandStub.validateSetup.calledTwice.should.be.true;
-            commandStub.execute.calledTwice.should.be.true;
+            commandStub.validateSetup.calledTwice.should.be.true();
+            commandStub.execute.calledTwice.should.be.true();
 
             asserts.calledOnceWithoutParameters(
               [messagesStub.expiredTokenMessage]);

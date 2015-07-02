@@ -60,15 +60,15 @@ describe('pushCommand', function () {
 
       pushCommand.execute()
         .then(function () {
-          pushControllerStub.push.calledOnce.should.be.true;
+          pushControllerStub.push.calledOnce.should.be.true();
           pushControllerStub.push.firstCall.args.length.should.equal(0);
 
-          messagesStub.status.calledOnce.should.be.true;
+          messagesStub.status.calledOnce.should.be.true();
           messagesStub.status.calledWith(pushControllerResult)
-            .should.be.true;
+            .should.be.true();
 
-          loggerStub.info.calledOnce.should.be.true;
-          loggerStub.info.calledWith(successfulMessage).should.be.true;
+          loggerStub.info.calledOnce.should.be.true();
+          loggerStub.info.calledWith(successfulMessage).should.be.true();
 
           done();
         })
@@ -82,14 +82,14 @@ describe('pushCommand', function () {
 
       pushCommand.execute()
         .then(function () {
-          pushControllerStub.push.calledOnce.should.be.true;
+          pushControllerStub.push.calledOnce.should.be.true();
           pushControllerStub.push.firstCall.args.length.should.equal(0);
 
-          messagesStub.nothingPush.calledOnce.should.be.true;
+          messagesStub.nothingPush.calledOnce.should.be.true();
           messagesStub.nothingPush.firstCall.args.length.should.equal(0);
 
-          loggerStub.info.calledOnce.should.be.true;
-          loggerStub.info.calledWithExactly(nothingMessage).should.be.true;
+          loggerStub.info.calledOnce.should.be.true();
+          loggerStub.info.calledWithExactly(nothingMessage).should.be.true();
 
           done();
         })

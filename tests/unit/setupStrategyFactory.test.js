@@ -50,7 +50,7 @@ describe('setupStrategyFactory', function () {
 
       strategy.getBusinessGroup(businessGroups)
         .then(function (selectedBusinessGroup) {
-          selectedBusinessGroup.should.be.an.Object;
+          selectedBusinessGroup.should.be.an.Object();
           selectedBusinessGroup.id.should.be.equal(1);
 
           asserts.calledOnceWithExactly(commandPromptStub.getChoice, [
@@ -75,7 +75,7 @@ describe('setupStrategyFactory', function () {
 
       strategy.getAPI(apis)
         .then(function (selectedAPI) {
-          selectedAPI.should.be.an.Object;
+          selectedAPI.should.be.an.Object();
           selectedAPI.id.should.be.equal(1);
 
           asserts.calledOnceWithExactly(commandPromptStub.getChoice, [
@@ -99,7 +99,7 @@ describe('setupStrategyFactory', function () {
 
       strategy.getAPIVersion(apis[0].versions)
         .then(function (selectedAPIVersion) {
-          selectedAPIVersion.should.be.an.Object;
+          selectedAPIVersion.should.be.an.Object();
           selectedAPIVersion.id.should.be.equal(1);
 
           asserts.calledOnceWithExactly(commandPromptStub.getChoice, [
@@ -124,7 +124,7 @@ describe('setupStrategyFactory', function () {
 
       strategy.getRunPull()
         .then(function (getRunPull) {
-          getRunPull.should.be.ok;
+          getRunPull.should.be.ok();
           asserts.calledOnceWithExactly(commandPromptStub.getConfirmation, [
             runPullPromptMessage]);
           asserts.calledOnceWithoutParameters([
@@ -149,7 +149,7 @@ describe('setupStrategyFactory', function () {
 
       strategy.getBusinessGroup(businessGroups)
         .then(function (selectedBusinessGroup) {
-          selectedBusinessGroup.should.be.an.Object;
+          selectedBusinessGroup.should.be.an.Object();
           selectedBusinessGroup.id.should.be.equal(1);
 
           done();
@@ -164,7 +164,7 @@ describe('setupStrategyFactory', function () {
 
       strategy.getAPI(apis)
         .then(function (selectedAPI) {
-          selectedAPI.should.be.an.Object;
+          selectedAPI.should.be.an.Object();
           selectedAPI.id.should.be.equal(1);
 
           done();
@@ -179,7 +179,7 @@ describe('setupStrategyFactory', function () {
 
       strategy.getAPIVersion(apis[0].versions)
         .then(function (selectedAPIVersion) {
-          selectedAPIVersion.should.be.an.Object;
+          selectedAPIVersion.should.be.an.Object();
           selectedAPIVersion.id.should.be.equal(1);
 
           done();
@@ -195,7 +195,7 @@ describe('setupStrategyFactory', function () {
 
       strategy.getRunPull()
         .then(function (getRunPull) {
-          getRunPull.should.be.ok;
+          getRunPull.should.be.ok();
 
           done();
         })
@@ -219,16 +219,16 @@ describe('setupStrategyFactory', function () {
           done('should have failed');
         })
         .catch(function (err) {
-          errorsStub.ChoiceNotFoundError.called.should.be.true;
+          errorsStub.ChoiceNotFoundError.called.should.be.true();
           errorsStub.ChoiceNotFoundError.firstCall
             .args.length.should.equal(1);
           errorsStub.ChoiceNotFoundError.firstCall
             .args[0].should.equal(messagesStub.businessGroupDescription());
 
-          err.should.be.an.Object;
+          err.should.be.an.Object();
           should.deepEqual(err, error);
 
-          messagesStub.businessGroupDescription.called.should.be.ok;
+          messagesStub.businessGroupDescription.called.should.be.ok();
 
           done();
         })
@@ -251,16 +251,16 @@ describe('setupStrategyFactory', function () {
           done('should have failed');
         })
         .catch(function (err) {
-          errorsStub.ChoiceNotFoundError.called.should.be.true;
+          errorsStub.ChoiceNotFoundError.called.should.be.true();
           errorsStub.ChoiceNotFoundError.firstCall
             .args.length.should.equal(1);
           errorsStub.ChoiceNotFoundError.firstCall
             .args[0].should.equal(messagesStub.apiDescription());
 
-          err.should.be.an.Object;
+          err.should.be.an.Object();
           should.deepEqual(err, error);
 
-          messagesStub.apiDescription.called.should.be.ok;
+          messagesStub.apiDescription.called.should.be.ok();
 
           done();
         })
@@ -284,16 +284,16 @@ describe('setupStrategyFactory', function () {
           done('should have failed');
         })
         .catch(function (err) {
-          errorsStub.ChoiceNotFoundError.called.should.be.true;
+          errorsStub.ChoiceNotFoundError.called.should.be.true();
           errorsStub.ChoiceNotFoundError.firstCall
             .args.length.should.equal(1);
           errorsStub.ChoiceNotFoundError.firstCall
             .args[0].should.equal(messagesStub.apiVersionDescription());
 
-          err.should.be.an.Object;
+          err.should.be.an.Object();
           should.deepEqual(err, error);
 
-          messagesStub.apiVersionDescription.called.should.be.ok;
+          messagesStub.apiVersionDescription.called.should.be.ok();
 
           done();
         })

@@ -50,13 +50,13 @@ describe('pullController', function () {
             currentWorkspace
           ]);
 
-          loggerStub.info.calledTwice.should.be.true;
+          loggerStub.info.calledTwice.should.be.true();
           loggerStub.info.firstCall.calledWithExactly(downloadMessage)
-            .should.be.true;
+            .should.be.true();
           loggerStub.info.secondCall.calledWithExactly(finishMessage)
-            .should.be.true;
+            .should.be.true();
 
-          workspaceFiles.should.be.an.Array;
+          workspaceFiles.should.be.an.Array();
           workspaceFiles.length.should.equal(10);
           should.deepEqual(workspaceFiles[0], currentWorkspace.files[0]);
 
