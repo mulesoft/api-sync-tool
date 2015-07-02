@@ -1,5 +1,5 @@
 # api-sync-tool
-Tool that synchronizes an API in API platform with local filesystem
+Tool that synchronizes an API in Anypoint Platform with local filesystem
 
 Installing:
 ```
