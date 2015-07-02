@@ -30,12 +30,9 @@ describe('pushController', function () {
     apiPlatformServiceStub.getAPIFilesMetadata = sinon.stub().returns(
       Promise.resolve(apiFilesMetadata));
 
-    apiPlatformServiceStub.createAPIFile = sinon.stub().returns(
-      Promise.resolve(currentWorkspace.files[0]));
-    apiPlatformServiceStub.updateAPIFile = sinon.stub().returns(
-      Promise.resolve(currentWorkspace.files[1]));
-    apiPlatformServiceStub.deleteAPIFile = sinon.stub().returns(
-      Promise.resolve(currentWorkspace.files[2].path));
+    apiPlatformServiceStub.createAPIFile = sinon.stub();
+    apiPlatformServiceStub.updateAPIFile = sinon.stub();
+    apiPlatformServiceStub.deleteAPIFile = sinon.stub();
 
     workspaceRepositoryStub.update = sinon.stub().returns(Promise.resolve());
     loggerStub.info = sinon.stub();
@@ -48,10 +45,40 @@ describe('pushController', function () {
   describe('push', run(function (pushController) {
     it('should run correctly', function (done) {
       var status = {
-        added: [currentWorkspace.files[0].path],
-        changed: [currentWorkspace.files[1].path],
-        deleted: [currentWorkspace.files[2].path]
+        added: [
+          currentWorkspace.files[0].path,
+          currentWorkspace.files[1].path,
+          currentWorkspace.files[2].path,
+          currentWorkspace.files[3].path
+        ],
+        changed: [
+          currentWorkspace.files[4].path,
+          currentWorkspace.files[5].path,
+          currentWorkspace.files[6].path
+        ],
+        deleted: [
+          currentWorkspace.files[7].path,
+          currentWorkspace.files[8].path,
+          currentWorkspace.files[9].path
+        ]
       };
+
+      apiPlatformServiceStub.createAPIFile
+        .onFirstCall().returns(Promise.resolve(currentWorkspace.files[0]))
+        .onSecondCall().returns(Promise.resolve(currentWorkspace.files[1]))
+        .onThirdCall().returns(Promise.resolve(currentWorkspace.files[2]))
+        .onCall(3).returns(Promise.resolve(currentWorkspace.files[3]));
+
+      apiPlatformServiceStub.updateAPIFile
+        .onFirstCall().returns(Promise.resolve(currentWorkspace.files[4]))
+        .onSecondCall().returns(Promise.resolve(currentWorkspace.files[5]))
+        .onThirdCall().returns(Promise.resolve(currentWorkspace.files[6]));
+
+      apiPlatformServiceStub.deleteAPIFile
+        .onFirstCall().returns(Promise.resolve(currentWorkspace.files[7].path))
+        .onSecondCall().returns(Promise.resolve(currentWorkspace.files[8].path))
+        .onThirdCall().returns(Promise.resolve(currentWorkspace.files[9].path));
+
       localServiceStub.status.returns(Promise.resolve(status));
       localServiceStub.getDirectoriesPath = sinon.stub()
         .returns(Promise.resolve([
@@ -120,8 +147,8 @@ describe('pushController', function () {
           apiPlatformServiceStub.createAPIDirectory
             .thirdCall.calledWithExactly(thirdDirectory);
 
-          apiPlatformServiceStub.createAPIFile.calledOnce.should.be.true();
-          apiPlatformServiceStub.createAPIFile.calledWithExactly(
+          apiPlatformServiceStub.createAPIFile.callCount.should.equal(4);
+          apiPlatformServiceStub.createAPIFile.firstCall.calledWithExactly(
             currentWorkspace.bizGroup.id,
             currentWorkspace.api.id,
             currentWorkspace.apiVersion.id,
@@ -131,20 +158,78 @@ describe('pushController', function () {
             })
           ).should.be.true();
 
-          apiPlatformServiceStub.updateAPIFile.calledOnce.should.be.true();
-          apiPlatformServiceStub.updateAPIFile.calledWithExactly(
+          apiPlatformServiceStub.createAPIFile.secondCall.calledWithExactly(
             currentWorkspace.bizGroup.id,
             currentWorkspace.api.id,
             currentWorkspace.apiVersion.id,
-            apiFilesMetadata[1]
+            sinon.match({
+              path: currentWorkspace.files[1].path,
+              parentId: null
+            })
           ).should.be.true();
 
-          apiPlatformServiceStub.deleteAPIFile.calledOnce.should.be.true();
-          apiPlatformServiceStub.deleteAPIFile.calledWithExactly(
+          apiPlatformServiceStub.createAPIFile.thirdCall.calledWithExactly(
             currentWorkspace.bizGroup.id,
             currentWorkspace.api.id,
             currentWorkspace.apiVersion.id,
-            apiFilesMetadata[2]
+            sinon.match({
+              path: currentWorkspace.files[2].path,
+              parentId: null
+            })
+          ).should.be.true();
+
+          apiPlatformServiceStub.createAPIFile.lastCall.calledWithExactly(
+            currentWorkspace.bizGroup.id,
+            currentWorkspace.api.id,
+            currentWorkspace.apiVersion.id,
+            sinon.match({
+              path: currentWorkspace.files[3].path,
+              parentId: null
+            })
+          ).should.be.true();
+
+          apiPlatformServiceStub.updateAPIFile.calledThrice.should.be.true();
+          apiPlatformServiceStub.updateAPIFile.firstCall.calledWithExactly(
+            currentWorkspace.bizGroup.id,
+            currentWorkspace.api.id,
+            currentWorkspace.apiVersion.id,
+            apiFilesMetadata[4]
+          ).should.be.true();
+
+          apiPlatformServiceStub.updateAPIFile.secondCall.calledWithExactly(
+            currentWorkspace.bizGroup.id,
+            currentWorkspace.api.id,
+            currentWorkspace.apiVersion.id,
+            apiFilesMetadata[5]
+          ).should.be.true();
+
+          apiPlatformServiceStub.updateAPIFile.thirdCall.calledWithExactly(
+            currentWorkspace.bizGroup.id,
+            currentWorkspace.api.id,
+            currentWorkspace.apiVersion.id,
+            apiFilesMetadata[6]
+          ).should.be.true();
+
+          apiPlatformServiceStub.deleteAPIFile.calledThrice.should.be.true();
+          apiPlatformServiceStub.deleteAPIFile.firstCall.calledWithExactly(
+            currentWorkspace.bizGroup.id,
+            currentWorkspace.api.id,
+            currentWorkspace.apiVersion.id,
+            apiFilesMetadata[7]
+          ).should.be.true();
+
+          apiPlatformServiceStub.deleteAPIFile.secondCall.calledWithExactly(
+            currentWorkspace.bizGroup.id,
+            currentWorkspace.api.id,
+            currentWorkspace.apiVersion.id,
+            apiFilesMetadata[8]
+          ).should.be.true();
+
+          apiPlatformServiceStub.deleteAPIFile.thirdCall.calledWithExactly(
+            currentWorkspace.bizGroup.id,
+            currentWorkspace.api.id,
+            currentWorkspace.apiVersion.id,
+            apiFilesMetadata[9]
           ).should.be.true();
 
           workspaceRepositoryStub.update.calledOnce.should.be.true();
