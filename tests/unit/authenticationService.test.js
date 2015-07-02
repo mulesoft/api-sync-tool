@@ -16,7 +16,7 @@ describe('authenticationService', function () {
     it('should login user', function (done) {
       authenticationService.login('juan', 'test')
         .then(function () {
-          csRepositoryStub.login.called.should.be.true;
+          csRepositoryStub.login.called.should.be.true();
           csRepositoryStub.login.firstCall.args[0].should.equal('juan');
           csRepositoryStub.login.firstCall.args[1].should.equal('test');
 

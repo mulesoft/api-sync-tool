@@ -48,7 +48,7 @@ describe('setupController', function () {
         .then(function (result) {
           // Verify stub calls.
           userOrganizationServiceStub.getBusinessGroups.calledOnce
-            .should.be.true;
+            .should.be.true();
 
           asserts.calledOnceWithExactly(setupStrategyStub.getBusinessGroup, [
             sortByName(organizations)]);
@@ -72,16 +72,16 @@ describe('setupController', function () {
             currentWorkspace]);
 
           // Assert method response.
-          result.should.be.an.Object;
+          result.should.be.an.Object();
 
-          result.workspace.should.be.an.Object;
+          result.workspace.should.be.an.Object();
           result.workspace.should.have.properties('bizGroup', 'api',
             'apiVersion', 'directory');
           result.workspace.bizGroup.id.should.equal(organizations[1].id);
           result.workspace.api.id.should.equal(apis[0].id);
           result.workspace.apiVersion.id.should.equal(apis[0].versions[0].id);
           result.workspace.directory.should.equal('current');
-          result.runPull.should.be.ok;
+          result.runPull.should.be.ok();
 
           done();
         })

@@ -35,22 +35,22 @@ describe('csRepository', function () {
 
       csRepository.login(username, password)
         .then(function (authentication) {
-          superagentStub.post.called.should.be.true;
+          superagentStub.post.called.should.be.true();
           superagentStub.post.firstCall.args[0]
             .should.match(/.*\/oauth2\/token$/);
 
-          superagentStub.send.calledOnce.should.be.true;
+          superagentStub.send.calledOnce.should.be.true();
           superagentStub.send.calledWithExactly(sinon.match({
             username: username,
             password: password
-          })).should.be.true;
+          })).should.be.true();
 
-          superagentStub.set.calledOnce.should.be.true;
+          superagentStub.set.calledOnce.should.be.true();
           superagentStub.set.calledWithExactly('Accept', 'application/json');
 
-          superagentStub.end.calledOnce.should.be.true;
+          superagentStub.end.calledOnce.should.be.true();
 
-          authentication.should.be.an.Object;
+          authentication.should.be.an.Object();
           authentication.accessToken.should.equal(accessToken);
 
           done();
@@ -70,23 +70,23 @@ describe('csRepository', function () {
           done('Test should fail');
         })
         .catch(function (error) {
-          superagentStub.post.called.should.be.true;
+          superagentStub.post.called.should.be.true();
           superagentStub.post.firstCall.args[0]
             .should.match(/.*\/oauth2\/token$/);
 
-          superagentStub.send.calledOnce.should.be.true;
+          superagentStub.send.calledOnce.should.be.true();
           superagentStub.send.calledWithExactly(sinon.match({
             username: username,
             password: password
-          })).should.be.true;
+          })).should.be.true();
 
-          superagentStub.set.calledOnce.should.be.true;
+          superagentStub.set.calledOnce.should.be.true();
           superagentStub.set.calledWithExactly('Accept', 'application/json');
 
-          superagentStub.end.calledOnce.should.be.true;
+          superagentStub.end.calledOnce.should.be.true();
 
-          errorsStub.LoginError.calledOnce.should.be.true;
-          errorsStub.LoginError.calledWithExactly(username).should.be.true;
+          errorsStub.LoginError.calledOnce.should.be.true();
+          errorsStub.LoginError.calledWithExactly(username).should.be.true();
 
           error.should.be.an.LoginError;
 
@@ -107,22 +107,22 @@ describe('csRepository', function () {
           done('Test should fail');
         })
         .catch(function (error) {
-          superagentStub.post.called.should.be.true;
+          superagentStub.post.called.should.be.true();
           superagentStub.post.firstCall.args[0]
             .should.match(/.*\/oauth2\/token$/);
 
-          superagentStub.send.calledOnce.should.be.true;
+          superagentStub.send.calledOnce.should.be.true();
           superagentStub.send.calledWithExactly(sinon.match({
             username: username,
             password: password
-          })).should.be.true;
+          })).should.be.true();
 
-          superagentStub.set.calledOnce.should.be.true;
+          superagentStub.set.calledOnce.should.be.true();
           superagentStub.set.calledWithExactly('Accept', 'application/json');
 
-          superagentStub.end.calledOnce.should.be.true;
+          superagentStub.end.calledOnce.should.be.true();
 
-          error.should.be.an.Object;
+          error.should.be.an.Object();
           error.status.should.equal(404);
 
           done();
@@ -145,20 +145,20 @@ describe('csRepository', function () {
     it('should get userInfo', function (done) {
       csRepository.getUserInfo()
         .then(function () {
-          contextHolderStub.get.calledOnce.should.be.true;
+          contextHolderStub.get.calledOnce.should.be.true();
           contextHolderStub.get.firstCall.args.length.should.equal(0);
-          contextStub.getToken.calledOnce.should.be.true;
+          contextStub.getToken.calledOnce.should.be.true();
           contextStub.getToken.firstCall.args.length.should.equal(0);
 
-          superagentStub.get.calledOnce.should.be.true;
+          superagentStub.get.calledOnce.should.be.true();
           superagentStub.get.calledWithExactly(
-              sinon.match(/.*\/api\/users\/me$/)).should.be.true;
+              sinon.match(/.*\/api\/users\/me$/)).should.be.true();
 
-          superagentStub.set.calledOnce.should.be.true;
+          superagentStub.set.calledOnce.should.be.true();
           superagentStub.set.calledWithExactly('Authorization',
-              sinon.match(/Bearer.*/)).should.be.true;
+              sinon.match(/Bearer.*/)).should.be.true();
 
-          superagentStub.end.calledOnce.should.be.true;
+          superagentStub.end.calledOnce.should.be.true();
 
           done();
         })

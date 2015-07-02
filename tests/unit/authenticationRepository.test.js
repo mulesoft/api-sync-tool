@@ -62,7 +62,7 @@ describe('authenticationRepository', function () {
           asserts.calledOnceWithExactly(fsStub.readFileSync, [authFilePath,
             fileEncoding]);
 
-          authentication.should.be.an.Object;
+          authentication.should.be.an.Object();
           should.deepEqual(authenticationObject, authentication);
 
           done();
@@ -78,12 +78,12 @@ describe('authenticationRepository', function () {
 
       authenticationRepository.get()
         .then(function (authentication) {
-          osenvStub.home.calledOnce.should.be.true;
+          osenvStub.home.calledOnce.should.be.true();
 
           asserts.calledOnceWithExactly(fsStub.readFileSync, [authFilePath,
             fileEncoding]);
 
-          authentication.should.be.an.Object;
+          authentication.should.be.an.Object();
           authentication.directory.should.equal(expectedPath);
 
           done();
@@ -99,19 +99,19 @@ describe('authenticationRepository', function () {
 
       authenticationRepository.get()
         .then(function (authentication) {
-          osenvStub.home.called.should.be.true;
+          osenvStub.home.called.should.be.true();
 
           asserts.calledOnceWithExactly(fsStub.readFileSync, [authFilePath,
             fileEncoding]);
 
           asserts.notCalled([fsStub.writeFileSync]);
 
-          authentication.should.be.an.Object;
+          authentication.should.be.an.Object();
 
-          messagesStub.authFileNotFound.calledOnce.should.be.true;
+          messagesStub.authFileNotFound.calledOnce.should.be.true();
 
-          loggerStub.debug.calledOnce.should.be.true;
-          loggerStub.debug.calledWithExactly(notFoundMessage).should.be.true;
+          loggerStub.debug.calledOnce.should.be.true();
+          loggerStub.debug.calledWithExactly(notFoundMessage).should.be.true();
 
           done();
         })
@@ -133,9 +133,9 @@ describe('authenticationRepository', function () {
           asserts.calledOnceWithExactly(fsStub.writeFileSync, [authFilePath,
             sinon.match.string, fileEncoding]);
 
-          osenvStub.home.calledTwice.should.be.true;
+          osenvStub.home.calledTwice.should.be.true();
 
-          authentication.should.be.an.Object;
+          authentication.should.be.an.Object();
           authentication.directory.should.equal(expectedPath);
           authentication.accessToken.should.equal(expectedAccessToken);
 
@@ -155,8 +155,8 @@ describe('authenticationRepository', function () {
           done('This test should have failed');
         })
         .catch(function () {
-          processStub.cwd.calledOnce.should.be.true;
-          errorsStub.WriteFileError.calledWithNew().should.be.true;
+          processStub.cwd.calledOnce.should.be.true();
+          errorsStub.WriteFileError.calledWithNew().should.be.true();
 
           asserts.notCalled([fsStub.readFileSync, fsStub.writeFileSync]);
 

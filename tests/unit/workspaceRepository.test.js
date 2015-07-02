@@ -70,12 +70,12 @@ describe('workspaceRepository', function () {
 
       workspaceRepository.get()
         .then(function (workspace) {
-          osenvStub.home.calledOnce.should.be.true;
+          osenvStub.home.calledOnce.should.be.true();
 
           asserts.calledOnceWithExactly(fsStub.readFileSync, [workspaceFilePath,
             fileEncoding]);
 
-          workspace.should.be.an.Object;
+          workspace.should.be.an.Object();
           workspace.directory.should.equal(expectedPath);
 
           done();
@@ -92,14 +92,14 @@ describe('workspaceRepository', function () {
 
       workspaceRepository.get()
         .then(function (workspace) {
-          osenvStub.home.called.should.be.true;
+          osenvStub.home.called.should.be.true();
 
           asserts.calledOnceWithExactly(fsStub.readFileSync, [workspaceFilePath,
             fileEncoding]);
 
           asserts.notCalled([fsStub.writeFileSync]);
 
-          workspace.should.be.an.Object;
+          workspace.should.be.an.Object();
           workspace.directory.should.equal(expectedPath);
 
           done();
@@ -130,7 +130,7 @@ describe('workspaceRepository', function () {
             fileEncoding
           ]);
 
-          osenvStub.home.calledTwice.should.be.true;
+          osenvStub.home.calledTwice.should.be.true();
 
           done();
         })
@@ -147,13 +147,11 @@ describe('workspaceRepository', function () {
         .then(function () {
           done('This test should have failed');
         })
-        .catch(function (err) {
-          processStub.cwd.calledOnce.should.be.true;
-          err.should.be.an.WritingFileError;
-
+        .catch(function () {
+          processStub.cwd.calledOnce.should.be.true();
           asserts.notCalled([fsStub.readFileSync, fsStub.writeFileSync]);
 
-          errorsStub.WrongDirectoryError.calledWithNew().should.be.true;
+          errorsStub.WrongDirectoryError.calledWithNew().should.be.true();
 
           done();
         })

@@ -58,13 +58,13 @@ describe('localService', function () {
         Promise.resolve(currentWorkspace.files[0].hash));
       localService.status()
         .then(function (result) {
-          result.unchanged.should.be.an.Array;
+          result.unchanged.should.be.an.Array();
           result.unchanged.length.should.equal(1);
-          result.changed.should.be.an.Array;
+          result.changed.should.be.an.Array();
           result.changed.length.should.equal(2);
-          result.deleted.should.be.an.Array;
+          result.deleted.should.be.an.Array();
           result.deleted.length.should.equal(1);
-          result.added.should.be.an.Array;
+          result.added.should.be.an.Array();
           result.added.length.should.equal(1);
 
           result.unchanged.should.containEql(fileList[0]);

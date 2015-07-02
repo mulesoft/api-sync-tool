@@ -51,7 +51,7 @@ describe('commandPrompt', function () {
             sinon.match.func
           ]);
 
-          choice.should.be.an.Object;
+          choice.should.be.an.Object();
           should.deepEqual(choice, rawOptions[0]);
 
           done();
@@ -80,7 +80,7 @@ describe('commandPrompt', function () {
             sinon.match.func
           ]);
 
-          answer.should.be.ok;
+          answer.should.be.ok();
           done();
         })
         .catch(function (err) {

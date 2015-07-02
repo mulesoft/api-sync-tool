@@ -42,7 +42,7 @@ describe('validateSetupStrategy', run(function (validateSetupStrategy) {
       .catch(function () {
         asserts.calledOnceWithoutParameters([workspaceRepositoryStub.get]);
 
-        errorsStub.SetupNeededError.calledWithNew().should.be.true;
+        errorsStub.SetupNeededError.calledWithNew().should.be.true();
 
         done();
       })

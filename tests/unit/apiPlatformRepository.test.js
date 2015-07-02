@@ -62,8 +62,8 @@ describe('apiPlatformRepository', function () {
 
           assertReadAPICalls();
 
-          allAPIs.should.be.an.Array;
-          allAPIs[0].should.be.an.Object;
+          allAPIs.should.be.an.Array();
+          allAPIs[0].should.be.an.Object();
           allAPIs[0].id.should.equal(1);
           allAPIs[0].name.should.equal('name1');
 
@@ -93,7 +93,7 @@ describe('apiPlatformRepository', function () {
 
           assertReadAPICalls();
 
-          errorsStub.BadCredentialsError.calledWithNew().should.be.true;
+          errorsStub.BadCredentialsError.calledWithNew().should.be.true();
 
           done();
         })
@@ -166,7 +166,7 @@ describe('apiPlatformRepository', function () {
             streamStub
           ]);
 
-          errorsStub.WriteFileError.calledWithNew().should.be.true;
+          errorsStub.DownloadFileError.calledWithNew().should.be.true();
 
           done();
         })
@@ -196,7 +196,7 @@ describe('apiPlatformRepository', function () {
             streamStub
           ]);
 
-          errorsStub.WriteFileError.calledWithNew().should.be.true;
+          errorsStub.WriteFileError.calledWithNew().should.be.true();
 
           done();
         })
@@ -228,7 +228,7 @@ describe('apiPlatformRepository', function () {
             streamStub
           ]);
 
-          errorsStub.BadCredentialsError.calledWithNew().should.be.true;
+          errorsStub.BadCredentialsError.calledWithNew().should.be.true();
 
           done();
         })
@@ -263,7 +263,7 @@ describe('apiPlatformRepository', function () {
             streamStub
           ]);
 
-          errorsStub.DownloadFileError.calledWithNew().should.be.true;
+          errorsStub.DownloadFileError.calledWithNew().should.be.true();
 
           done();
         })
@@ -273,17 +273,17 @@ describe('apiPlatformRepository', function () {
     });
 
     function checkEventsRegister() {
-      streamStub.on.calledTwice.should.be.true;
+      streamStub.on.calledTwice.should.be.true();
       streamStub.on.firstCall.calledWithExactly('finish', sinon.match.func)
-        .should.be.true;
+        .should.be.true();
       streamStub.on.secondCall.calledWithExactly('error', sinon.match.func)
-          .should.be.true;
+          .should.be.true();
 
-      superagentCallbacksStub.on.calledTwice.should.be.true;
+      superagentCallbacksStub.on.calledTwice.should.be.true();
       superagentCallbacksStub.on.firstCall
-        .calledWithExactly('error', sinon.match.func).should.be.true;
+        .calledWithExactly('error', sinon.match.func).should.be.true();
       superagentCallbacksStub.on.secondCall
-        .calledWithExactly('end', sinon.match.func).should.be.true;
+        .calledWithExactly('end', sinon.match.func).should.be.true();
     }
   }));
 
@@ -325,7 +325,7 @@ describe('apiPlatformRepository', function () {
 
           assertReadAPICalls();
 
-          allFiles.should.be.an.Array;
+          allFiles.should.be.an.Array();
           allFiles.length.should.equal(2);
           should.deepEqual(allFiles[0], apiFilesMetadata[0]);
           should.deepEqual(allFiles[1], apiFilesMetadata[2]);
@@ -356,7 +356,7 @@ describe('apiPlatformRepository', function () {
 
           assertReadAPICalls();
 
-          errorsStub.BadCredentialsError.calledWithNew().should.be.true;
+          errorsStub.BadCredentialsError.calledWithNew().should.be.true();
 
           done();
         })
@@ -402,7 +402,7 @@ describe('apiPlatformRepository', function () {
             isDirectory: true
           }));
 
-          createdDir.should.be.an.Object;
+          createdDir.should.be.an.Object();
           createdDir.path.should.equal(newDir.path);
           createdDir.id.should.equal(createdDirId);
 
@@ -435,7 +435,7 @@ describe('apiPlatformRepository', function () {
             isDirectory: false
           }));
 
-          createdFile.should.be.an.Object;
+          createdFile.should.be.an.Object();
           createdFile.path.should.equal(newFile.path);
           createdFile.id.should.equal(createdFileId);
 
@@ -469,7 +469,7 @@ describe('apiPlatformRepository', function () {
             isDirectory: true
           }));
 
-          errorsStub.BadCredentialsError.calledWithNew().should.be.true;
+          errorsStub.BadCredentialsError.calledWithNew().should.be.true();
 
           done();
         })
@@ -508,7 +508,7 @@ describe('apiPlatformRepository', function () {
             data: file.data
           }));
 
-          updatedFile.should.be.a.String;
+          updatedFile.should.be.a.String();
           updatedFile.should.equal(file.path);
 
           done();
@@ -542,7 +542,7 @@ describe('apiPlatformRepository', function () {
             data: file.data
           }));
 
-          errorsStub.BadCredentialsError.calledWithNew().should.be.true;
+          errorsStub.BadCredentialsError.calledWithNew().should.be.true();
 
           done();
         })
@@ -576,7 +576,7 @@ describe('apiPlatformRepository', function () {
 
           assertReadAPICalls();
 
-          updatedFile.should.be.a.String;
+          updatedFile.should.be.a.String();
           updatedFile.should.equal(file.path);
 
           done();
@@ -605,7 +605,7 @@ describe('apiPlatformRepository', function () {
 
           assertReadAPICalls();
 
-          errorsStub.BadCredentialsError.calledWithNew().should.be.true;
+          errorsStub.BadCredentialsError.calledWithNew().should.be.true();
 
           done();
         })
@@ -655,35 +655,35 @@ describe('apiPlatformRepository', function () {
 });
 
 function assertReadAPICalls() {
-  superagentStub.set.calledTwice.should.be.true;
+  superagentStub.set.calledTwice.should.be.true();
   superagentStub.set.firstCall.calledWithExactly(
-    'Authorization', 'Bearer ' + token).should.be.true;
+    'Authorization', 'Bearer ' + token).should.be.true();
   superagentStub.set.secondCall.calledWithExactly(
-    'Accept', 'application/json').should.be.true;
+    'Accept', 'application/json').should.be.true();
 
-  superagentStub.end.calledOnce.should.be.true;
+  superagentStub.end.calledOnce.should.be.true();
 }
 
 function assertReadAPICallbacksCalls() {
-  superagentCallbacksStub.set.calledTwice.should.be.true;
+  superagentCallbacksStub.set.calledTwice.should.be.true();
   superagentCallbacksStub.set.firstCall.calledWithExactly(
-    'Authorization', 'Bearer ' + token).should.be.true;
+    'Authorization', 'Bearer ' + token).should.be.true();
     superagentCallbacksStub.set.secondCall.calledWithExactly(
-    'Accept', 'application/json').should.be.true;
+    'Accept', 'application/json').should.be.true();
 }
 
 function assertWriteAPICalls(args) {
-  superagentStub.set.calledThrice.should.be.true;
+  superagentStub.set.calledThrice.should.be.true();
   superagentStub.set.firstCall.calledWithExactly(
-    'Content-Type', 'application/json').should.be.true;
+    'Content-Type', 'application/json').should.be.true();
   superagentStub.set.secondCall.calledWithExactly(
-    'Authorization', 'Bearer ' + token).should.be.true;
+    'Authorization', 'Bearer ' + token).should.be.true();
   superagentStub.set.thirdCall.calledWithExactly(
-    'Accept', 'application/json').should.be.true;
+    'Accept', 'application/json').should.be.true();
 
   asserts.calledOnceWithExactly(superagentStub.send, [args]);
 
-  superagentStub.end.calledOnce.should.be.true;
+  superagentStub.end.calledOnce.should.be.true();
 }
 
 function run(callback) {

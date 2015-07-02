@@ -96,18 +96,18 @@ describe('pushController', function () {
 
       pushController.push()
         .then(function (output) {
-          workspaceRepositoryStub.get.calledOnce.should.be.true;
+          workspaceRepositoryStub.get.calledOnce.should.be.true();
           workspaceRepositoryStub.get.firstCall.args.length.should.equal(0);
 
-          localServiceStub.status.calledOnce.should.be.true;
+          localServiceStub.status.calledOnce.should.be.true();
           localServiceStub.status.firstCall.args.length.should.equal(0);
 
-          apiPlatformServiceStub.getAPIFilesMetadata.calledOnce.should.be.true;
+          apiPlatformServiceStub.getAPIFilesMetadata.calledOnce.should.be.true();
           apiPlatformServiceStub.getAPIFilesMetadata.calledWithExactly(
             currentWorkspace.bizGroup.id,
             currentWorkspace.api.id,
             currentWorkspace.apiVersion.id
-          ).should.be.true;
+          ).should.be.true();
 
           asserts.calledOnceWithoutParameters([
             localServiceStub.getDirectoriesPath]);
@@ -120,7 +120,7 @@ describe('pushController', function () {
           apiPlatformServiceStub.createAPIDirectory
             .thirdCall.calledWithExactly(thirdDirectory);
 
-          apiPlatformServiceStub.createAPIFile.calledOnce.should.be.true;
+          apiPlatformServiceStub.createAPIFile.calledOnce.should.be.true();
           apiPlatformServiceStub.createAPIFile.calledWithExactly(
             currentWorkspace.bizGroup.id,
             currentWorkspace.api.id,
@@ -129,44 +129,44 @@ describe('pushController', function () {
               path: currentWorkspace.files[0].path,
               parentId: null
             })
-          ).should.be.true;
+          ).should.be.true();
 
-          apiPlatformServiceStub.updateAPIFile.calledOnce.should.be.true;
+          apiPlatformServiceStub.updateAPIFile.calledOnce.should.be.true();
           apiPlatformServiceStub.updateAPIFile.calledWithExactly(
             currentWorkspace.bizGroup.id,
             currentWorkspace.api.id,
             currentWorkspace.apiVersion.id,
             apiFilesMetadata[1]
-          ).should.be.true;
+          ).should.be.true();
 
-          apiPlatformServiceStub.deleteAPIFile.calledOnce.should.be.true;
+          apiPlatformServiceStub.deleteAPIFile.calledOnce.should.be.true();
           apiPlatformServiceStub.deleteAPIFile.calledWithExactly(
             currentWorkspace.bizGroup.id,
             currentWorkspace.api.id,
             currentWorkspace.apiVersion.id,
             apiFilesMetadata[2]
-          ).should.be.true;
+          ).should.be.true();
 
-          workspaceRepositoryStub.update.calledOnce.should.be.true;
+          workspaceRepositoryStub.update.calledOnce.should.be.true();
           workspaceRepositoryStub.update.calledWithExactly(
-              currentWorkspace).should.be.true;
+              currentWorkspace).should.be.true();
 
-          loggerStub.info.calledThrice.should.be.true;
+          loggerStub.info.calledThrice.should.be.true();
           loggerStub.info.firstCall.calledWithExactly(newMessage)
-              .should.be.true;
+              .should.be.true();
           loggerStub.info.secondCall.calledWithExactly(changedMessage)
-              .should.be.true;
+              .should.be.true();
           loggerStub.info.thirdCall.calledWithExactly(deletedMessage)
-              .should.be.true;
+              .should.be.true();
 
-          messagesStub.pushProgressNew.calledOnce.should.be.true;
+          messagesStub.pushProgressNew.calledOnce.should.be.true();
           messagesStub.pushProgressNew.firstCall.args.length.should.equal(0);
 
-          messagesStub.pushProgressChanged.calledOnce.should.be.true;
+          messagesStub.pushProgressChanged.calledOnce.should.be.true();
           messagesStub.pushProgressChanged.firstCall.args.length.should
               .equal(0);
 
-          messagesStub.pushProgressDeleted.calledOnce.should.be.true;
+          messagesStub.pushProgressDeleted.calledOnce.should.be.true();
           messagesStub.pushProgressDeleted.firstCall.args.length.should
               .equal(0);
 
@@ -193,22 +193,22 @@ describe('pushController', function () {
 
       pushController.push()
         .then(function (output) {
-          workspaceRepositoryStub.get.calledOnce.should.be.true;
+          workspaceRepositoryStub.get.calledOnce.should.be.true();
           workspaceRepositoryStub.get.firstCall.args.length.should.equal(0);
 
-          localServiceStub.status.calledOnce.should.be.true;
+          localServiceStub.status.calledOnce.should.be.true();
           localServiceStub.status.firstCall.args.length.should.equal(0);
 
-          apiPlatformServiceStub.getAPIFilesMetadata.calledOnce.should.be.true;
+          apiPlatformServiceStub.getAPIFilesMetadata.calledOnce.should.be.true();
           apiPlatformServiceStub.getAPIFilesMetadata.calledWithExactly(
             currentWorkspace.bizGroup.id,
             currentWorkspace.api.id,
             currentWorkspace.apiVersion.id
-          ).should.be.true;
+          ).should.be.true();
 
-          workspaceRepositoryStub.update.calledOnce.should.be.true;
+          workspaceRepositoryStub.update.calledOnce.should.be.true();
           workspaceRepositoryStub.update.calledWithExactly(currentWorkspace)
-              .should.be.true;
+              .should.be.true();
 
           asserts.notCalled([
             apiPlatformServiceStub.createAPIFile,
@@ -237,15 +237,15 @@ describe('pushController', function () {
 
       pushController.push()
         .then(function () {
-          workspaceRepositoryStub.get.calledOnce.should.be.true;
+          workspaceRepositoryStub.get.calledOnce.should.be.true();
           workspaceRepositoryStub.get.firstCall.args.length.should.equal(0);
 
-          localServiceStub.status.calledOnce.should.be.true;
+          localServiceStub.status.calledOnce.should.be.true();
           localServiceStub.status.firstCall.args.length.should.equal(0);
 
-          workspaceRepositoryStub.update.calledOnce.should.be.true;
+          workspaceRepositoryStub.update.calledOnce.should.be.true();
           workspaceRepositoryStub.update.calledWithExactly(currentWorkspace)
-              .should.be.true;
+              .should.be.true();
 
           asserts.notCalled([
             apiPlatformServiceStub.getAPIFilesMetadata,
