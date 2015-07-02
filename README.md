@@ -1,11 +1,9 @@
 # api-sync-tool
 Tool that synchronizes an API in API platform with local filesystem
 
-Steps to use:
+Installing:
 ```
-npm install
-
-npm link
+npm install -g api-sync
 
 api-sync
 ```
@@ -19,3 +17,14 @@ api-sync
 
 ## Keeping users logged in
 To keep users logged in, this tool stores an access token in a hidden file in the user's home directory. This token has an expiration time that can be configured by its organization admin.
+
+## Developing
+
+Using the local code version:
+```
+npm install
+
+npm link
+
+api-sync
+```
