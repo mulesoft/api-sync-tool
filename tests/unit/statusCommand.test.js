@@ -18,44 +18,60 @@ describe('statusCommand', function () {
   beforeEach(function () {
     messagesStub.status = sinon.stub().returns(successfulMessage);
     messagesStub.nothingStatus = sinon.stub().returns(nothingMessage);
+    messagesStub.statusDetailedHelp = sinon.stub();
     localServiceStub.status = sinon.stub();
     loggerStub.info = sinon.stub();
     validateSetupDoneStrategyStub.validate = sinon.stub();
   });
 
-  describe('validateSetup', run(function (statusCommand) {
+  describe('getHelp', function () {
+    it('should be a message', function (done) {
+      run(function (statusCommand) {
+        messagesStub.statusDetailedHelp.should.equal(statusCommand.getHelp);
+        done();
+      });
+    });
+  });
+
+  describe('validateSetup', function () {
     it('should be a dependency', function (done) {
-      validateSetupDoneStrategyStub.should.equal(statusCommand.validateSetup);
+      run(function (statusCommand) {
+        validateSetupDoneStrategyStub.should.equal(statusCommand.validateSetup);
 
-      done();
+        done();
+      });
     });
-  }));
+  });
 
-  describe('validateInput', run(function (statusCommand) {
+  describe('validateInput', function () {
     it('should run validation and do nothing', function (done) {
-      statusCommand.validateInput()
-        .then(function () {
-          done();
-        })
-        .catch(function (err) {
-          done(err);
-        });
+      run(function (statusCommand) {
+        statusCommand.validateInput()
+          .then(function () {
+            done();
+          })
+          .catch(function (err) {
+            done(err);
+          });
+      });
     });
-  }));
+  });
 
-  describe('parseArgs', run(function (statusCommand) {
+  describe('parseArgs', function () {
     it('should parse args and do nothing', function (done) {
-      statusCommand.parseArgs()
-        .then(function () {
-          done();
-        })
-        .catch(function (err) {
-          done(err);
-        });
+      run(function (statusCommand) {
+        statusCommand.parseArgs()
+          .then(function () {
+            done();
+          })
+          .catch(function (err) {
+            done(err);
+          });
+      });
     });
-  }));
+  });
 
-  describe('execute', run(function (statusCommand) {
+  describe('execute', function () {
     it('should execute status and log changes', function (done) {
       var result = {
         added: [{
@@ -67,17 +83,18 @@ describe('statusCommand', function () {
         deleted: []
       };
       localServiceStub.status.returns(Promise.resolve(result));
-
-      statusCommand.execute()
-        .then(function () {
-          asserts.calledOnceWithoutParameters([localServiceStub.status]);
-          asserts.calledOnceWithExactly(messagesStub.status, [result]);
-          asserts.calledOnceWithExactly(loggerStub.info, [successfulMessage]);
-          done();
-        })
-        .catch(function (err) {
-          done(err);
-        });
+      run(function (statusCommand) {
+        statusCommand.execute()
+          .then(function () {
+            asserts.calledOnceWithoutParameters([localServiceStub.status]);
+            asserts.calledOnceWithExactly(messagesStub.status, [result]);
+            asserts.calledOnceWithExactly(loggerStub.info, [successfulMessage]);
+            done();
+          })
+          .catch(function (err) {
+            done(err);
+          });
+      });
     });
 
     it('should execute status and log an empty result', function (done) {
@@ -91,28 +108,27 @@ describe('statusCommand', function () {
         deleted: []
       };
       localServiceStub.status.returns(Promise.resolve(result));
-
-      statusCommand.execute()
-        .then(function () {
-          asserts.calledOnceWithoutParameters([localServiceStub.status,
-            messagesStub.nothingStatus]);
-          asserts.calledOnceWithExactly(loggerStub.info, [nothingMessage]);
-          done();
-        })
-        .catch(function (err) {
-          done(err);
-        });
+      run(function (statusCommand) {
+        statusCommand.execute()
+          .then(function () {
+            asserts.calledOnceWithoutParameters([localServiceStub.status,
+              messagesStub.nothingStatus]);
+            asserts.calledOnceWithExactly(loggerStub.info, [nothingMessage]);
+            done();
+          })
+          .catch(function (err) {
+            done(err);
+          });
+      });
     });
-  }));
+  });
 });
 
 function run(callback) {
-  return function () {
-    var container = containerFactory.createContainer();
-    container.register('messages', messagesStub);
-    container.register('logger', loggerStub);
-    container.register('localService', localServiceStub);
-    container.register('validateSetupDoneStrategy', validateSetupDoneStrategyStub);
-    container.resolve(callback);
-  };
+  var container = containerFactory.createContainer();
+  container.register('messages', messagesStub);
+  container.register('logger', loggerStub);
+  container.register('localService', localServiceStub);
+  container.register('validateSetupDoneStrategy', validateSetupDoneStrategyStub);
+  container.resolve(callback);
 }

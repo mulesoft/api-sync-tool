@@ -16,69 +16,85 @@ describe('cleanupCommand', function () {
   beforeEach(function () {
     cleanupControllerStub.cleanup = sinon.stub().returns(Promise.resolve());
     messagesStub.cleanup = sinon.stub().returns(successfulMessage);
+    messagesStub.cleanupDetailedHelp = sinon.stub();
     loggerStub.info = sinon.stub();
   });
 
-  describe('validateSetup', run(function (cleanupCommand) {
-    it('should run validation and do nothing', function (done) {
-      cleanupCommand.validateSetup()
-        .then(function () {
-          done();
-        })
-        .catch(function (err) {
-          done(err);
-        });
+  describe('getHelp', function () {
+    it('should be a message', function (done) {
+      run(function (cleanupCommand) {
+        messagesStub.cleanupDetailedHelp.should.equal(cleanupCommand.getHelp);
+        done();
+      });
     });
-  }));
+  });
 
-  describe('validateInput', run(function (cleanupCommand) {
+  describe('validateSetup', function () {
     it('should run validation and do nothing', function (done) {
-      cleanupCommand.validateInput()
-        .then(function () {
-          done();
-        })
-        .catch(function (err) {
-          done(err);
-        });
+      run(function (cleanupCommand) {
+        cleanupCommand.validateSetup()
+          .then(function () {
+            done();
+          })
+          .catch(function (err) {
+            done(err);
+          });
+      });
     });
-  }));
+  });
 
-  describe('parseArgs', run(function (cleanupCommand) {
+  describe('validateInput', function () {
+    it('should run validation and do nothing', function (done) {
+      run(function (cleanupCommand) {
+        cleanupCommand.validateInput()
+          .then(function () {
+            done();
+          })
+          .catch(function (err) {
+            done(err);
+          });
+      });
+    });
+  });
+
+  describe('parseArgs', function () {
     it('should parse args and do nothing', function (done) {
-      cleanupCommand.parseArgs()
-        .then(function () {
-          done();
-        })
-        .catch(function (err) {
-          done(err);
-        });
+      run(function (cleanupCommand) {
+        cleanupCommand.parseArgs()
+          .then(function () {
+            done();
+          })
+          .catch(function (err) {
+            done(err);
+          });
+          });
     });
-  }));
+  });
 
-  describe('execute', run(function (cleanupCommand) {
+  describe('execute', function () {
     it('should execute cleanup and log a successful result', function (done) {
-      cleanupCommand.execute()
-        .then(function () {
-          asserts.calledOnceWithoutParameters([cleanupControllerStub.cleanup,
-            messagesStub.cleanup]);
+      run(function (cleanupCommand) {
+        cleanupCommand.execute()
+          .then(function () {
+            asserts.calledOnceWithoutParameters([cleanupControllerStub.cleanup,
+              messagesStub.cleanup]);
 
-          asserts.calledOnceWithExactly(loggerStub.info, [successfulMessage]);
+            asserts.calledOnceWithExactly(loggerStub.info, [successfulMessage]);
 
-          done();
-        })
-        .catch(function (err) {
-          done(err);
-        });
+            done();
+          })
+          .catch(function (err) {
+            done(err);
+          });
+      });
     });
-  }));
+  });
 });
 
 function run(callback) {
-  return function () {
-    var container = containerFactory.createContainer();
-    container.register('messages', messagesStub);
-    container.register('logger', loggerStub);
-    container.register('cleanupController', cleanupControllerStub);
-    container.resolve(callback);
-  };
+  var container = containerFactory.createContainer();
+  container.register('messages', messagesStub);
+  container.register('logger', loggerStub);
+  container.register('cleanupController', cleanupControllerStub);
+  container.resolve(callback);
 }
