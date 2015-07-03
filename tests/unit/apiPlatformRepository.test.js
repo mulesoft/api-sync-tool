@@ -24,6 +24,7 @@ describe('apiPlatformRepository', function () {
     superagentStub.send = sinon.stub().returnsThis();
     superagentStub.set = sinon.stub().returnsThis();
     superagentStub.query = sinon.stub().returnsThis();
+    superagentStub.type = sinon.stub().returnsThis();
     superagentStub.end = sinon.stub();
 
     errorsStub.LoginError = sinon.stub();
@@ -34,6 +35,164 @@ describe('apiPlatformRepository', function () {
     contextStub.getToken = sinon.stub().returns(token);
     contextHolderStub.get = sinon.stub().returns(contextStub);
   });
+
+  describe('addRootRaml', run(function (apiPlatformRepository) {
+    var data = 'xxxx';
+    var organizationId = 1;
+    var apiId = 'api';
+    var apiVersionId = 'version';
+    var rootRaml = {
+      path: 'api.raml',
+      data: data
+    };
+    var response = {
+      body: {
+        data: 1
+      },
+      notBody: 1
+    };
+    var newRootRaml = {
+      isDirectory: false,
+      name: 'api.raml',
+      data:  data
+    };
+
+    it('should add the root raml', function (done) {
+      superagentStub.end.returns(Promise.resolve(response));
+
+      apiPlatformRepository.addRootRaml(organizationId, apiId, apiVersionId,
+          rootRaml)
+        .then(function (body) {
+          asserts.calledOnceWithExactly(superagentStub.post, [
+            sinon.match(
+              '/organizations/' + organizationId +
+              '/apis/' + apiId +
+              '/versions/' + apiVersionId +
+              '/addRootRaml'
+            )
+          ]);
+          asserts.calledOnceWithExactly(superagentStub.send, [
+            newRootRaml
+          ]);
+          asserts.calledOnceWithExactly(superagentStub.type, [
+            'application/json'
+          ]);
+
+          assertReadAPICalls();
+
+          should.deepEqual(body, response.body);
+
+          done();
+        })
+        .catch(function (err) {
+          done(err);
+        });
+    });
+
+    it('should manage errors correctly', function (done) {
+      superagentStub.end.returns(Promise.reject({
+        status: 401
+      }));
+
+      apiPlatformRepository.addRootRaml(organizationId, apiId, apiVersionId,
+          rootRaml)
+        .then(function () {
+          done('Should have failed');
+        })
+        .catch(function () {
+          asserts.calledOnceWithExactly(superagentStub.post, [
+            sinon.match(
+              '/organizations/' + organizationId +
+              '/apis/' + apiId +
+              '/versions/' + apiVersionId +
+              '/addRootRaml'
+            )
+          ]);
+
+          assertReadAPICalls();
+
+          errorsStub.BadCredentialsError.calledWithNew().should.be.true();
+
+          done();
+        })
+        .catch(function (err) {
+          done(err);
+        });
+    });
+  }));
+
+  describe('createAPI', run(function (apiPlatformRepository) {
+    var organizationId = 1;
+    var apiName = 'api';
+    var apiVersionName = 'version';
+    var api = {
+      name: apiName,
+      version: {name: apiVersionName}
+    };
+    var response = {
+      body: {
+        data: 1
+      },
+      notBody: 1
+    };
+
+    it('should create an API', function (done) {
+      superagentStub.end.returns(Promise.resolve(response));
+
+      apiPlatformRepository.createAPI(organizationId, apiName, apiVersionName)
+        .then(function (body) {
+          asserts.calledOnceWithExactly(superagentStub.post, [
+            sinon.match(
+              '/organizations/' + organizationId +
+              '/apis'
+            )
+          ]);
+          asserts.calledOnceWithExactly(superagentStub.send, [
+            JSON.stringify(api)
+          ]);
+          asserts.calledOnceWithExactly(superagentStub.type, [
+            'application/json'
+          ]);
+
+          assertReadAPICalls();
+
+          should.deepEqual(body, response.body);
+
+          done();
+        })
+        .catch(function (err) {
+          done(err);
+        });
+    });
+
+    it('should manage errors correctly', function (done) {
+      superagentStub.end.returns(Promise.reject({
+        status: 401
+      }));
+
+      apiPlatformRepository.createAPI(organizationId, apiName, apiVersionName)
+        .then(function () {
+          done('Should have failed');
+        })
+        .catch(function () {
+          asserts.calledOnceWithExactly(superagentStub.post, [
+            sinon.match(
+              '/organizations/' + organizationId +
+              '/apis'
+            )
+          ]);
+
+          assertReadAPICalls();
+
+          errorsStub.BadCredentialsError.calledWithNew().should.be.true();
+
+          done();
+        })
+        .catch(function (err) {
+          done(err);
+        });
+    });
+  }));
 
   describe('getAllAPIs', run(function (apiPlatformRepository) {
     it('should return all APIs', function (done) {

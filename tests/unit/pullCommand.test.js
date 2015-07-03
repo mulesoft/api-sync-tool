@@ -9,7 +9,7 @@ var asserts  = require('../support/asserts');
 var loggerStub = {};
 var messagesStub = {};
 var pullControllerStub = {};
-var validateSetupStrategyStub = {};
+var validateSetupDoneStrategyStub = {};
 
 var statusMessage = 'status';
 var emptyMessage = 'empty';
@@ -27,12 +27,12 @@ describe('cleanupCommand', function () {
     messagesStub.status = sinon.stub().returns(statusMessage);
     messagesStub.emptyAPIPullmessage = sinon.stub().returns(emptyMessage);
     loggerStub.info = sinon.stub();
-    validateSetupStrategyStub.validate = sinon.stub();
+    validateSetupDoneStrategyStub.validate = sinon.stub();
   });
 
   describe('validateSetup', run(function (pullCommand) {
     it('should be a dependency', function (done) {
-      validateSetupStrategyStub.should.equal(pullCommand.validateSetup);
+      validateSetupDoneStrategyStub.should.equal(pullCommand.validateSetup);
 
       done();
     });
@@ -41,6 +41,18 @@ describe('cleanupCommand', function () {
   describe('validateInput', run(function (pullCommand) {
     it('should run validation and do nothing', function (done) {
       pullCommand.validateInput()
+        .then(function () {
+          done();
+        })
+        .catch(function (err) {
+          done(err);
+        });
+    });
+  }));
+
+  describe('parseArgs', run(function (pullCommand) {
+    it('should parse args and do nothing', function (done) {
+      pullCommand.parseArgs()
         .then(function () {
           done();
         })
@@ -94,7 +106,7 @@ function run(callback) {
     container.register('messages', messagesStub);
     container.register('logger', loggerStub);
     container.register('pullController', pullControllerStub);
-    container.register('validateSetupStrategy', validateSetupStrategyStub);
+    container.register('validateSetupDoneStrategy', validateSetupDoneStrategyStub);
     container.resolve(callback);
   };
 }

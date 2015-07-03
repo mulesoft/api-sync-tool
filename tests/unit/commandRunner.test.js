@@ -27,6 +27,7 @@ var expiredToken = 'expired token';
 
 describe('commandRunner', function () {
   beforeEach(function () {
+    commandStub.parseArgs = sinon.stub().returns(args);
     commandStub.validateSetup = sinon.stub().returns(Promise.resolve());
     commandStub.validateInput = sinon.stub().returns(Promise.resolve());
     commandStub.execute = sinon.stub().returns(Promise.resolve());

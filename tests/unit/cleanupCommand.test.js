@@ -9,7 +9,7 @@ var asserts  = require('../support/asserts');
 var cleanupControllerStub = {};
 var loggerStub = {};
 var messagesStub = {};
-var validateSetupStrategyStub = {};
+var validateSetupDoneStrategyStub = {};
 
 var successfulMessage = 'Success';
 
@@ -18,18 +18,18 @@ describe('cleanupCommand', function () {
     cleanupControllerStub.cleanup = sinon.stub().returns(Promise.resolve());
     messagesStub.cleanup = sinon.stub().returns(successfulMessage);
     loggerStub.info = sinon.stub();
-    validateSetupStrategyStub.validate = sinon.stub();
+    validateSetupDoneStrategyStub.validate = sinon.stub();
   });
 
   describe('validateSetup', run(function (cleanupCommand) {
     it('should be a dependency', function (done) {
-      validateSetupStrategyStub.should.equal(cleanupCommand.validateSetup);
+      validateSetupDoneStrategyStub.should.equal(cleanupCommand.validateSetup);
 
       done();
     });
   }));
 
-  describe('execute', run(function (cleanupCommand) {
+  describe('validateInput', run(function (cleanupCommand) {
     it('should run validation and do nothing', function (done) {
       cleanupCommand.validateInput()
         .then(function () {
@@ -39,7 +39,21 @@ describe('cleanupCommand', function () {
           done(err);
         });
     });
+  }));
 
+  describe('parseArgs', run(function (cleanupCommand) {
+    it('should parse args and do nothing', function (done) {
+      cleanupCommand.parseArgs()
+        .then(function () {
+          done();
+        })
+        .catch(function (err) {
+          done(err);
+        });
+    });
+  }));
+
+  describe('execute', run(function (cleanupCommand) {
     it('should execute cleanup and log a successful result', function (done) {
       cleanupCommand.execute()
         .then(function () {
@@ -63,7 +77,7 @@ function run(callback) {
     container.register('messages', messagesStub);
     container.register('logger', loggerStub);
     container.register('cleanupController', cleanupControllerStub);
-    container.register('validateSetupStrategy', validateSetupStrategyStub);
+    container.register('validateSetupDoneStrategy', validateSetupDoneStrategyStub);
     container.resolve(callback);
   };
 }
