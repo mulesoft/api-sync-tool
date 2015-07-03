@@ -1,5 +1,6 @@
 'use strict';
 
+var _ = require('lodash');
 var should = require('should');
 var sinon = require('sinon');
 
@@ -646,9 +647,21 @@ describe('apiPlatformRepository', function () {
       data: 'content'
     };
 
+    var expectedUpdateResponse = {
+      id: file.id,
+      audit: {
+        created: {
+          date: '2015-07-01 20:45:12'
+        },
+        updated: {
+          date: '2015-07-03 20:45:12'
+        }
+      }
+    };
+
     it('should update the specified file', function (done) {
       superagentStub.end.returns(Promise.resolve({
-        body: []
+        body: expectedUpdateResponse
       }));
 
       apiPlatformRepository.updateAPIFile(workspace.bizGroup.id,
@@ -667,8 +680,7 @@ describe('apiPlatformRepository', function () {
             data: file.data
           }));
 
-          updatedFile.should.be.a.String();
-          updatedFile.should.equal(file.path);
+          should.deepEqual(updatedFile, _.set(expectedUpdateResponse, 'path', file.path));
 
           done();
         })
