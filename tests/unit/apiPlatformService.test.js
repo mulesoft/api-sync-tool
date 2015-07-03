@@ -22,16 +22,36 @@ describe('apiPlatformService', function () {
   var directory = '/Users/test';
   var apiFiles = [
     {
+      audit: {
+        created: {
+          date: '2015-07-03 14:50:00'
+        },
+        updated: {}
+      },
       name: 'api.raml',
       path: '/api.raml',
       isDirectory: false
     },
     {
+      audit: {
+        created: {
+          date: '2015-07-03 14:50:00'
+        },
+        updated: {
+          date: '2015-07-02 13:12:00'
+        }
+      },
       name: 'schema.json',
       path: '/schema.json',
       isDirectory: false
     },
     {
+      audit: {
+        created: {
+          date: '2015-07-03 14:50:00'
+        },
+        updated: {}
+      },
       name: 'temp',
       path: '/temp',
       isDirectory: true
@@ -198,12 +218,18 @@ describe('apiPlatformService', function () {
 
           fileSystemRepositoryStub.getFileHash.calledTwice.should.be.true();
 
-          result.should.be.an.Array();
-          result.length.should.equal(2);
-          result[0].path.should.equal(apiFiles[0].path);
-          result[0].hash.should.equal(fileHash);
-          result[1].path.should.equal(apiFiles[1].path);
-          result[1].hash.should.equal(fileHash);
+          should.deepEqual(result, [
+            {
+              audit: apiFiles[0].audit,
+              path: apiFiles[0].path,
+              hash: fileHash
+            },
+            {
+              audit: apiFiles[1].audit,
+              path: apiFiles[1].path,
+              hash: fileHash
+            }
+          ]);
 
           done();
         })
@@ -295,13 +321,24 @@ describe('apiPlatformService', function () {
       data: 'asdasd'
     };
 
+    var createdFileData = {
+      audit: {
+        created: {
+          date: '2015-07-03 14:50:00'
+        },
+        updated: {}
+      },
+      path: newFile.path,
+      data: newFileData.data
+    };
+
     var fileHash = 'hash';
 
     it('should create API file', function (done) {
       fileSystemRepositoryStub.getFile = sinon.stub().returns(
         Promise.resolve(newFileData));
       apiPlatformRepositoryStub.createAPIFile = sinon.stub().returns(
-        Promise.resolve(newFileData));
+        Promise.resolve(createdFileData));
       fileSystemRepositoryStub.getFileHash = sinon.stub().returns(
         Promise.resolve(fileHash));
 
@@ -324,6 +361,7 @@ describe('apiPlatformService', function () {
               ]);
 
               should.deepEqual(createdFile, {
+                audit: createdFileData.audit,
                 path: newFile.path,
                 hash: fileHash
               });
@@ -347,13 +385,24 @@ describe('apiPlatformService', function () {
       data: 'asdasd'
     };
 
+    var updatedFileData = {
+      audit: {
+        created: {
+          date: '2015-07-03 14:50:00'
+        },
+        updated: {}
+      },
+      path: file.path,
+      data: fileData.data
+    };
+
     var fileHash = 'hash';
 
     it('should update API file', function (done) {
       fileSystemRepositoryStub.getFile = sinon.stub().returns(
         Promise.resolve(fileData));
       apiPlatformRepositoryStub.updateAPIFile = sinon.stub().returns(
-        Promise.resolve(fileData.path));
+        Promise.resolve(updatedFileData));
       fileSystemRepositoryStub.getFileHash = sinon.stub().returns(
         Promise.resolve(fileHash));
 
@@ -376,6 +425,7 @@ describe('apiPlatformService', function () {
               ]);
 
             should.deepEqual(updatedFile, {
+              audit: updatedFileData.audit,
               path: file.path,
               hash: fileHash
             });
