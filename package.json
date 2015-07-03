@@ -1,6 +1,6 @@
 {
   "name": "api-sync",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "Anypoint Platform synchronization tool for APIs",
   "repository": {
     "type": "git",
