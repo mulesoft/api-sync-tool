@@ -15,12 +15,6 @@ var contextStub = {};
 var shaStub = {};
 var fsStub = {};
 
-var promisifyStub = function () {
-  return function (otherFunction) {
-    return otherFunction;
-  };
-};
-
 describe('fileSystemRepository', function () {
   beforeEach(function () {
     contextStub.getDirectoryPath = sinon.stub().returns(localPath);
@@ -341,7 +335,6 @@ function run(callback) {
     container.register('contextHolder', contextHolderStub);
     container.register('sha', shaStub);
     container.register('fs', fsStub);
-    container.register('promisify', promisifyStub);
     container.resolve(callback);
   };
 }
