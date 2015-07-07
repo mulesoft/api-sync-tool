@@ -62,6 +62,12 @@ function getWorkspaceFilesMetadata(number) {
   return _.range(1, number + 1)
     .map(function (n) {
       return {
+        audit: {
+          created: {
+            date: '2015-10-05 00:05:00'
+          },
+          updated: {}
+        },
         path: 'api' + n + '.raml',
         hash: 'asdf' + n
       };
@@ -73,6 +79,12 @@ function getAPIFilesMetadata(number) {
   return _.range(1, number + 1)
     .map(function (n) {
       return {
+        audit: {
+          created: {
+            date: '2015-10-05 00:05:00'
+          },
+          updated: {}
+        },
         id: n,
         path: 'api' + n + '.raml'
       };
