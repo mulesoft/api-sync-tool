@@ -1,5 +1,7 @@
 'use strict';
 
+var BPromise = require('bluebird');
+
 var should = require('should');
 var sinon = require('sinon');
 
@@ -44,7 +46,7 @@ describe('setupStrategyFactory', function () {
   describe('interactive', run(function (setupStrategyFactory) {
     it('should return selected business group', function (done) {
       // Setup return value for stub method.
-      commandPromptStub.getChoice.returns(Promise.resolve(businessGroups[0]));
+      commandPromptStub.getChoice.returns(BPromise.resolve(businessGroups[0]));
 
       var strategy = setupStrategyFactory.get({isInteractive: true});
 
@@ -69,7 +71,7 @@ describe('setupStrategyFactory', function () {
 
     it('should return selected api', function (done) {
       // Setup return value for stub method.
-      commandPromptStub.getChoice.returns(Promise.resolve(apis[0]));
+      commandPromptStub.getChoice.returns(BPromise.resolve(apis[0]));
 
       var strategy = setupStrategyFactory.get({isInteractive: true});
 
@@ -93,7 +95,7 @@ describe('setupStrategyFactory', function () {
 
     it('should return selected api version', function (done) {
       // Setup return value for stub method.
-      commandPromptStub.getChoice.returns(Promise.resolve(apis[0].versions[0]));
+      commandPromptStub.getChoice.returns(BPromise.resolve(apis[0].versions[0]));
 
       var strategy = setupStrategyFactory.get({isInteractive: true});
 
@@ -118,7 +120,7 @@ describe('setupStrategyFactory', function () {
 
     it('should return run pull decision', function (done) {
       // Setup return value for stub method.
-      commandPromptStub.getConfirmation.returns(Promise.resolve(true));
+      commandPromptStub.getConfirmation.returns(BPromise.resolve(true));
 
       var strategy = setupStrategyFactory.get({isInteractive: true});
 

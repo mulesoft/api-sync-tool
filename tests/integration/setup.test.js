@@ -1,5 +1,7 @@
 'use strict';
 
+var BPromise = require('bluebird');
+
 require('should');
 var sinon = require('sinon');
 
@@ -107,12 +109,12 @@ describe('setup', run(function (application) {
 
     superagentStub.end = sinon.stub();
     // Request for login
-    superagentStub.end.onFirstCall().returns(Promise.resolve(loginResponse));
+    superagentStub.end.onFirstCall().returns(BPromise.resolve(loginResponse));
     // Request for user info
-    superagentStub.end.onSecondCall().returns(Promise.resolve(
+    superagentStub.end.onSecondCall().returns(BPromise.resolve(
       userInfoResponse));
     // Request for APIs
-    superagentStub.end.onThirdCall().returns(Promise.resolve(apisResponse));
+    superagentStub.end.onThirdCall().returns(BPromise.resolve(apisResponse));
 
     loggerStub.error = sinon.stub();
     loggerStub.info = sinon.stub();

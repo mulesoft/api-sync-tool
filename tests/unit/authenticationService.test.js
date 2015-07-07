@@ -1,5 +1,7 @@
 'use strict';
 
+var BPromise = require('bluebird');
+
 require('should');
 var sinon = require('sinon');
 
@@ -9,7 +11,7 @@ var csRepositoryStub = {};
 
 describe('authenticationService', function () {
   beforeEach(function () {
-    csRepositoryStub.login = sinon.stub().returns(Promise.resolve());
+    csRepositoryStub.login = sinon.stub().returns(BPromise.resolve());
   });
 
   describe('login', run(function (authenticationService) {

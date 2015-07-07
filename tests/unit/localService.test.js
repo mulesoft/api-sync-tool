@@ -1,5 +1,7 @@
 'use strict';
 
+var BPromise = require('bluebird');
+
 var should = require('should');
 var sinon = require('sinon');
 
@@ -79,21 +81,21 @@ apiFiles.push({
 describe('localService', function () {
   beforeEach(function () {
     apiPlatformRepositoryStub.getAPIFilesMetadata = sinon.stub().returns(
-      Promise.resolve(apiFiles));
+      BPromise.resolve(apiFiles));
 
     fileSystemRepositoryStub.getFilesPath = sinon.stub().returns(
-      Promise.resolve(fileList));
+      BPromise.resolve(fileList));
     fileSystemRepositoryStub.getFileHash = sinon.stub();
 
     workspaceRepositoryStub.get = sinon.stub().returns(
-      Promise.resolve(currentWorkspace));
+      BPromise.resolve(currentWorkspace));
   });
 
   describe('getDirectoriesPath', run(function (localService) {
     it('should pass the call to fileSystemRepository', function (done) {
       var dirs = [{path: 'x'}];
       fileSystemRepositoryStub.getDirectoriesPath = sinon.stub()
-        .returns(Promise.resolve(dirs));
+        .returns(BPromise.resolve(dirs));
       localService.getDirectoriesPath()
         .then(function (output) {
           asserts.calledOnceWithoutParameters([
@@ -111,9 +113,9 @@ describe('localService', function () {
 
   describe('status', run(function (localService) {
     it('should return the current local status', function (done) {
-      fileSystemRepositoryStub.getFileHash.returns(Promise.resolve(fileHash));
+      fileSystemRepositoryStub.getFileHash.returns(BPromise.resolve(fileHash));
       fileSystemRepositoryStub.getFileHash.onFirstCall().returns(
-        Promise.resolve(currentWorkspace.files[0].hash));
+        BPromise.resolve(currentWorkspace.files[0].hash));
       localService.status()
         .then(function (result) {
           result.unchanged.should.be.an.Array();
@@ -144,9 +146,9 @@ describe('localService', function () {
 
   describe('conflicts', run(function (localService) {
     it('should return conflicts', function (done) {
-      fileSystemRepositoryStub.getFileHash.returns(Promise.resolve(fileHash));
+      fileSystemRepositoryStub.getFileHash.returns(BPromise.resolve(fileHash));
       fileSystemRepositoryStub.getFileHash.onFirstCall().returns(
-        Promise.resolve(currentWorkspace.files[0].hash));
+        BPromise.resolve(currentWorkspace.files[0].hash));
 
       localService.conflicts()
         .then(function (conflicts) {

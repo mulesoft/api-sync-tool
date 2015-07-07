@@ -1,5 +1,7 @@
 'use strict';
 
+var BPromise = require('bluebird');
+
 require('should');
 var sinon = require('sinon');
 
@@ -84,7 +86,7 @@ describe('pushCommand', function () {
 
   describe('execute', function () {
     it('should execute push and log a successful result', function (done) {
-      pushControllerStub.push.returns(Promise.resolve(pushControllerResult));
+      pushControllerStub.push.returns(BPromise.resolve(pushControllerResult));
 
       run(function (pushCommand) {
         pushCommand.execute()
@@ -108,7 +110,7 @@ describe('pushCommand', function () {
     });
 
     it('should execute push command and log a nothing result', function (done) {
-      pushControllerStub.push.returns(Promise.resolve(pushControllerEmptyResult));
+      pushControllerStub.push.returns(BPromise.resolve(pushControllerEmptyResult));
 
       run(function (pushCommand) {
         pushCommand.execute()

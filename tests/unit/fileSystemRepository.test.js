@@ -1,5 +1,7 @@
 'use strict';
 
+var BPromise = require('bluebird');
+
 var should = require('should');
 var sinon = require('sinon');
 
@@ -26,7 +28,7 @@ describe('fileSystemRepository', function () {
       var filePath = 'pepe';
       var fileData = 'data';
 
-      fsStub.readFile = sinon.stub().returns(Promise.resolve(fileData));
+      fsStub.readFile = sinon.stub().returns(BPromise.resolve(fileData));
 
       fileSystemRepository.getFile(filePath)
         .then(function (result) {
@@ -70,7 +72,7 @@ describe('fileSystemRepository', function () {
   describe('getFileHash', run(function (fileSystemRepository) {
     var fileHash = 'hash';
     beforeEach(function () {
-      shaStub.get = sinon.stub().returns(Promise.resolve(fileHash));
+      shaStub.get = sinon.stub().returns(BPromise.resolve(fileHash));
     });
 
     it('should return the hash of a file in the local repository',
@@ -274,10 +276,10 @@ describe('fileSystemRepository', function () {
 
   function setFs(fs) {
     fsStub.readdir = function (dir) {
-      return Promise.resolve(fs[dir]);
+      return BPromise.resolve(fs[dir]);
     };
     fsStub.stat = function (filePath) {
-      return Promise.resolve({
+      return BPromise.resolve({
         isDirectory: function () {
           return filePath in fs;
         }
@@ -308,7 +310,7 @@ describe('fileSystemRepository', function () {
 
   describe('removeFile', run(function (fileSystemRepository) {
     beforeEach(function () {
-      fsStub.unlink = sinon.stub().returns(Promise.resolve('removed'));
+      fsStub.unlink = sinon.stub().returns(BPromise.resolve('removed'));
     });
 
     it('it should call the fileSystem unlink', function (done) {

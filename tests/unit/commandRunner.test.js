@@ -1,5 +1,7 @@
 'use strict';
 
+var BPromise = require('bluebird');
+
 require('should');
 var sinon = require('sinon');
 
@@ -28,29 +30,29 @@ var expiredToken = 'expired token';
 describe('commandRunner', function () {
   beforeEach(function () {
     commandStub.parseArgs = sinon.stub().returns(args);
-    commandStub.validateSetup = sinon.stub().returns(Promise.resolve());
-    commandStub.validateInput = sinon.stub().returns(Promise.resolve());
-    commandStub.execute = sinon.stub().returns(Promise.resolve());
+    commandStub.validateSetup = sinon.stub().returns(BPromise.resolve());
+    commandStub.validateInput = sinon.stub().returns(BPromise.resolve());
+    commandStub.execute = sinon.stub().returns(BPromise.resolve());
 
     authenticationRepositoryStub
-      .get = sinon.stub().returns(Promise.resolve(authentication));
+      .get = sinon.stub().returns(BPromise.resolve(authentication));
     authenticationRepositoryStub
-      .update = sinon.stub().returns(Promise.resolve());
+      .update = sinon.stub().returns(BPromise.resolve());
 
     loginPromptStub
-      .getUserCredentials = sinon.stub().returns(Promise.resolve(user));
+      .getUserCredentials = sinon.stub().returns(BPromise.resolve(user));
 
     authenticationServiceStub.login =
-      sinon.stub().returns(Promise.resolve(newAuthentication));
+      sinon.stub().returns(BPromise.resolve(newAuthentication));
 
     contextFactoryStub.create =
       sinon.stub().returns(userContext);
 
-    contextHolderStub.set = sinon.stub().returns(Promise.resolve());
-    commandPromptStub.getConfirmation = sinon.stub().returns(Promise.resolve());
-    errorsStub.BadCredentialsError = sinon.stub().returns(Promise.resolve());
+    contextHolderStub.set = sinon.stub().returns(BPromise.resolve());
+    commandPromptStub.getConfirmation = sinon.stub().returns(BPromise.resolve());
+    errorsStub.BadCredentialsError = sinon.stub().returns(BPromise.resolve());
     messagesStub.storeAuthenticationPromptMessage =
-      sinon.stub().returns(Promise.resolve());
+      sinon.stub().returns(BPromise.resolve());
 
     processStub.cwd = sinon.stub().returns(cwd);
   });
@@ -100,7 +102,7 @@ describe('commandRunner', function () {
   describe('user isn\'t authenticated', run(function (commandRunner) {
     beforeEach(function () {
       authenticationRepositoryStub
-        .get = sinon.stub().returns(Promise.resolve({}));
+        .get = sinon.stub().returns(BPromise.resolve({}));
     });
 
     it('logs the user', function (done) {
@@ -121,7 +123,7 @@ describe('commandRunner', function () {
 
     it('the user wants to store the authentication', function (done) {
       commandPromptStub
-        .getConfirmation = sinon.stub().returns(Promise.resolve(true));
+        .getConfirmation = sinon.stub().returns(BPromise.resolve(true));
       commandRunner.run(commandStub, args)
         .then(function () {
           authenticationRepositoryStub.get.calledTwice.should.be.true();
@@ -139,7 +141,7 @@ describe('commandRunner', function () {
 
     it('the user doesn\'t want to store the authentication', function (done) {
       commandPromptStub
-        .getConfirmation = sinon.stub().returns(Promise.resolve(false));
+        .getConfirmation = sinon.stub().returns(BPromise.resolve(false));
       commandRunner.run(commandStub, args)
         .then(function () {
           authenticationRepositoryStub.get.calledOnce.should.be.true();
@@ -159,8 +161,8 @@ describe('commandRunner', function () {
         /* jshint ignore:start */
         commandStub.execute = sinon.stub();
         commandStub.execute
-          .onFirstCall().returns(Promise.reject(new String('pepe')))
-          .onSecondCall().returns(Promise.resolve())
+          .onFirstCall().returns(BPromise.reject(new String('pepe')))
+          .onSecondCall().returns(BPromise.resolve())
         /* jshint ignore:end */
 
         messagesStub.expiredTokenMessage = sinon.stub().returns(expiredToken);
@@ -193,7 +195,7 @@ describe('commandRunner', function () {
       /* jshint ignore:end */
       beforeEach(function () {
         errorsStub.BadCredentialsError = Boolean;
-        commandStub.execute = sinon.stub().returns(Promise.reject(error));
+        commandStub.execute = sinon.stub().returns(BPromise.reject(error));
       });
 
       it('rejects with the error', function (done) {

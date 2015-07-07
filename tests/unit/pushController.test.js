@@ -1,5 +1,7 @@
 'use strict';
 
+var BPromise = require('bluebird');
+
 var should = require('should');
 var sinon = require('sinon');
 var _ = require('lodash');
@@ -24,17 +26,17 @@ describe('pushController', function () {
 
   beforeEach(function () {
     workspaceRepositoryStub.get = sinon.stub().returns(
-      Promise.resolve(currentWorkspace));
+      BPromise.resolve(currentWorkspace));
     localServiceStub.status = sinon.stub();
 
     apiPlatformServiceStub.getAPIFilesMetadata = sinon.stub().returns(
-      Promise.resolve(apiFilesMetadata));
+      BPromise.resolve(apiFilesMetadata));
 
     apiPlatformServiceStub.createAPIFile = sinon.stub();
     apiPlatformServiceStub.updateAPIFile = sinon.stub();
     apiPlatformServiceStub.deleteAPIFile = sinon.stub();
 
-    workspaceRepositoryStub.update = sinon.stub().returns(Promise.resolve());
+    workspaceRepositoryStub.update = sinon.stub().returns(BPromise.resolve());
     loggerStub.info = sinon.stub();
 
     messagesStub.pushProgressNew = sinon.stub().returns(newMessage);
@@ -68,24 +70,24 @@ describe('pushController', function () {
       };
 
       apiPlatformServiceStub.createAPIFile
-        .onFirstCall().returns(Promise.resolve(currentWorkspace.files[0]))
-        .onSecondCall().returns(Promise.resolve(currentWorkspace.files[1]))
-        .onThirdCall().returns(Promise.resolve(currentWorkspace.files[2]))
-        .onCall(3).returns(Promise.resolve(currentWorkspace.files[3]));
+        .onFirstCall().returns(BPromise.resolve(currentWorkspace.files[0]))
+        .onSecondCall().returns(BPromise.resolve(currentWorkspace.files[1]))
+        .onThirdCall().returns(BPromise.resolve(currentWorkspace.files[2]))
+        .onCall(3).returns(BPromise.resolve(currentWorkspace.files[3]));
 
       apiPlatformServiceStub.updateAPIFile
-        .onFirstCall().returns(Promise.resolve(currentWorkspace.files[4]))
-        .onSecondCall().returns(Promise.resolve(currentWorkspace.files[5]))
-        .onThirdCall().returns(Promise.resolve(currentWorkspace.files[6]));
+        .onFirstCall().returns(BPromise.resolve(currentWorkspace.files[4]))
+        .onSecondCall().returns(BPromise.resolve(currentWorkspace.files[5]))
+        .onThirdCall().returns(BPromise.resolve(currentWorkspace.files[6]));
 
       apiPlatformServiceStub.deleteAPIFile
-        .onFirstCall().returns(Promise.resolve(currentWorkspace.files[7].path))
-        .onSecondCall().returns(Promise.resolve(currentWorkspace.files[8].path))
-        .onThirdCall().returns(Promise.resolve(currentWorkspace.files[9].path));
+        .onFirstCall().returns(BPromise.resolve(currentWorkspace.files[7].path))
+        .onSecondCall().returns(BPromise.resolve(currentWorkspace.files[8].path))
+        .onThirdCall().returns(BPromise.resolve(currentWorkspace.files[9].path));
 
-      localServiceStub.status.returns(Promise.resolve(status));
+      localServiceStub.status.returns(BPromise.resolve(status));
       localServiceStub.getDirectoriesPath = sinon.stub()
-        .returns(Promise.resolve([
+        .returns(BPromise.resolve([
           '/folder2',
           '/folder1',
           '/folder2/folder21'
@@ -119,11 +121,11 @@ describe('pushController', function () {
 
       apiPlatformServiceStub.createAPIDirectory = sinon.stub();
       apiPlatformServiceStub.createAPIDirectory
-        .onFirstCall().returns(Promise.resolve(firstDirectoryResult));
+        .onFirstCall().returns(BPromise.resolve(firstDirectoryResult));
       apiPlatformServiceStub.createAPIDirectory
-        .onSecondCall().returns(Promise.resolve(secondDirectoryResult));
+        .onSecondCall().returns(BPromise.resolve(secondDirectoryResult));
       apiPlatformServiceStub.createAPIDirectory
-        .onThirdCall().returns(Promise.resolve(thirdDirectoryResult));
+        .onThirdCall().returns(BPromise.resolve(thirdDirectoryResult));
 
       pushController.push()
         .then(function (output) {
@@ -267,9 +269,9 @@ describe('pushController', function () {
         changed: [],
         deleted: []
       };
-      localServiceStub.status.returns(Promise.resolve(status));
+      localServiceStub.status.returns(BPromise.resolve(status));
       localServiceStub.getDirectoriesPath = sinon.stub()
-        .returns(Promise.resolve([]));
+        .returns(BPromise.resolve([]));
       apiPlatformServiceStub.createAPIDirectory = sinon.stub();
 
       pushController.push()
@@ -312,7 +314,7 @@ describe('pushController', function () {
     });
 
     it('should update workspace even when something fails', function (done) {
-      localServiceStub.status.returns(Promise.reject());
+      localServiceStub.status.returns(BPromise.reject());
       localServiceStub.getDirectoriesPath = sinon.stub();
       apiPlatformServiceStub.createAPIDirectory = sinon.stub();
 

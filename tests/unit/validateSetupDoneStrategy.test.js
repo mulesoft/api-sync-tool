@@ -1,5 +1,7 @@
 'use strict';
 
+var BPromise = require('bluebird');
+
 require('should');
 var sinon = require('sinon');
 
@@ -19,7 +21,7 @@ describe('validateSetupDoneStrategy', run(function (validateSetupDoneStrategy) {
   });
 
   it('should pass validation for initialized workspace', function (done) {
-    workspaceRepositoryStub.get.returns(Promise.resolve(workspace));
+    workspaceRepositoryStub.get.returns(BPromise.resolve(workspace));
 
     validateSetupDoneStrategy()
       .then(function () {
@@ -33,7 +35,7 @@ describe('validateSetupDoneStrategy', run(function (validateSetupDoneStrategy) {
   });
 
   it('should fail validation for new workspace', function (done) {
-    workspaceRepositoryStub.get.returns(Promise.resolve({}));
+    workspaceRepositoryStub.get.returns(BPromise.resolve({}));
 
     validateSetupDoneStrategy()
       .then(function () {

@@ -1,5 +1,7 @@
 'use strict';
 
+var BPromise = require('bluebird');
+
 require('should');
 var sinon = require('sinon');
 
@@ -14,7 +16,7 @@ var successfulMessage = 'Success';
 
 describe('cleanupCommand', function () {
   beforeEach(function () {
-    cleanupControllerStub.cleanup = sinon.stub().returns(Promise.resolve());
+    cleanupControllerStub.cleanup = sinon.stub().returns(BPromise.resolve());
     messagesStub.cleanup = sinon.stub().returns(successfulMessage);
     messagesStub.cleanupDetailedHelp = sinon.stub();
     loggerStub.info = sinon.stub();

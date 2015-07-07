@@ -1,5 +1,7 @@
 'use strict';
 
+var BPromise = require('bluebird');
+
 var should = require('should');
 var sinon = require('sinon');
 
@@ -140,9 +142,9 @@ describe('createCommand', function () {
             id: 2
           }
         };
-        createControllerStub.create = sinon.stub().returns(Promise.resolve(api));
-        pushCommandStub.execute = sinon.stub().returns(Promise.resolve());
-        setupCommandStub.execute = sinon.stub().returns(Promise.resolve());
+        createControllerStub.create = sinon.stub().returns(BPromise.resolve(api));
+        pushCommandStub.execute = sinon.stub().returns(BPromise.resolve());
+        setupCommandStub.execute = sinon.stub().returns(BPromise.resolve());
         var args = {
           bizGroup: 1234,
           api: 'name',

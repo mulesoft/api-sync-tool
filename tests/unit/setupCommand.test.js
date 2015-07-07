@@ -1,5 +1,7 @@
 'use strict';
 
+var BPromise = require('bluebird');
+
 var should = require('should');
 var sinon = require('sinon');
 
@@ -40,9 +42,9 @@ describe('setupCommand', function () {
     messagesStub.setupDetailedHelp = sinon.stub();
     messagesStub.setupSuccessful = sinon.stub().returns(okMessage);
 
-    setupControllerStub.setup = sinon.stub().returns(Promise.resolve(
+    setupControllerStub.setup = sinon.stub().returns(BPromise.resolve(
         setupControllerResult));
-    pullCommandStub.execute = sinon.stub().returns(Promise.resolve());
+    pullCommandStub.execute = sinon.stub().returns(BPromise.resolve());
     setupStrategyFactoryStub.get = sinon.stub();
     loggerStub.info = sinon.stub();
 

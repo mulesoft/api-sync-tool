@@ -1,5 +1,7 @@
 'use strict';
 
+var BPromise = require('bluebird');
+
 require('should');
 var sinon = require('sinon');
 
@@ -82,7 +84,7 @@ describe('statusCommand', function () {
         unchanged: [],
         deleted: []
       };
-      localServiceStub.status.returns(Promise.resolve(result));
+      localServiceStub.status.returns(BPromise.resolve(result));
       run(function (statusCommand) {
         statusCommand.execute()
           .then(function () {
@@ -107,7 +109,7 @@ describe('statusCommand', function () {
         }],
         deleted: []
       };
-      localServiceStub.status.returns(Promise.resolve(result));
+      localServiceStub.status.returns(BPromise.resolve(result));
       run(function (statusCommand) {
         statusCommand.execute()
           .then(function () {

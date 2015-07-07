@@ -1,5 +1,7 @@
 'use strict';
 
+var BPromise = require('bluebird');
+
 require('should');
 var sinon = require('sinon');
 
@@ -21,7 +23,7 @@ describe('application', function () {
   beforeEach(function () {
     commandStub = sinon.stub();
     commandStub.getHelp = sinon.stub().returns(helpMessage);
-    commandFactoryStub.get = sinon.stub().returns(Promise.resolve(commandStub));
+    commandFactoryStub.get = sinon.stub().returns(BPromise.resolve(commandStub));
 
     commandRunnerStub.run = sinon.stub();
 
@@ -92,7 +94,7 @@ describe('application', function () {
 
     it('should catch errors from commandFactory', function (done) {
       commandFactoryStub.get =
-        sinon.stub().returns(Promise.reject(errorMessage));
+        sinon.stub().returns(BPromise.reject(errorMessage));
 
       var args = {_: ['test']};
       run(function (application) {
@@ -120,7 +122,7 @@ describe('application', function () {
 
     it('should catch errors from commandRunner', function (done) {
       commandRunnerStub.run =
-        sinon.stub().returns(Promise.reject(errorMessage));
+        sinon.stub().returns(BPromise.reject(errorMessage));
 
       var args = {_: ['test']};
       run(function (application) {

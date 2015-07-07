@@ -1,5 +1,7 @@
 'use strict';
 
+var BPromise = require('bluebird');
+
 require('should');
 var sinon = require('sinon');
 var _ = require('lodash');
@@ -23,23 +25,23 @@ var currentWorkspace = {
 describe('setupController', function () {
   beforeEach(function () {
     userOrganizationServiceStub.getBusinessGroups =
-      sinon.stub().returns(Promise.resolve(_.shuffle(organizations)));
+      sinon.stub().returns(BPromise.resolve(_.shuffle(organizations)));
 
     apiPlatformServiceStub.getAllAPIs =
-      sinon.stub().returns(Promise.resolve(apis));
+      sinon.stub().returns(BPromise.resolve(apis));
 
     setupStrategyStub.getBusinessGroup =
-      sinon.stub().returns(Promise.resolve(organizations[1]));
+      sinon.stub().returns(BPromise.resolve(organizations[1]));
     setupStrategyStub.getAPI =
-      sinon.stub().returns(Promise.resolve(apis[0]));
+      sinon.stub().returns(BPromise.resolve(apis[0]));
     setupStrategyStub.getAPIVersion =
-      sinon.stub().returns(Promise.resolve(apis[0].versions[0]));
+      sinon.stub().returns(BPromise.resolve(apis[0].versions[0]));
     setupStrategyStub.getRunPull =
-      sinon.stub().returns(Promise.resolve(true));
+      sinon.stub().returns(BPromise.resolve(true));
 
     workspaceRepositoryStub.get = sinon.stub().returns(
-      Promise.resolve(currentWorkspace));
-    workspaceRepositoryStub.update = sinon.stub().returns(Promise.resolve());
+      BPromise.resolve(currentWorkspace));
+    workspaceRepositoryStub.update = sinon.stub().returns(BPromise.resolve());
   });
 
   describe('setup', run(function (setupController) {

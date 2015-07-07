@@ -1,5 +1,7 @@
 'use strict';
 
+var BPromise = require('bluebird');
+
 require('should');
 var sinon = require('sinon');
 
@@ -80,7 +82,7 @@ describe('cleanupCommand', function () {
 
   describe('execute', function () {
     it('should execute pull and log the added files', function (done) {
-      pullControllerStub.getAPIFiles.returns(Promise.resolve(results));
+      pullControllerStub.getAPIFiles.returns(BPromise.resolve(results));
 
       run(function (pullCommand) {
         pullCommand.execute()
@@ -100,7 +102,7 @@ describe('cleanupCommand', function () {
     });
 
     it('should execute pull and log if no files where found', function (done) {
-      pullControllerStub.getAPIFiles.returns(Promise.resolve([]));
+      pullControllerStub.getAPIFiles.returns(BPromise.resolve([]));
 
       run(function (pullCommand) {
         pullCommand.execute()

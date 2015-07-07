@@ -1,5 +1,7 @@
 'use strict';
 
+var BPromise = require('bluebird');
+
 require('should');
 var sinon = require('sinon');
 
@@ -9,7 +11,7 @@ var csRepositoryStub = {};
 
 describe('userOrganizationService', function () {
   beforeEach(function () {
-    csRepositoryStub.getUserInfo = sinon.stub().returns(Promise.resolve({
+    csRepositoryStub.getUserInfo = sinon.stub().returns(BPromise.resolve({
       memberOfOrganizations: [
         {
           id: 1,
