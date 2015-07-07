@@ -9,7 +9,6 @@ var asserts  = require('../support/asserts');
 var cleanupControllerStub = {};
 var loggerStub = {};
 var messagesStub = {};
-var validateSetupDoneStrategyStub = {};
 
 var successfulMessage = 'Success';
 
@@ -18,14 +17,17 @@ describe('cleanupCommand', function () {
     cleanupControllerStub.cleanup = sinon.stub().returns(Promise.resolve());
     messagesStub.cleanup = sinon.stub().returns(successfulMessage);
     loggerStub.info = sinon.stub();
-    validateSetupDoneStrategyStub.validate = sinon.stub();
   });
 
   describe('validateSetup', run(function (cleanupCommand) {
-    it('should be a dependency', function (done) {
-      validateSetupDoneStrategyStub.should.equal(cleanupCommand.validateSetup);
-
-      done();
+    it('should run validation and do nothing', function (done) {
+      cleanupCommand.validateSetup()
+        .then(function () {
+          done();
+        })
+        .catch(function (err) {
+          done(err);
+        });
     });
   }));
 
@@ -77,7 +79,6 @@ function run(callback) {
     container.register('messages', messagesStub);
     container.register('logger', loggerStub);
     container.register('cleanupController', cleanupControllerStub);
-    container.register('validateSetupDoneStrategy', validateSetupDoneStrategyStub);
     container.resolve(callback);
   };
 }
