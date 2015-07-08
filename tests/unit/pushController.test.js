@@ -11,6 +11,7 @@ var containerFactory  = require('../support/testContainerFactory');
 var contentGenerator = require('../support/contentGenerator');
 
 var apiPlatformServiceStub = {};
+var errorsStub = {};
 var localServiceStub = {};
 var loggerStub = {};
 var messagesStub = {};
@@ -27,7 +28,12 @@ describe('pushController', function () {
   beforeEach(function () {
     workspaceRepositoryStub.get = sinon.stub().returns(
       BPromise.resolve(currentWorkspace));
+
     localServiceStub.status = sinon.stub();
+    localServiceStub.conflicts = sinon.stub();
+    localServiceStub.getDirectoriesPath = sinon.stub();
+
+    errorsStub.ConflictsFoundError = sinon.stub();
 
     apiPlatformServiceStub.getAPIFilesMetadata = sinon.stub().returns(
       BPromise.resolve(apiFilesMetadata));
@@ -86,7 +92,7 @@ describe('pushController', function () {
         .onThirdCall().returns(BPromise.resolve(currentWorkspace.files[9].path));
 
       localServiceStub.status.returns(BPromise.resolve(status));
-      localServiceStub.getDirectoriesPath = sinon.stub()
+      localServiceStub.getDirectoriesPath
         .returns(BPromise.resolve([
           '/folder2',
           '/folder1',
@@ -129,11 +135,12 @@ describe('pushController', function () {
 
       pushController.push()
         .then(function (output) {
-          workspaceRepositoryStub.get.calledOnce.should.be.true();
-          workspaceRepositoryStub.get.firstCall.args.length.should.equal(0);
-
-          localServiceStub.status.calledOnce.should.be.true();
-          localServiceStub.status.firstCall.args.length.should.equal(0);
+          asserts.calledOnceWithoutParameters([
+            workspaceRepositoryStub.get,
+            localServiceStub.status,
+            localServiceStub.getDirectoriesPath,
+            localServiceStub.conflicts
+          ]);
 
           apiPlatformServiceStub.getAPIFilesMetadata.calledOnce.should.be.true();
           apiPlatformServiceStub.getAPIFilesMetadata.calledWithExactly(
@@ -141,9 +148,6 @@ describe('pushController', function () {
             currentWorkspace.api.id,
             currentWorkspace.apiVersion.id
           ).should.be.true();
-
-          asserts.calledOnceWithoutParameters([
-            localServiceStub.getDirectoriesPath]);
 
           apiPlatformServiceStub.createAPIDirectory.calledThrice;
           apiPlatformServiceStub.createAPIDirectory
@@ -270,7 +274,7 @@ describe('pushController', function () {
         deleted: []
       };
       localServiceStub.status.returns(BPromise.resolve(status));
-      localServiceStub.getDirectoriesPath = sinon.stub()
+      localServiceStub.getDirectoriesPath
         .returns(BPromise.resolve([]));
       apiPlatformServiceStub.createAPIDirectory = sinon.stub();
 
@@ -282,7 +286,8 @@ describe('pushController', function () {
           localServiceStub.status.calledOnce.should.be.true();
           localServiceStub.status.firstCall.args.length.should.equal(0);
 
-          apiPlatformServiceStub.getAPIFilesMetadata.calledOnce.should.be.true();
+          apiPlatformServiceStub.getAPIFilesMetadata.calledOnce
+            .should.be.true();
           apiPlatformServiceStub.getAPIFilesMetadata.calledWithExactly(
             currentWorkspace.bizGroup.id,
             currentWorkspace.api.id,
@@ -315,7 +320,6 @@ describe('pushController', function () {
 
     it('should update workspace even when something fails', function (done) {
       localServiceStub.status.returns(BPromise.reject());
-      localServiceStub.getDirectoriesPath = sinon.stub();
       apiPlatformServiceStub.createAPIDirectory = sinon.stub();
 
       pushController.push()
@@ -349,6 +353,29 @@ describe('pushController', function () {
           done(err);
         });
     });
+
+    it ('should fail when conflicts are found', function (done) {
+      localServiceStub.conflicts.returns(BPromise.resolve({
+        added: ['api.raml']
+      }));
+      pushController.push()
+        .then(function () {
+          done('should have failed');
+        })
+        .catch(function () {
+          asserts.calledOnceWithoutParameters([
+            workspaceRepositoryStub.get,
+            localServiceStub.status,
+            localServiceStub.getDirectoriesPath,
+            localServiceStub.conflicts]);
+
+          errorsStub.ConflictsFoundError.calledWithNew().should.be.true();
+          done();
+        })
+        .catch(function (err) {
+          done(err);
+        });
+    });
   }));
 });
 
@@ -356,6 +383,7 @@ function run(callback) {
   return function () {
     var container = containerFactory.createContainer();
     container.register('apiPlatformService', apiPlatformServiceStub);
+    container.register('errors', errorsStub);
     container.register('localService', localServiceStub);
     container.register('workspaceRepository', workspaceRepositoryStub);
     container.register('logger', loggerStub);
