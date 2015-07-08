@@ -1,5 +1,7 @@
 'use strict';
 
+var BPromise = require('bluebird');
+
 var should = require('should');
 var sinon = require('sinon');
 
@@ -83,11 +85,11 @@ describe('apiPlatformService', function () {
 
     beforeEach(function () {
       apiPlatformRepositoryStub.createAPI =
-        sinon.stub().returns(Promise.resolve(newApi));
+        sinon.stub().returns(BPromise.resolve(newApi));
       apiPlatformRepositoryStub.addRootRaml =
-        sinon.stub().returns(Promise.resolve());
+        sinon.stub().returns(BPromise.resolve());
       fileSystemRepositoryStub.getFile =
-        sinon.stub().returns(Promise.resolve(fileData));
+        sinon.stub().returns(BPromise.resolve(fileData));
 
       loggerStub.info = sinon.stub();
 
@@ -148,7 +150,7 @@ describe('apiPlatformService', function () {
 
     beforeEach(function () {
       apiPlatformRepositoryStub.getAllAPIs = sinon.stub().returns(
-        Promise.resolve(apis));
+        BPromise.resolve(apis));
     });
 
     it('should return all APIs', function (done) {
@@ -176,18 +178,18 @@ describe('apiPlatformService', function () {
     it('should download API Files and store metadata in workspace',
         function (done) {
       apiPlatformRepositoryStub.getAPIFilesMetadata = sinon.stub().returns(
-        Promise.resolve(apiFiles));
+        BPromise.resolve(apiFiles));
       fileSystemRepositoryStub.createWriteStream = sinon.stub().returns(
         streamStub);
       apiPlatformRepositoryStub.getAPIFiles = sinon.stub().returns(
-        Promise.resolve());
-      decompresserStub.decompressFile = sinon.stub().returns(Promise.resolve());
+        BPromise.resolve());
+      decompresserStub.decompressFile = sinon.stub().returns(BPromise.resolve());
       fileSystemRepositoryStub.removeFile = sinon.stub().returns(
-        Promise.resolve());
+        BPromise.resolve());
       fileSystemRepositoryStub.getFileFullPath = sinon.stub().returns(
         fileFullPath);
       fileSystemRepositoryStub.getFileHash = sinon.stub().returns(
-        Promise.resolve(fileHash));
+        BPromise.resolve(fileHash));
 
       apiPlatformService.getAPIFiles(workspace.bizGroup.id, workspace.api.id,
           workspace.apiVersion.id)
@@ -240,7 +242,7 @@ describe('apiPlatformService', function () {
 
     it('should return empty when API has no definition files', function (done) {
       apiPlatformRepositoryStub.getAPIFilesMetadata = sinon.stub().returns(
-        Promise.resolve([]));
+        BPromise.resolve([]));
 
       apiPlatformService.getAPIFiles(workspace.bizGroup.id, workspace.api.id,
           workspace.apiVersion.id)
@@ -263,7 +265,7 @@ describe('apiPlatformService', function () {
   describe('getAPIFilesMetadata', run(function (apiPlatformService) {
     it('should return API definition files metadata', function (done) {
       apiPlatformRepositoryStub.getAPIFilesMetadata = sinon.stub().returns(
-        Promise.resolve(apiFiles));
+        BPromise.resolve(apiFiles));
 
         apiPlatformService.getAPIFilesMetadata(workspace.bizGroup.id,
             workspace.api.id, workspace.apiVersion.id)
@@ -287,7 +289,7 @@ describe('apiPlatformService', function () {
   describe('createAPIDirectory', run(function (apiPlatformService) {
     var newDir = {path: 'x'};
     apiPlatformRepositoryStub.createAPIDirectory = sinon.stub()
-      .returns(Promise.resolve(newDir));
+      .returns(BPromise.resolve(newDir));
 
     it('should pass the call to apiPlatformRepository', function (done) {
       apiPlatformService.createAPIDirectory(workspace.bizGroup.id,
@@ -336,11 +338,11 @@ describe('apiPlatformService', function () {
 
     it('should create API file', function (done) {
       fileSystemRepositoryStub.getFile = sinon.stub().returns(
-        Promise.resolve(newFileData));
+        BPromise.resolve(newFileData));
       apiPlatformRepositoryStub.createAPIFile = sinon.stub().returns(
-        Promise.resolve(createdFileData));
+        BPromise.resolve(createdFileData));
       fileSystemRepositoryStub.getFileHash = sinon.stub().returns(
-        Promise.resolve(fileHash));
+        BPromise.resolve(fileHash));
 
         apiPlatformService.createAPIFile(workspace.bizGroup.id,
             workspace.api.id, workspace.apiVersion.id, newFile)
@@ -400,11 +402,11 @@ describe('apiPlatformService', function () {
 
     it('should update API file', function (done) {
       fileSystemRepositoryStub.getFile = sinon.stub().returns(
-        Promise.resolve(fileData));
+        BPromise.resolve(fileData));
       apiPlatformRepositoryStub.updateAPIFile = sinon.stub().returns(
-        Promise.resolve(updatedFileData));
+        BPromise.resolve(updatedFileData));
       fileSystemRepositoryStub.getFileHash = sinon.stub().returns(
-        Promise.resolve(fileHash));
+        BPromise.resolve(fileHash));
 
         apiPlatformService.updateAPIFile(workspace.bizGroup.id,
             workspace.api.id, workspace.apiVersion.id, file)
@@ -443,7 +445,7 @@ describe('apiPlatformService', function () {
 
     it('should delete API file', function (done) {
       apiPlatformRepositoryStub.deleteAPIFile = sinon.stub().returns(
-        Promise.resolve(filePath));
+        BPromise.resolve(filePath));
 
         apiPlatformService.deleteAPIFile(workspace.bizGroup.id,
             workspace.api.id, workspace.apiVersion.id, filePath)

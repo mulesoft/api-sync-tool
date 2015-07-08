@@ -1,5 +1,7 @@
 'use strict';
 
+var BPromise = require('bluebird');
+
 require('should');
 var sinon = require('sinon');
 
@@ -11,8 +13,8 @@ var workspaceRepositoryStub = {};
 
 describe('cleanupController', function () {
   beforeEach(function () {
-    authenticationRepositoryStub.del = sinon.stub().returns(Promise.resolve());
-    workspaceRepositoryStub.del = sinon.stub().returns(Promise.resolve());
+    authenticationRepositoryStub.del = sinon.stub().returns(BPromise.resolve());
+    workspaceRepositoryStub.del = sinon.stub().returns(BPromise.resolve());
   });
 
   describe('cleanup', run(function (cleanupController) {

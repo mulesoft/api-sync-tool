@@ -1,5 +1,7 @@
 'use strict';
 
+var BPromise = require('bluebird');
+
 var _ = require('lodash');
 var should = require('should');
 var sinon = require('sinon');
@@ -59,7 +61,7 @@ describe('apiPlatformRepository', function () {
     };
 
     it('should add the root raml', function (done) {
-      superagentStub.end.returns(Promise.resolve(response));
+      superagentStub.end.returns(BPromise.resolve(response));
 
       apiPlatformRepository.addRootRaml(organizationId, apiId, apiVersionId,
           rootRaml)
@@ -91,7 +93,7 @@ describe('apiPlatformRepository', function () {
     });
 
     it('should manage errors correctly', function (done) {
-      superagentStub.end.returns(Promise.reject({
+      superagentStub.end.returns(BPromise.reject({
         status: 401
       }));
 
@@ -138,7 +140,7 @@ describe('apiPlatformRepository', function () {
     };
 
     it('should create an API', function (done) {
-      superagentStub.end.returns(Promise.resolve(response));
+      superagentStub.end.returns(BPromise.resolve(response));
 
       apiPlatformRepository.createAPI(organizationId, apiName, apiVersionName)
         .then(function (body) {
@@ -167,7 +169,7 @@ describe('apiPlatformRepository', function () {
     });
 
     it('should manage errors correctly', function (done) {
-      superagentStub.end.returns(Promise.reject({
+      superagentStub.end.returns(BPromise.reject({
         status: 401
       }));
 
@@ -197,7 +199,7 @@ describe('apiPlatformRepository', function () {
 
   describe('getAllAPIs', run(function (apiPlatformRepository) {
     it('should return all APIs', function (done) {
-      superagentStub.end.returns(Promise.resolve({
+      superagentStub.end.returns(BPromise.resolve({
         body: {
           apis: [{
             id: 1,
@@ -235,7 +237,7 @@ describe('apiPlatformRepository', function () {
     });
 
     it('should manage errors correctly', function (done) {
-      superagentStub.end.returns(Promise.reject({
+      superagentStub.end.returns(BPromise.reject({
         status: 401
       }));
 
@@ -471,7 +473,7 @@ describe('apiPlatformRepository', function () {
           isDirectory: false
         }
       ];
-      superagentStub.end.returns(Promise.resolve({
+      superagentStub.end.returns(BPromise.resolve({
         body: apiFilesMetadata}));
 
       apiPlatformRepository.getAPIFilesMetadata(workspace.bizGroup.id,
@@ -498,7 +500,7 @@ describe('apiPlatformRepository', function () {
     });
 
     it('should manage errors correctly', function (done) {
-      superagentStub.end.returns(Promise.reject({
+      superagentStub.end.returns(BPromise.reject({
         status: 401
       }));
 
@@ -541,7 +543,7 @@ describe('apiPlatformRepository', function () {
     var createdFileId = 54312;
 
     it('should create the specified dir', function (done) {
-      superagentStub.end.returns(Promise.resolve({
+      superagentStub.end.returns(BPromise.resolve({
         body: {
           id: createdDirId
         }
@@ -574,7 +576,7 @@ describe('apiPlatformRepository', function () {
     });
 
     it('should create the specified file', function (done) {
-      superagentStub.end.returns(Promise.resolve({
+      superagentStub.end.returns(BPromise.resolve({
         body: {
           id: createdFileId
         }
@@ -607,7 +609,7 @@ describe('apiPlatformRepository', function () {
     });
 
     it('should manage errors correctly', function (done) {
-      superagentStub.end.returns(Promise.reject({
+      superagentStub.end.returns(BPromise.reject({
         status: 401
       }));
 
@@ -660,7 +662,7 @@ describe('apiPlatformRepository', function () {
     };
 
     it('should update the specified file', function (done) {
-      superagentStub.end.returns(Promise.resolve({
+      superagentStub.end.returns(BPromise.resolve({
         body: expectedUpdateResponse
       }));
 
@@ -690,7 +692,7 @@ describe('apiPlatformRepository', function () {
     });
 
     it('should manage errors correctly', function (done) {
-      superagentStub.end.returns(Promise.reject({
+      superagentStub.end.returns(BPromise.reject({
         status: 401
       }));
 
@@ -732,7 +734,7 @@ describe('apiPlatformRepository', function () {
     };
 
     it('should delete the specified file', function (done) {
-      superagentStub.end.returns(Promise.resolve({
+      superagentStub.end.returns(BPromise.resolve({
         body: []
       }));
 
@@ -758,7 +760,7 @@ describe('apiPlatformRepository', function () {
     });
 
     it('should manage errors correctly', function (done) {
-      superagentStub.end.returns(Promise.reject({
+      superagentStub.end.returns(BPromise.reject({
         status: 401
       }));
 
@@ -798,7 +800,7 @@ describe('apiPlatformRepository', function () {
       var customError = {
         status: 400
       };
-      superagentStub.end.returns(Promise.reject(customError));
+      superagentStub.end.returns(BPromise.reject(customError));
 
       apiPlatformRepository.deleteAPIFile(workspace.bizGroup.id,
           workspace.api.id, workspace.apiVersion.id, file)

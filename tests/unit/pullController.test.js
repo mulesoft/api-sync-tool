@@ -1,5 +1,7 @@
 'use strict';
 
+var BPromise = require('bluebird');
+
 var should = require('should');
 var sinon = require('sinon');
 
@@ -21,12 +23,12 @@ describe('pullController', function () {
 
   beforeEach(function () {
     workspaceRepositoryStub.get = sinon.stub().returns(
-      Promise.resolve(currentWorkspace));
+      BPromise.resolve(currentWorkspace));
 
     apiPlatformServiceStub.getAPIFiles = sinon.stub().returns(
-      Promise.resolve(filesMetadata));
+      BPromise.resolve(filesMetadata));
 
-    workspaceRepositoryStub.update = sinon.stub().returns(Promise.resolve());
+    workspaceRepositoryStub.update = sinon.stub().returns(BPromise.resolve());
     loggerStub.info = sinon.stub();
 
     messagesStub.downloadingAPI = sinon.stub().returns(downloadMessage);

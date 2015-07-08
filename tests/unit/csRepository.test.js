@@ -1,5 +1,7 @@
 'use strict';
 
+var BPromise = require('bluebird');
+
 var should = require('should');
 var sinon = require('sinon');
 
@@ -28,7 +30,7 @@ describe('csRepository', function () {
 
   describe('login', run(function (csRepository) {
     it('should login user', function (done) {
-      superagentStub.end.returns(Promise.resolve({
+      superagentStub.end.returns(BPromise.resolve({
         body: {
           access_token: accessToken
         }
@@ -62,7 +64,7 @@ describe('csRepository', function () {
     });
 
     it('should fail when credentials are wrong', function (done) {
-      superagentStub.end.returns(Promise.reject({
+      superagentStub.end.returns(BPromise.reject({
         status: 400
       }));
 
@@ -99,7 +101,7 @@ describe('csRepository', function () {
     });
 
     it('should fail with other errors', function (done) {
-      superagentStub.end.returns(Promise.reject({
+      superagentStub.end.returns(BPromise.reject({
         status: 404
       }));
 
@@ -138,7 +140,7 @@ describe('csRepository', function () {
     beforeEach(function () {
       contextStub.getToken = sinon.stub().returns('token');
       contextHolderStub.get = sinon.stub().returns(contextStub);
-      superagentStub.end.returns(Promise.resolve({
+      superagentStub.end.returns(BPromise.resolve({
         body: {}
       }));
     });
@@ -169,7 +171,7 @@ describe('csRepository', function () {
     });
 
     it('should manage errors correctly', function (done) {
-      superagentStub.end.returns(Promise.reject({
+      superagentStub.end.returns(BPromise.reject({
         status: 401
       }));
 
@@ -197,7 +199,7 @@ describe('csRepository', function () {
       var customError = {
         status: 400
       };
-      superagentStub.end.returns(Promise.reject(customError));
+      superagentStub.end.returns(BPromise.reject(customError));
 
       csRepository.getUserInfo()
         .then(function () {
