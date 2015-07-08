@@ -181,18 +181,21 @@ describe('fileSystemRepository', function () {
         fs[localPath] = [
           'api1.raml',
           'api2.raml',
+          'api1.meta',
           'folder1',
           'ignoreFilesFolder'
         ];
         fs[localPath + '/folder1'] = [
           'api3.raml',
           'api4.raml',
+          'api4.meta',
           'folder2'
         ];
         fs[localPath + '/folder1/folder2'] = [];
         fs[localPath + '/ignoreFilesFolder'] = [
           '.gitignore',
           'one.file',
+          'one.meta',
           '.git',
           'valid'
         ];
@@ -236,7 +239,8 @@ describe('fileSystemRepository', function () {
             });
       });
 
-      it('should return the file tree in a directory ignoring paths starting with a dot',
+      it('should return the file tree in a directory ignoring paths starting ' +
+          'with a dot and files with meta extension',
         function (done) {
           fileSystemRepository.getFilesPath('/ignoreFilesFolder')
             .then(function (filePaths) {
