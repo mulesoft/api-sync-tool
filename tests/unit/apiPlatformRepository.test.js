@@ -134,7 +134,10 @@ describe('apiPlatformRepository', function () {
     };
     var response = {
       body: {
-        data: 1
+        id: 1,
+        version: {
+          id: 2
+        }
       },
       notBody: 1
     };
@@ -159,7 +162,8 @@ describe('apiPlatformRepository', function () {
 
           assertReadAPICalls();
 
-          should.deepEqual(body, response.body);
+          should.deepEqual(body,
+            _.set(response.body, 'organizationId', organizationId));
 
           done();
         })
@@ -182,6 +186,90 @@ describe('apiPlatformRepository', function () {
             sinon.match(
               '/organizations/' + organizationId +
               '/apis'
+            )
+          ]);
+
+          assertReadAPICalls();
+
+          errorsStub.BadCredentialsError.calledWithNew().should.be.true();
+
+          done();
+        })
+        .catch(function (err) {
+          done(err);
+        });
+    });
+  }));
+
+  describe('createAPIVersion', run(function (apiPlatformRepository) {
+    var organizationId = 1;
+    var apiId = 1;
+    var apiVersionName = 'version';
+    var apiVersion = {
+      name: apiVersionName,
+      description: ''
+    };
+    var apiVersionId = 2;
+    var response = {
+      body: {
+        id: apiVersionId
+      },
+      notBody: 1
+    };
+
+    it('should create an API version', function (done) {
+      superagentStub.end.returns(BPromise.resolve(response));
+
+      apiPlatformRepository.createAPIVersion(organizationId, apiId,
+          apiVersionName)
+        .then(function (body) {
+          asserts.calledOnceWithExactly(superagentStub.post, [
+            sinon.match(
+              '/organizations/' + organizationId +
+              '/apis/' + apiId +
+              '/versions'
+            )
+          ]);
+          asserts.calledOnceWithExactly(superagentStub.send, [
+            JSON.stringify(apiVersion)
+          ]);
+          asserts.calledOnceWithExactly(superagentStub.type, [
+            'application/json'
+          ]);
+
+          assertReadAPICalls();
+
+          should.deepEqual(body, {
+            organizationId: organizationId,
+            id: apiId,
+            version: {
+              id: apiVersionId
+            }
+          });
+
+          done();
+        })
+        .catch(function (err) {
+          done(err);
+        });
+    });
+
+    it('should manage errors correctly', function (done) {
+      superagentStub.end.returns(BPromise.reject({
+        status: 401
+      }));
+
+      apiPlatformRepository.createAPIVersion(organizationId, apiId,
+          apiVersionName)
+        .then(function () {
+          done('Should have failed');
+        })
+        .catch(function () {
+          asserts.calledOnceWithExactly(superagentStub.post, [
+            sinon.match(
+              '/organizations/' + organizationId +
+              '/apis/' + apiId +
+              '/versions'
             )
           ]);
 

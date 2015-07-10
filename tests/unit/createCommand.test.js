@@ -27,6 +27,7 @@ describe('createCommand', function () {
     messagesStub.businessGroupDescription = sinon.stub().returns('bizGroup');
     messagesStub.createDetailedHelp = sinon.stub();
     messagesStub.apiNameDescription = sinon.stub().returns('api');
+    messagesStub.apiDescription = sinon.stub().returns('api');
     messagesStub.apiVersionNameDescription = sinon.stub().returns('apiVersion');
     messagesStub.rootRamlDescription = sinon.stub().returns('root raml path');
     messagesStub.settingEnvironment = sinon.stub().returns(settingEnvironment);
@@ -57,25 +58,18 @@ describe('createCommand', function () {
   });
 
   describe('validateInput', function () {
-    it('should fail when there are wrong aguments', function (done) {
+    it('should fail when there are not enough arguments', function (done) {
       run(function (createCommand) {
-          createCommand.validateInput({_: ['create'], bizGroup: 1234, pepe: 1})
+        createCommand.validateInput({
+          _: ['create'],
+          bizGroup: 1234,
+          pepe: 1
+        })
         .then(function () {
           done('Error: test should fail');
         })
         .catch(function (err) {
-          asserts.calledOnceWithExactly(
-            errorsStub.WrongArgumentsError, ['create', sinon.match.array]);
-
-          err.should.be.an.Object;
-          should.deepEqual(err, error);
-
-          asserts.calledOnceWithoutParameters([
-            messagesStub.businessGroupDescription,
-            messagesStub.apiNameDescription,
-            messagesStub.apiVersionNameDescription,
-            messagesStub.rootRamlDescription
-          ]);
+          checkError(err);
 
           done();
         })
@@ -85,41 +79,126 @@ describe('createCommand', function () {
       });
     });
 
-    it('should pass with the right arguments', function (done) {
+    it('should fail when there both API and API version arguments',
+        function (done) {
       run(function (createCommand) {
         createCommand.validateInput({
-            _: ['create'],
-            bizGroup: 1234,
-            api: 'name',
-            apiVersion: 'version',
-            rootRaml: 'api.raml'
-          })
-          .then(function (result) {
-            should.not.exist(result);
+          _: ['create'],
+          bizGroup: 1234,
+          apiId: 1,
+          apiName: 'name',
+          apiVersion: 'version',
+          rootRaml: 'api.raml'
+        })
+        .catch(function (err) {
+          checkError(err);
 
-            done();
-          })
-          .catch(function (err) {
-            done(err);
-          });
+          done();
+        })
+        .catch(function (err) {
+          done(err);
+        });
       });
     });
+
+    it('should pass with the right arguments for new API', function (done) {
+      run(function (createCommand) {
+        createCommand.validateInput({
+          _: ['create'],
+          bizGroup: 1234,
+          apiId: 1,
+          apiVersion: 'version',
+          rootRaml: 'api.raml'
+        })
+        .then(function (result) {
+          should.not.exist(result);
+
+          done();
+        })
+        .catch(function (err) {
+          done(err);
+        });
+      });
+    });
+
+    it('should pass with the right arguments for new API version',
+        function (done) {
+      run(function (createCommand) {
+        createCommand.validateInput({
+          _: ['create'],
+          bizGroup: 1234,
+          apiName: 'name',
+          apiVersion: 'version',
+          rootRaml: 'api.raml'
+        })
+        .then(function (result) {
+          should.not.exist(result);
+
+          done();
+        })
+        .catch(function (err) {
+          done(err);
+        });
+      });
+    });
+
+    function checkError(err) {
+      asserts.calledOnceWithExactly(
+        errorsStub.WrongArgumentsError, ['create', sinon.match.array]);
+
+      err.should.be.an.Object;
+      should.deepEqual(err, error);
+
+      asserts.calledOnceWithoutParameters([
+        messagesStub.businessGroupDescription,
+        messagesStub.apiNameDescription,
+        messagesStub.apiVersionNameDescription,
+        messagesStub.rootRamlDescription
+      ]);
+    }
   });
 
   describe('parseArgs', function () {
-    it('should parse batch mode arguments', function (done) {
+    it('should parse batch mode arguments for new API', function (done) {
       run(function (createCommand) {
         try {
           var args = createCommand.parseArgs({
             _: ['create'],
             bizGroup: 1234,
-            api: 'name',
+            apiId: 1,
             apiVersion: 'version',
             rootRaml: 'api.raml'
           });
           should.deepEqual(args, {
             bizGroup: 1234,
-            api: 'name',
+            apiId: 1,
+            apiName: undefined,
+            apiVersion: 'version',
+            rootRamlPath: 'api.raml'
+          });
+
+          done();
+        } catch (err) {
+          done(err);
+        }
+      });
+    });
+
+    it('should parse batch mode arguments for new API version',
+        function (done) {
+      run(function (createCommand) {
+        try {
+          var args = createCommand.parseArgs({
+            _: ['create'],
+            bizGroup: 1234,
+            apiName: 'name',
+            apiVersion: 'version',
+            rootRaml: 'api.raml'
+          });
+          should.deepEqual(args, {
+            bizGroup: 1234,
+            apiId: undefined,
+            apiName: 'name',
             apiVersion: 'version',
             rootRamlPath: 'api.raml'
           });
@@ -133,45 +212,37 @@ describe('createCommand', function () {
   });
 
   describe('execute', function () {
-    it('should run the command', function (done) {
+    var api = {
+      organizationId: 1234,
+      id: 1,
+      version: {
+        id: 2
+      }
+    };
+
+    beforeEach(function () {
+      createControllerStub.createAPI =
+        sinon.stub().returns(BPromise.resolve(api));
+      createControllerStub.createAPIVersion =
+        sinon.stub().returns(BPromise.resolve(api));
+      pushCommandStub.execute = sinon.stub().returns(BPromise.resolve());
+      setupCommandStub.execute = sinon.stub().returns(BPromise.resolve());
+    });
+
+    it('should run the command for a new API', function (done) {
+      var args = {
+        bizGroup: 1234,
+        apiName: 'name',
+        apiVersion: 'version',
+        rootRamlPath: 'api.raml'
+      };
       run(function (createCommand) {
-        var api = {
-          organizationId: 1234,
-          id: 1,
-          version: {
-            id: 2
-          }
-        };
-        createControllerStub.create = sinon.stub().returns(BPromise.resolve(api));
-        pushCommandStub.execute = sinon.stub().returns(BPromise.resolve());
-        setupCommandStub.execute = sinon.stub().returns(BPromise.resolve());
-        var args = {
-          bizGroup: 1234,
-          api: 'name',
-          apiVersion: 'version',
-          rootRamlPath: 'api.raml'
-        };
         createCommand.execute(args)
           .then(function () {
-            asserts.calledOnceWithExactly(createControllerStub.create, [args]);
-            asserts.calledOnceWithExactly(setupCommandStub.execute, [{
-              bizGroup: api.organizationId,
-              api: api.id,
-              apiVersion: api.version.id
-            }]);
+            asserts.calledOnceWithExactly(createControllerStub.createAPI,
+              [args]);
 
-            asserts.calledOnceWithExactly(pushCommandStub.execute, [undefined]);
-
-            loggerStub.info.calledTwice.should.be.true();
-            loggerStub.info.firstCall.calledWithExactly(creatingAPI)
-              .should.be.true();
-            loggerStub.info.secondCall.calledWithExactly(settingEnvironment)
-              .should.be.true();
-
-            asserts.calledOnceWithoutParameters([
-              messagesStub.creatingAPI,
-              messagesStub.settingEnvironment
-            ]);
+            checkNewAPI();
 
             done();
           })
@@ -180,6 +251,50 @@ describe('createCommand', function () {
           });
       });
     });
+
+    it('should run the command for a new API version', function (done) {
+      var args = {
+        bizGroup: 1234,
+        apiId: 1,
+        apiVersion: 'version',
+        rootRamlPath: 'api.raml'
+      };
+      run(function (createCommand) {
+        createCommand.execute(args)
+          .then(function () {
+            asserts.calledOnceWithExactly(createControllerStub.createAPIVersion,
+              [args]);
+
+            checkNewAPI();
+
+            done();
+          })
+          .catch(function (err) {
+            done(err);
+          });
+      });
+    });
+
+    function checkNewAPI() {
+      asserts.calledOnceWithExactly(setupCommandStub.execute, [{
+        bizGroup: api.organizationId,
+        api: api.id,
+        apiVersion: api.version.id
+      }]);
+
+      asserts.calledOnceWithExactly(pushCommandStub.execute, [undefined]);
+
+      loggerStub.info.calledTwice.should.be.true();
+      loggerStub.info.firstCall.calledWithExactly(creatingAPI)
+        .should.be.true();
+      loggerStub.info.secondCall.calledWithExactly(settingEnvironment)
+        .should.be.true();
+
+      asserts.calledOnceWithoutParameters([
+        messagesStub.creatingAPI,
+        messagesStub.settingEnvironment
+      ]);
+    }
   });
 });
 
