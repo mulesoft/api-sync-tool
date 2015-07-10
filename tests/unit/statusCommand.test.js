@@ -10,7 +10,7 @@ var containerFactory  = require('../support/testContainerFactory');
 
 var loggerStub = {};
 var messagesStub = {};
-var localServiceStub = {};
+var statusControllerStub = {};
 var validateSetupDoneStrategyStub = {};
 
 var successfulMessage = 'Success';
@@ -18,10 +18,11 @@ var nothingMessage = 'Nothing';
 
 describe('statusCommand', function () {
   beforeEach(function () {
-    messagesStub.status = sinon.stub().returns(successfulMessage);
+    messagesStub.statusAndConflicts = sinon.stub().returns(successfulMessage);
     messagesStub.nothingStatus = sinon.stub().returns(nothingMessage);
     messagesStub.statusDetailedHelp = sinon.stub();
-    localServiceStub.status = sinon.stub();
+    statusControllerStub.status = sinon.stub();
+    statusControllerStub.conflicts = sinon.stub();
     loggerStub.info = sinon.stub();
     validateSetupDoneStrategyStub.validate = sinon.stub();
   });
@@ -75,7 +76,7 @@ describe('statusCommand', function () {
 
   describe('execute', function () {
     it('should execute status and log changes', function (done) {
-      var result = {
+      var status = {
         added: [{
           name: 'api.raml',
           path: '/api.raml'
@@ -84,12 +85,23 @@ describe('statusCommand', function () {
         unchanged: [],
         deleted: []
       };
-      localServiceStub.status.returns(BPromise.resolve(result));
+      var conflicts = {
+        added: [{
+          name: 'api.raml',
+          path: '/api.raml'
+        }],
+        changed: [],
+        unchanged: [],
+        deleted: []
+      };
+      statusControllerStub.status.returns(BPromise.resolve(status));
+      statusControllerStub.conflicts.returns(BPromise.resolve(conflicts));
       run(function (statusCommand) {
         statusCommand.execute()
           .then(function () {
-            asserts.calledOnceWithoutParameters([localServiceStub.status]);
-            asserts.calledOnceWithExactly(messagesStub.status, [result]);
+            asserts.calledOnceWithoutParameters([statusControllerStub.status]);
+            asserts.calledOnceWithExactly(messagesStub.statusAndConflicts,
+              [status, conflicts]);
             asserts.calledOnceWithExactly(loggerStub.info, [successfulMessage]);
             done();
           })
@@ -100,7 +112,7 @@ describe('statusCommand', function () {
     });
 
     it('should execute status and log an empty result', function (done) {
-      var result = {
+      var status = {
         added: [],
         changed: [],
         unchanged: [{
@@ -109,12 +121,16 @@ describe('statusCommand', function () {
         }],
         deleted: []
       };
-      localServiceStub.status.returns(BPromise.resolve(result));
+      var conflicts = {};
+
+      statusControllerStub.status.returns(BPromise.resolve(status));
+      statusControllerStub.conflicts.returns(BPromise.resolve(conflicts));
+
       run(function (statusCommand) {
         statusCommand.execute()
           .then(function () {
-            asserts.calledOnceWithoutParameters([localServiceStub.status,
-              messagesStub.nothingStatus]);
+            asserts.calledOnceWithoutParameters([statusControllerStub.status,
+              statusControllerStub.conflicts, messagesStub.nothingStatus]);
             asserts.calledOnceWithExactly(loggerStub.info, [nothingMessage]);
             done();
           })
@@ -130,7 +146,7 @@ function run(callback) {
   var container = containerFactory.createContainer();
   container.register('messages', messagesStub);
   container.register('logger', loggerStub);
-  container.register('localService', localServiceStub);
+  container.register('statusController', statusControllerStub);
   container.register('validateSetupDoneStrategy', validateSetupDoneStrategyStub);
   container.resolve(callback);
 }

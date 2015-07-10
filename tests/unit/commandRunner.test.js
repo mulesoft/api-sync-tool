@@ -14,6 +14,7 @@ var commandPromptStub = {};
 var contextFactoryStub = {};
 var contextHolderStub = {};
 var errorsStub = {};
+var loggerStub = {};
 var loginPromptStub = {};
 var messagesStub = {};
 var processStub = {};
@@ -38,6 +39,9 @@ describe('commandRunner', function () {
       .get = sinon.stub().returns(BPromise.resolve(authentication));
     authenticationRepositoryStub
       .update = sinon.stub().returns(BPromise.resolve());
+
+    loggerStub.debug = sinon.stub();
+    loggerStub.info = sinon.stub();
 
     loginPromptStub
       .getUserCredentials = sinon.stub().returns(BPromise.resolve(user));
@@ -223,6 +227,7 @@ function run(callback) {
     container.register('contextFactory', contextFactoryStub);
     container.register('contextHolder', contextHolderStub);
     container.register('errors', errorsStub);
+    container.register('logger', loggerStub);
     container.register('loginPrompt', loginPromptStub);
     container.register('messages', messagesStub);
     container.register('process', processStub);
