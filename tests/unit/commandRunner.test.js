@@ -4,6 +4,7 @@ var BPromise = require('bluebird');
 
 require('should');
 var sinon = require('sinon');
+var _ = require('lodash');
 
 var asserts = require('../support/asserts');
 var containerFactory  = require('../support/testContainerFactory');
@@ -22,7 +23,9 @@ var processStub = {};
 var cwd = 'pepe';
 var commandStub = {};
 var args = {arg: 1};
-var newAuthentication = {accessToken: 2};
+var newAccessToken = 2;
+var loginAuthentication = {accessToken: newAccessToken};
+var newAuthentication = {dir: cwd, accessToken: newAccessToken};
 var authentication = {dir: 'dir', accessToken: 1};
 var userContext = {context: 1};
 var user = {name: 'pepe', password: 1234};
@@ -30,27 +33,29 @@ var expiredToken = 'expired token';
 
 describe('commandRunner', function () {
   beforeEach(function () {
+    commandStub.doesntNeedAuthentication = undefined;
     commandStub.parseArgs = sinon.stub().returns(args);
     commandStub.validateSetup = sinon.stub().returns(BPromise.resolve());
     commandStub.validateInput = sinon.stub().returns(BPromise.resolve());
     commandStub.execute = sinon.stub().returns(BPromise.resolve());
 
-    authenticationRepositoryStub
-      .get = sinon.stub().returns(BPromise.resolve(authentication));
-    authenticationRepositoryStub
-      .update = sinon.stub().returns(BPromise.resolve());
+    authenticationRepositoryStub.get =
+      sinon.stub().returns(BPromise.resolve(_.cloneDeep(authentication)));
 
     loggerStub.debug = sinon.stub();
     loggerStub.info = sinon.stub();
 
-    loginPromptStub
-      .getUserCredentials = sinon.stub().returns(BPromise.resolve(user));
+    authenticationRepositoryStub.update =
+      sinon.stub().returns(BPromise.resolve(_.cloneDeep(newAuthentication)));
+
+    loginPromptStub.getUserCredentials =
+      sinon.stub().returns(BPromise.resolve(_.cloneDeep(user)));
 
     authenticationServiceStub.login =
-      sinon.stub().returns(BPromise.resolve(newAuthentication));
+      sinon.stub().returns(BPromise.resolve(_.cloneDeep(loginAuthentication)));
 
     contextFactoryStub.create =
-      sinon.stub().returns(userContext);
+      sinon.stub().returns(_.cloneDeep(userContext));
 
     contextHolderStub.set = sinon.stub().returns(BPromise.resolve());
     commandPromptStub.getConfirmation = sinon.stub().returns(BPromise.resolve());
@@ -61,39 +66,25 @@ describe('commandRunner', function () {
     processStub.cwd = sinon.stub().returns(cwd);
   });
 
-  describe('command runs successfully', run(function (commandRunner) {
-    it('validates', function (done) {
-      commandRunner.run(commandStub, args)
-        .then(function () {
-          asserts.calledOnceWithoutParameters([commandStub.validateSetup]);
-          asserts.calledOnceWithExactly(commandStub.validateInput, [args]);
-
-          done();
-        })
-        .catch(function (err) {
-          done(err);
-        });
+  describe('command doesn\'t need authentication', run(function (commandRunner) {
+    beforeEach(function () {
+      commandStub.doesntNeedAuthentication = true;
     });
 
-    it('gets stored authentication', function (done) {
+    it('validates, runs command', function (done) {
       commandRunner.run(commandStub, args)
         .then(function () {
-          authenticationRepositoryStub.get.calledOnce.should.be.true();
-          asserts.calledOnceWithExactly(
-            contextFactoryStub.create, [authentication, cwd]);
-          asserts.calledOnceWithExactly(contextHolderStub.set, [userContext]);
+          validate();
 
-          done();
-        })
-        .catch(function (err) {
-          done(err);
-        });
-    });
+          asserts.notCalled([
+            authenticationRepositoryStub.get,
+            authenticationRepositoryStub.update,
+            loginPromptStub.getUserCredentials,
+            authenticationServiceStub.login,
+            commandPromptStub.getConfirmation
+          ]);
 
-    it('runs command', function (done) {
-      commandRunner.run(commandStub, args)
-        .then(function () {
-          asserts.calledOnceWithExactly(commandStub.execute, [args]);
+          runCommand(undefined);
 
           done();
         })
@@ -103,64 +94,99 @@ describe('commandRunner', function () {
     });
   }));
 
-  describe('user isn\'t authenticated', run(function (commandRunner) {
-    beforeEach(function () {
-      authenticationRepositoryStub
-        .get = sinon.stub().returns(BPromise.resolve({}));
+  describe('command needs authentication', run(function (commandRunner) {
+    describe('user is authenticated', function () {
+      it('validates, authenticates, runs command', function (done) {
+        commandRunner.run(commandStub, args)
+          .then(function () {
+            validate();
+
+            authenticationRepositoryStub.get.calledOnce.should.be.true();
+            runCommand(authentication);
+
+            done();
+          })
+          .catch(function (err) {
+            done(err);
+          });
+      });
     });
 
-    it('logs the user', function (done) {
-      commandRunner.run(commandStub, args)
-        .then(function () {
-          asserts.calledOnceWithoutParameters(
-            [loginPromptStub.getUserCredentials,
-            messagesStub.storeAuthenticationPromptMessage]);
-          asserts.calledOnceWithExactly(
-            authenticationServiceStub.login, [user.name, user.password]);
+    describe('user isn\'t authenticated', run(function (commandRunner) {
+      beforeEach(function () {
+        authenticationRepositoryStub
+          .get = sinon.stub().returns(BPromise.resolve({dir: cwd}));
+      });
 
-          done();
-        })
-        .catch(function (err) {
-          done(err);
-        });
-    });
+      it('users wants to save his authentication', function (done) {
+        commandPromptStub
+          .getConfirmation = sinon.stub().returns(BPromise.resolve(true));
+        commandRunner.run(commandStub, args)
+          .then(function () {
+            validate();
+            login();
 
-    it('the user wants to store the authentication', function (done) {
-      commandPromptStub
-        .getConfirmation = sinon.stub().returns(BPromise.resolve(true));
-      commandRunner.run(commandStub, args)
-        .then(function () {
-          authenticationRepositoryStub.get.calledTwice.should.be.true();
-          authenticationRepositoryStub.get.secondCall.args.length
-            .should.equal(0);
-          asserts.calledOnceWithExactly(authenticationRepositoryStub.update,
-            [newAuthentication]);
+            authenticationRepositoryStub.get.calledTwice.should.be.true();
+            authenticationRepositoryStub.get.secondCall.args.length
+              .should.equal(0);
 
-          done();
-        })
-        .catch(function (err) {
-          done(err);
-        });
-    });
+            asserts.calledOnceWithExactly(authenticationRepositoryStub.update,
+              [newAuthentication]);
+            runCommand(newAuthentication);
 
-    it('the user doesn\'t want to store the authentication', function (done) {
-      commandPromptStub
-        .getConfirmation = sinon.stub().returns(BPromise.resolve(false));
-      commandRunner.run(commandStub, args)
-        .then(function () {
-          authenticationRepositoryStub.get.calledOnce.should.be.true();
+            done();
+          })
+          .catch(function (err) {
+            done(err);
+          });
+      });
 
-          done();
-        })
-        .catch(function (err) {
-          done(err);
-        });
-    });
+      it('the user doesn\'t want to store the authentication', function (done) {
+        commandPromptStub
+          .getConfirmation = sinon.stub().returns(BPromise.resolve(false));
+        commandRunner.run(commandStub, args)
+          .then(function () {
+            validate();
+            login();
+
+            asserts.calledOnceWithoutParameters([
+              authenticationRepositoryStub.get
+            ]);
+            asserts.notCalled([
+              authenticationRepositoryStub.update
+            ]);
+
+            runCommand(loginAuthentication);
+
+            done();
+          })
+          .catch(function (err) {
+            done(err);
+          });
+      });
+
+      function login() {
+        asserts.calledOnceWithoutParameters([
+          loginPromptStub.getUserCredentials,
+          messagesStub.storeAuthenticationPromptMessage]);
+        asserts.calledOnceWithExactly(
+          authenticationServiceStub.login, [user.name, user.password]);
+      }
+    }));
   }));
 
   describe('authentication fails', run(function (commandRunner) {
     describe('with a badCredentialsError', function () {
       beforeEach(function () {
+        commandPromptStub
+          .getConfirmation = sinon.stub().returns(BPromise.resolve(false));
+        authenticationRepositoryStub.get.onFirstCall()
+          .returns(BPromise.resolve(_.cloneDeep(authentication)));
+        authenticationRepositoryStub.get.onSecondCall()
+          .returns(BPromise.resolve(_.cloneDeep(authentication)));
+        authenticationRepositoryStub.get.onThirdCall()
+          .returns(BPromise.resolve({dir: cwd}));
+
         errorsStub.BadCredentialsError = String;
         /* jshint ignore:start */
         commandStub.execute = sinon.stub();
@@ -175,13 +201,45 @@ describe('commandRunner', function () {
       it('deletes authentication and tries all again', function (done) {
         commandRunner.run(commandStub, args)
           .then(function () {
-            asserts.calledOnceWithExactly(authenticationRepositoryStub.update,
-              [{dir: 'dir'}]);
             commandStub.validateSetup.calledTwice.should.be.true();
-            commandStub.execute.calledTwice.should.be.true();
+            commandStub.validateSetup
+              .alwaysCalledWithExactly().should.be.true();
 
-            asserts.calledOnceWithoutParameters(
-              [messagesStub.expiredTokenMessage]);
+            commandStub.validateInput.calledTwice.should.be.true();
+            commandStub.validateInput
+              .alwaysCalledWithExactly(args).should.be.true();
+
+            contextFactoryStub.create.calledTwice.should.be.true();
+            contextFactoryStub.create.firstCall
+              .calledWithExactly(authentication, cwd).should.be.true();
+            contextFactoryStub.create.secondCall
+              .calledWithExactly(loginAuthentication, cwd).should.be.true();
+
+            contextHolderStub.set.calledTwice.should.be.true();
+            contextHolderStub.set.alwaysCalledWithExactly(userContext)
+              .should.be.true();
+
+            commandStub.execute.calledTwice.should.be.true();
+            commandStub.execute.alwaysCalledWithExactly(args).should.be.true();
+
+            authenticationRepositoryStub.get.calledThrice.should.be.true();
+
+            asserts.calledOnceWithExactly(authenticationRepositoryStub.update, [
+              {dir: 'dir'}
+            ]);
+            commandStub.validateSetup.calledTwice.should.be.true();
+
+            asserts.calledOnceWithoutParameters([
+              messagesStub.expiredTokenMessage
+            ]);
+
+            asserts.calledOnceWithExactly(loggerStub.debug, [
+              'Bad credentials'
+            ]);
+
+            asserts.calledOnceWithExactly(loggerStub.info, [
+              expiredToken
+            ]);
 
             done();
           })
@@ -208,13 +266,32 @@ describe('commandRunner', function () {
             done('should fail');
           })
           .catch(function (err) {
+            validate();
+            authenticationRepositoryStub.get.calledOnce.should.be.true();
+            runCommand(authentication);
+
             err.should.equal(errorMessage);
 
             done();
+          })
+          .catch(function (err) {
+            done(err);
           });
       });
     });
   }));
+
+  function validate() {
+    asserts.calledOnceWithoutParameters([commandStub.validateSetup]);
+    asserts.calledOnceWithExactly(commandStub.validateInput, [args]);
+  }
+
+  function runCommand(authentication) {
+    asserts.calledOnceWithExactly(contextFactoryStub.create,
+      [authentication, cwd]);
+    asserts.calledOnceWithExactly(contextHolderStub.set, [userContext]);
+    asserts.calledOnceWithExactly(commandStub.execute, [args]);
+  }
 });
 
 function run(callback) {
