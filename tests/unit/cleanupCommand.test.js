@@ -22,6 +22,15 @@ describe('cleanupCommand', function () {
     loggerStub.info = sinon.stub();
   });
 
+  describe('doesntNeedAuthentication', function () {
+    it('should be true', function (done) {
+      run(function (cleanupCommand) {
+        cleanupCommand.doesntNeedAuthentication.should.be.true();
+        done();
+      });
+    });
+  });
+
   describe('getHelp', function () {
     it('should be a message', function (done) {
       run(function (cleanupCommand) {
