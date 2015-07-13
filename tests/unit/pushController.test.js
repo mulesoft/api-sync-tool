@@ -29,8 +29,8 @@ describe('pushController', function () {
     workspaceRepositoryStub.get = sinon.stub().returns(
       BPromise.resolve(currentWorkspace));
 
-    localServiceStub.status = sinon.stub();
-    localServiceStub.conflicts = sinon.stub();
+    localServiceStub.getStatus = sinon.stub();
+    localServiceStub.getConflicts = sinon.stub();
     localServiceStub.getDirectoriesPath = sinon.stub();
 
     errorsStub.ConflictsFoundError = sinon.stub();
@@ -91,7 +91,7 @@ describe('pushController', function () {
         .onSecondCall().returns(BPromise.resolve(currentWorkspace.files[8].path))
         .onThirdCall().returns(BPromise.resolve(currentWorkspace.files[9].path));
 
-      localServiceStub.status.returns(BPromise.resolve(status));
+      localServiceStub.getStatus.returns(BPromise.resolve(status));
       localServiceStub.getDirectoriesPath
         .returns(BPromise.resolve([
           '/folder2',
@@ -137,9 +137,9 @@ describe('pushController', function () {
         .then(function (output) {
           asserts.calledOnceWithoutParameters([
             workspaceRepositoryStub.get,
-            localServiceStub.status,
+            localServiceStub.getStatus,
             localServiceStub.getDirectoriesPath,
-            localServiceStub.conflicts
+            localServiceStub.getConflicts
           ]);
 
           apiPlatformServiceStub.getAPIFilesMetadata.calledOnce.should.be.true();
@@ -273,7 +273,7 @@ describe('pushController', function () {
         changed: [],
         deleted: []
       };
-      localServiceStub.status.returns(BPromise.resolve(status));
+      localServiceStub.getStatus.returns(BPromise.resolve(status));
       localServiceStub.getDirectoriesPath
         .returns(BPromise.resolve([]));
       apiPlatformServiceStub.createAPIDirectory = sinon.stub();
@@ -283,8 +283,8 @@ describe('pushController', function () {
           workspaceRepositoryStub.get.calledOnce.should.be.true();
           workspaceRepositoryStub.get.firstCall.args.length.should.equal(0);
 
-          localServiceStub.status.calledOnce.should.be.true();
-          localServiceStub.status.firstCall.args.length.should.equal(0);
+          localServiceStub.getStatus.calledOnce.should.be.true();
+          localServiceStub.getStatus.firstCall.args.length.should.equal(0);
 
           apiPlatformServiceStub.getAPIFilesMetadata.calledOnce
             .should.be.true();
@@ -319,7 +319,7 @@ describe('pushController', function () {
     });
 
     it('should update workspace even when something fails', function (done) {
-      localServiceStub.status.returns(BPromise.reject());
+      localServiceStub.getStatus.returns(BPromise.reject());
       apiPlatformServiceStub.createAPIDirectory = sinon.stub();
 
       pushController.push()
@@ -327,8 +327,8 @@ describe('pushController', function () {
           workspaceRepositoryStub.get.calledOnce.should.be.true();
           workspaceRepositoryStub.get.firstCall.args.length.should.equal(0);
 
-          localServiceStub.status.calledOnce.should.be.true();
-          localServiceStub.status.firstCall.args.length.should.equal(0);
+          localServiceStub.getStatus.calledOnce.should.be.true();
+          localServiceStub.getStatus.firstCall.args.length.should.equal(0);
 
           workspaceRepositoryStub.update.calledOnce.should.be.true();
           workspaceRepositoryStub.update.calledWithExactly(currentWorkspace)
@@ -355,7 +355,7 @@ describe('pushController', function () {
     });
 
     it ('should fail when conflicts are found', function (done) {
-      localServiceStub.conflicts.returns(BPromise.resolve({
+      localServiceStub.getConflicts.returns(BPromise.resolve({
         added: ['api.raml']
       }));
       pushController.push()
@@ -365,9 +365,9 @@ describe('pushController', function () {
         .catch(function () {
           asserts.calledOnceWithoutParameters([
             workspaceRepositoryStub.get,
-            localServiceStub.status,
+            localServiceStub.getStatus,
             localServiceStub.getDirectoriesPath,
-            localServiceStub.conflicts]);
+            localServiceStub.getConflicts]);
 
           errorsStub.ConflictsFoundError.calledWithNew().should.be.true();
           done();

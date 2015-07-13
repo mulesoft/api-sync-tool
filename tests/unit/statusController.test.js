@@ -26,19 +26,19 @@ var expectedConflicts = {
 
 describe('statusController', function () {
   beforeEach(function () {
-    localServiceStub.status = sinon.stub();
-    localServiceStub.conflicts = sinon.stub();
+    localServiceStub.getStatus = sinon.stub();
+    localServiceStub.getConflicts = sinon.stub();
   });
 
   describe('status', function () {
     it('should return status', function (done) {
-      localServiceStub.status.returns(BPromise.resolve(expectedStatus));
+      localServiceStub.getStatus.returns(BPromise.resolve(expectedStatus));
 
       run(function (statusController) {
         statusController.status()
           .then(function (result) {
             asserts.calledOnceWithoutParameters([
-              localServiceStub.status
+              localServiceStub.getStatus
             ]);
 
             should.deepEqual(result, expectedStatus);
@@ -54,12 +54,12 @@ describe('statusController', function () {
 
   describe('conflicts', function () {
     it('should return conflicts', function (done) {
-      localServiceStub.conflicts.returns(BPromise.resolve(expectedConflicts));
+      localServiceStub.getConflicts.returns(BPromise.resolve(expectedConflicts));
 
       run(function (statusController) {
         statusController.conflicts()
           .then(function (result) {
-            asserts.calledOnceWithoutParameters([localServiceStub.conflicts]);
+            asserts.calledOnceWithoutParameters([localServiceStub.getConflicts]);
 
             should.deepEqual(result, expectedStatus);
 
