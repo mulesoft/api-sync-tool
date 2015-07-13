@@ -253,15 +253,8 @@ describe('apiPlatformService', function () {
               hash: fileHash
             }],
             directories: [{
-              audit: {
-                created: {
-                  date: '2015-07-03 14:50:00'
-                },
-                updated: {}
-              },
-              name: 'temp',
-              path: '/temp',
-              isDirectory: true
+              audit: apiFiles[2].audit,
+              path: apiFiles[2].path
             }]
           });
 
