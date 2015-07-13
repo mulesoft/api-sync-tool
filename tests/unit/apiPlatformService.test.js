@@ -241,8 +241,8 @@ describe('apiPlatformService', function () {
 
           fileSystemRepositoryStub.getFileHash.calledTwice.should.be.true();
 
-          should.deepEqual(result, [
-            {
+          should.deepEqual(result, {
+            files: [{
               audit: apiFiles[0].audit,
               path: apiFiles[0].path,
               hash: fileHash
@@ -251,8 +251,19 @@ describe('apiPlatformService', function () {
               audit: apiFiles[1].audit,
               path: apiFiles[1].path,
               hash: fileHash
-            }
-          ]);
+            }],
+            directories: [{
+              audit: {
+                created: {
+                  date: '2015-07-03 14:50:00'
+                },
+                updated: {}
+              },
+              name: 'temp',
+              path: '/temp',
+              isDirectory: true
+            }]
+          });
 
           done();
         })

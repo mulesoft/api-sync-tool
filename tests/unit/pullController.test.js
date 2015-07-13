@@ -20,13 +20,17 @@ describe('pullController', function () {
 
   var currentWorkspace = contentGenerator.generateWorkspaceWithFiles();
   var filesMetadata = contentGenerator.getWorkspaceFilesMetadata();
+  var apiFilesResponse = {
+    files: filesMetadata,
+    directories: []
+  };
 
   beforeEach(function () {
     workspaceRepositoryStub.get = sinon.stub().returns(
       BPromise.resolve(currentWorkspace));
 
     apiPlatformServiceStub.getAPIFiles = sinon.stub().returns(
-      BPromise.resolve(filesMetadata));
+      BPromise.resolve(apiFilesResponse));
 
     workspaceRepositoryStub.update = sinon.stub().returns(BPromise.resolve());
     loggerStub.info = sinon.stub();
@@ -38,7 +42,7 @@ describe('pullController', function () {
   describe('getAPIFiles', run(function (pullController) {
     it('should run correctly', function (done) {
       pullController.getAPIFiles()
-        .then(function (workspaceFiles) {
+        .then(function (result) {
           asserts.calledOnceWithoutParameters([workspaceRepositoryStub.get,
             messagesStub.downloadingAPI, messagesStub.finishedDownloadingAPI]);
 
@@ -58,9 +62,7 @@ describe('pullController', function () {
           loggerStub.info.secondCall.calledWithExactly(finishMessage)
             .should.be.true();
 
-          workspaceFiles.should.be.an.Array();
-          workspaceFiles.length.should.equal(10);
-          should.deepEqual(workspaceFiles[0], currentWorkspace.files[0]);
+          should.deepEqual(result, apiFilesResponse);
 
           done();
         })
