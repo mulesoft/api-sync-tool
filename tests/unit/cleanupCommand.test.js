@@ -78,7 +78,7 @@ describe('cleanupCommand', function () {
           .catch(function (err) {
             done(err);
           });
-          });
+      });
     });
   });
 
