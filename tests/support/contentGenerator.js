@@ -54,6 +54,7 @@ function generateWorkspace() {
 function generateWorkspaceWithFiles(number) {
   var workspace = generateWorkspace();
   workspace.files = getWorkspaceFilesMetadata(number);
+  workspace.directories = [];
   return workspace;
 }
 
