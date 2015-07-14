@@ -7,7 +7,6 @@ var sinon = require('sinon');
 
 var containerFactory  = require('../support/testContainerFactory');
 var contentGenerator  = require('../support/contentGenerator');
-var asserts = require('../support/asserts');
 
 var apiPlatformRepositoryStub = {};
 var fileSystemRepositoryStub = {};
@@ -140,23 +139,6 @@ describe('localService', function () {
     workspaceRepositoryStub.get = sinon.stub().returns(
       BPromise.resolve(currentWorkspace));
   });
-
-  describe('getDirectoriesPath', run(function (localService) {
-    it('should pass the call to fileSystemRepository', function (done) {
-      localService.getDirectoriesPath()
-        .then(function (output) {
-          asserts.calledOnceWithoutParameters([
-            fileSystemRepositoryStub.getDirectoriesPath
-          ]);
-          should.deepEqual(output, directoriesList);
-
-          done();
-        })
-        .catch(function (err) {
-          done(err);
-        });
-    });
-  }));
 
   describe('status', run(function (localService) {
     it('should return the current local status', function (done) {

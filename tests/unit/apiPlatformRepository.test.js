@@ -729,6 +729,57 @@ describe('apiPlatformRepository', function () {
     });
   }));
 
+  describe('deleteAPIDirectory', run(function (apiPlatformRepository) {
+    var deletedDir = {
+      id: 123,
+      path: '/test',
+      parentId: null,
+      data: 'content'
+    };
+
+    it('should delete the specified directory', function (done) {
+      superagentStub.end.returns(BPromise.resolve({
+        body: []
+      }));
+
+      apiPlatformRepository.deleteAPIDirectory(workspace.bizGroup,
+          workspace.api.id, workspace.apiVersion.id, deletedDir)
+        .then(function (deletedFile) {
+          assertReadAPICalls();
+
+          deletedFile.should.be.a.String();
+          deletedFile.should.equal(deletedDir.path);
+
+          done();
+        })
+        .catch(function (err) {
+          done(err);
+        });
+    });
+
+    it('should manage errors correctly', function (done) {
+      superagentStub.end.returns(BPromise.reject({
+        status: 401
+      }));
+
+      apiPlatformRepository.deleteAPIDirectory(workspace.bizGroup.id,
+          workspace.api.id, workspace.apiVersion.id, deletedDir)
+        .then(function () {
+          done('Should have failed');
+        })
+        .catch(function () {
+          assertReadAPICalls();
+
+          errorsStub.BadCredentialsError.calledWithNew().should.be.true();
+
+          done();
+        })
+        .catch(function (err) {
+          done(err);
+        });
+    });
+  }));
+
   describe('updateAPIFile', run(function (apiPlatformRepository) {
     var file = {
       id: 123,

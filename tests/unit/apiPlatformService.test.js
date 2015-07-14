@@ -337,6 +337,32 @@ describe('apiPlatformService', function () {
     });
   }));
 
+  describe('deleteAPIDirectory', run(function (apiPlatformService) {
+    var deletedDir = {path: 'x'};
+    apiPlatformRepositoryStub.deleteAPIDirectory = sinon.stub()
+      .returns(BPromise.resolve(deletedDir));
+
+    it('should pass the call to apiPlatformRepository', function (done) {
+      apiPlatformService.deleteAPIDirectory(workspace.bizGroup.id,
+          workspace.api.id, workspace.apiVersion.id, deletedDir)
+        .then(function (output) {
+          should.deepEqual(output, deletedDir);
+          asserts.calledOnceWithExactly(
+            apiPlatformRepositoryStub.createAPIDirectory, [
+              workspace.bizGroup.id,
+              workspace.api.id,
+              workspace.apiVersion.id,
+              deletedDir
+            ]);
+
+          done();
+        })
+        .catch(function (err) {
+          done(err);
+        });
+    });
+  }));
+
   describe('createAPIFile', run(function (apiPlatformService) {
     var newFile = {
       path: 'schema.json',

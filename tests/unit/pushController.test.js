@@ -4,7 +4,6 @@ var BPromise = require('bluebird');
 
 var should = require('should');
 var sinon = require('sinon');
-var _ = require('lodash');
 
 var asserts = require('../support/asserts');
 var containerFactory  = require('../support/testContainerFactory');
@@ -31,7 +30,6 @@ describe('pushController', function () {
 
     localServiceStub.getStatus = sinon.stub();
     localServiceStub.getConflicts = sinon.stub();
-    localServiceStub.getDirectoriesPath = sinon.stub();
 
     errorsStub.ConflictsFoundError = sinon.stub();
 
@@ -41,6 +39,8 @@ describe('pushController', function () {
     apiPlatformServiceStub.createAPIFile = sinon.stub();
     apiPlatformServiceStub.updateAPIFile = sinon.stub();
     apiPlatformServiceStub.deleteAPIFile = sinon.stub();
+    apiPlatformServiceStub.createAPIDirectory = sinon.stub();
+    apiPlatformServiceStub.deleteAPIDirectory = sinon.stub();
 
     workspaceRepositoryStub.update = sinon.stub().returns(BPromise.resolve());
     loggerStub.info = sinon.stub();
@@ -56,7 +56,40 @@ describe('pushController', function () {
 
   describe('push', run(function (pushController) {
     it('should run correctly', function (done) {
+      var firstDirectory = {
+        path: '/folder1',
+        parentId: null
+      };
+      var secondDirectory = {
+        path: '/folder2',
+        parentId: null
+      };
+      var thirdDirectory = {
+        path: '/folder2/folder21',
+        parentId: 101
+      };
+      var firstDirToDelete = {
+        path: '/temp',
+        parentId: null
+      };
+      var secondDirToDelete = {
+        path: '/temp/schemas',
+        parentId: null
+      };
+
+      apiFilesMetadata.push(firstDirToDelete);
+      apiFilesMetadata.push(secondDirToDelete);
+
       var status = {
+        addedDirectories: [
+          firstDirectory.path,
+          secondDirectory.path,
+          thirdDirectory.path
+        ],
+        deletedDirectories: [
+          firstDirToDelete.path,
+          secondDirToDelete.path
+        ],
         added: [
           currentWorkspace.files[0].path,
           currentWorkspace.files[1].path,
@@ -92,12 +125,6 @@ describe('pushController', function () {
         .onThirdCall().returns(BPromise.resolve(currentWorkspace.files[9].path));
 
       localServiceStub.getStatus.returns(BPromise.resolve(status));
-      localServiceStub.getDirectoriesPath
-        .returns(BPromise.resolve([
-          '/folder2',
-          '/folder1',
-          '/folder2/folder21'
-        ]));
 
       var firstDirectoryResult = {
         path: '/folder1',
@@ -112,20 +139,6 @@ describe('pushController', function () {
         id: 102
       };
 
-      var firstDirectory = {
-        path: '/folder1',
-        parentId: null
-      };
-      var secondDirectory = {
-        path: '/folder2',
-        parentId: null
-      };
-      var thirdDirectory = {
-        path: '/folder2/folder21',
-        parentId: 101
-      };
-
-      apiPlatformServiceStub.createAPIDirectory = sinon.stub();
       apiPlatformServiceStub.createAPIDirectory
         .onFirstCall().returns(BPromise.resolve(firstDirectoryResult));
       apiPlatformServiceStub.createAPIDirectory
@@ -133,12 +146,16 @@ describe('pushController', function () {
       apiPlatformServiceStub.createAPIDirectory
         .onThirdCall().returns(BPromise.resolve(thirdDirectoryResult));
 
+      apiPlatformServiceStub.deleteAPIDirectory.onFirstCall()
+        .returns(BPromise.resolve(secondDirToDelete));
+      apiPlatformServiceStub.deleteAPIDirectory.onSecondCall()
+        .returns(BPromise.resolve(firstDirToDelete));
+
       pushController.push()
         .then(function (output) {
           asserts.calledOnceWithoutParameters([
             workspaceRepositoryStub.get,
             localServiceStub.getStatus,
-            localServiceStub.getDirectoriesPath,
             localServiceStub.getConflicts
           ]);
 
@@ -149,13 +166,39 @@ describe('pushController', function () {
             currentWorkspace.apiVersion.id
           ).should.be.true();
 
-          apiPlatformServiceStub.createAPIDirectory.calledThrice;
-          apiPlatformServiceStub.createAPIDirectory
-            .firstCall.calledWithExactly(firstDirectory);
-          apiPlatformServiceStub.createAPIDirectory
-            .secondCall.calledWithExactly(secondDirectory);
-          apiPlatformServiceStub.createAPIDirectory
-            .thirdCall.calledWithExactly(thirdDirectory);
+          apiPlatformServiceStub.createAPIDirectory.calledThrice
+            .should.be.true();
+          apiPlatformServiceStub.createAPIDirectory.firstCall.calledWithExactly(
+            currentWorkspace.bizGroup.id,
+            currentWorkspace.api.id,
+            currentWorkspace.apiVersion.id,
+            firstDirectory).should.be.true();
+          apiPlatformServiceStub.createAPIDirectory.secondCall
+            .calledWithExactly(
+              currentWorkspace.bizGroup.id,
+              currentWorkspace.api.id,
+              currentWorkspace.apiVersion.id,
+              secondDirectory).should.be.true();
+          apiPlatformServiceStub.createAPIDirectory.thirdCall.calledWithExactly(
+            currentWorkspace.bizGroup.id,
+            currentWorkspace.api.id,
+            currentWorkspace.apiVersion.id,
+            thirdDirectory).should.be.true();
+
+          apiPlatformServiceStub.deleteAPIDirectory.calledTwice
+            .should.be.true();
+          apiPlatformServiceStub.deleteAPIDirectory.firstCall
+            .calledWithExactly(
+              currentWorkspace.bizGroup.id,
+              currentWorkspace.api.id,
+              currentWorkspace.apiVersion.id,
+              secondDirToDelete).should.be.true();
+          apiPlatformServiceStub.deleteAPIDirectory.secondCall
+            .calledWithExactly(
+              currentWorkspace.bizGroup.id,
+              currentWorkspace.api.id,
+              currentWorkspace.apiVersion.id,
+              firstDirToDelete).should.be.true();
 
           apiPlatformServiceStub.createAPIFile.callCount.should.equal(4);
           apiPlatformServiceStub.createAPIFile.firstCall.calledWithExactly(
@@ -257,8 +300,7 @@ describe('pushController', function () {
           messagesStub.pushProgressDeleted.firstCall.args.length.should
               .equal(0);
 
-          should.deepEqual(output, _.set(status, 'addedDirectories',
-            ['/folder1', '/folder2', '/folder2/folder21']));
+          should.deepEqual(output, status);
 
           done();
         })
@@ -269,13 +311,13 @@ describe('pushController', function () {
 
     it('should run correctly when there are no changes', function (done) {
       var status = {
+        addedDirectories: [],
+        deletedDirectories: [],
         added: [],
         changed: [],
         deleted: []
       };
       localServiceStub.getStatus.returns(BPromise.resolve(status));
-      localServiceStub.getDirectoriesPath
-        .returns(BPromise.resolve([]));
       apiPlatformServiceStub.createAPIDirectory = sinon.stub();
 
       pushController.push()
@@ -309,7 +351,7 @@ describe('pushController', function () {
             apiPlatformServiceStub.createAPIDirectory
           ]);
 
-          should.deepEqual(output, _.set(status, 'addedDirectories', []));
+          should.deepEqual(output, status);
 
           done();
         })
@@ -343,7 +385,6 @@ describe('pushController', function () {
             messagesStub.pushProgressNew,
             messagesStub.pushProgressChanged,
             messagesStub.pushProgressDeleted,
-            localServiceStub.getDirectoriesPath,
             apiPlatformServiceStub.createAPIDirectory
           ]);
 
@@ -366,7 +407,6 @@ describe('pushController', function () {
           asserts.calledOnceWithoutParameters([
             workspaceRepositoryStub.get,
             localServiceStub.getStatus,
-            localServiceStub.getDirectoriesPath,
             localServiceStub.getConflicts]);
 
           errorsStub.ConflictsFoundError.calledWithNew().should.be.true();
