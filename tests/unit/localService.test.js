@@ -5,6 +5,7 @@ var BPromise = require('bluebird');
 var should = require('should');
 var sinon = require('sinon');
 
+var asserts = require('../support/asserts');
 var containerFactory  = require('../support/testContainerFactory');
 var contentGenerator  = require('../support/contentGenerator');
 
@@ -139,6 +140,27 @@ describe('localService', function () {
     workspaceRepositoryStub.get = sinon.stub().returns(
       BPromise.resolve(currentWorkspace));
   });
+
+  describe('getFilesPath', run(function (localService) {
+    it('should return the local folder files paths', function (done) {
+      var filesPaths = ['/file1.raml', '/folder1/file2.raml'];
+      fileSystemRepositoryStub.getFilesPath =
+        sinon.stub().returns(BPromise.resolve(filesPaths));
+
+      localService.getFilesPath()
+        .then(function (result) {
+          should.deepEqual(result, filesPaths);
+
+          asserts.calledOnceWithoutParameters([
+            fileSystemRepositoryStub.getFilesPath]);
+
+          done();
+        })
+        .catch(function (err) {
+          done(err);
+        });
+    });
+  }));
 
   describe('status', run(function (localService) {
     it('should return the current local status', function (done) {

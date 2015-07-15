@@ -118,6 +118,71 @@ describe('commandPrompt', function () {
     });
   }));
 
+  describe('getRawChoice', run(function (commandPrompt) {
+    it('should prompt for a choice with separator', function (done) {
+      var options = _.range(10);
+      var inquirerOptions = _.range(10);
+      inquirerOptions.push(separator);
+
+      inquirerStub.prompt.callsArgWith(1, {
+        answer: 0
+      }).returns();
+
+      commandPrompt.getRawChoice(message, options)
+        .then(function (choice) {
+          asserts.calledOnceWithExactly(inquirerStub.prompt, [
+            sinon.match({
+              type: 'list',
+              name: 'answer',
+              message: message,
+              choices: inquirerOptions
+            }),
+            sinon.match.func
+          ]);
+
+          inquirerStub.Separator.calledWithNew().should.be.true();
+
+          should.deepEqual(choice, options[0]);
+
+          done();
+        })
+        .catch(function (err) {
+          done(err);
+        });
+    });
+
+    it('should prompt for a choice without separator', function (done) {
+      var options = _.range(9);
+      var inquirerOptions = _.range(9);
+
+      inquirerStub.prompt.callsArgWith(1, {
+        answer: 0
+      }).returns();
+
+      commandPrompt.getRawChoice(message, options)
+        .then(function (choice) {
+          asserts.calledOnceWithExactly(inquirerStub.prompt, [
+            sinon.match({
+              type: 'list',
+              name: 'answer',
+              message: message,
+              choices: inquirerOptions
+            }),
+            sinon.match.func
+          ]);
+
+          asserts.notCalled([inquirerStub.Separator]);
+
+          should.deepEqual(choice, options[0]);
+
+          done();
+        })
+        .catch(function (err) {
+          done(err);
+        });
+    });
+  }));
+
   describe('getConfirmation', run(function (commandPrompt) {
     it('should prompt for a confirmation', function (done) {
       inquirerStub.prompt.callsArgWith(1, {
@@ -137,6 +202,33 @@ describe('commandPrompt', function () {
           ]);
 
           answer.should.be.ok();
+          done();
+        })
+        .catch(function (err) {
+          done(err);
+        });
+    });
+  }));
+
+  describe('getInput', run(function (commandPrompt) {
+    it('should prompt for a text input', function (done) {
+      var input = 'input';
+      inquirerStub.prompt.callsArgWith(1, {
+        input: input
+      }).returns();
+
+      commandPrompt.getInput(message)
+        .then(function (answer) {
+          asserts.calledOnceWithExactly(inquirerStub.prompt, [
+            sinon.match({
+              type: 'input',
+              name: 'input',
+              message: message
+            }),
+            sinon.match.func
+          ]);
+
+          answer.should.be.equal(input);
           done();
         })
         .catch(function (err) {
