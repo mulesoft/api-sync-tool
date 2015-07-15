@@ -4,6 +4,7 @@ var BPromise = require('bluebird');
 
 var should = require('should');
 var sinon = require('sinon');
+var _ = require('lodash');
 
 var asserts = require('../support/asserts');
 var containerFactory  = require('../support/testContainerFactory');
@@ -284,6 +285,18 @@ describe('pushController', function () {
             currentWorkspace.apiVersion.id,
             apiFilesMetadata[9]
           ).should.be.true();
+
+          should(_.find(currentWorkspace.directories, 'path',
+            firstDirToDelete.path)).not.be.ok();
+          should(_.find(currentWorkspace.directories, 'path',
+            secondDirToDelete.path)).not.be.ok();
+
+          should(_.find(currentWorkspace.files, 'path',
+            apiFilesMetadata[7].path)).not.be.ok();
+          should(_.find(currentWorkspace.files, 'path',
+            apiFilesMetadata[8].path)).not.be.ok();
+          should(_.find(currentWorkspace.files, 'path',
+            apiFilesMetadata[9].path)).not.be.ok();
 
           workspaceRepositoryStub.update.calledOnce.should.be.true();
           workspaceRepositoryStub.update.calledWithExactly(
