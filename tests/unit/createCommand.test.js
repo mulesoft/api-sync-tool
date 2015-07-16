@@ -9,6 +9,7 @@ var asserts = require('../support/asserts');
 var containerFactory  = require('../support/testContainerFactory');
 
 var createControllerStub = {};
+var createStrategyFactoryStub = {};
 var errorsStub = {};
 var loggerStub = {};
 var messagesStub = {};
@@ -101,6 +102,22 @@ describe('createCommand', function () {
       });
     });
 
+    it('should pass with no arguments', function (done) {
+      run(function (createCommand) {
+        createCommand.validateInput({
+          _: ['create']
+        })
+        .then(function (result) {
+          should.not.exist(result);
+
+          done();
+        })
+        .catch(function (err) {
+          done(err);
+        });
+      });
+    });
+
     it('should pass with the right arguments for new API', function (done) {
       run(function (createCommand) {
         createCommand.validateInput({
@@ -159,6 +176,23 @@ describe('createCommand', function () {
   });
 
   describe('parseArgs', function () {
+    it('should parse interactive mode arguments', function (done) {
+      run(function (createCommand) {
+        try {
+          var args = createCommand.parseArgs({
+            _: ['create']
+          });
+          should.deepEqual(args, {
+            isInteractive: true
+          });
+
+          done();
+        } catch (err) {
+          done(err);
+        }
+      });
+    });
+
     it('should parse batch mode arguments for new API', function (done) {
       run(function (createCommand) {
         try {
@@ -219,12 +253,12 @@ describe('createCommand', function () {
         id: 2
       }
     };
+    var createStrategy = {x: 1};
 
     beforeEach(function () {
-      createControllerStub.createAPI =
+      createControllerStub.create =
         sinon.stub().returns(BPromise.resolve(api));
-      createControllerStub.createAPIVersion =
-        sinon.stub().returns(BPromise.resolve(api));
+      createStrategyFactoryStub.get = sinon.stub().returns(createStrategy);
       pushCommandStub.execute = sinon.stub().returns(BPromise.resolve());
       setupCommandStub.execute = sinon.stub().returns(BPromise.resolve());
     });
@@ -239,33 +273,31 @@ describe('createCommand', function () {
       run(function (createCommand) {
         createCommand.execute(args)
           .then(function () {
-            asserts.calledOnceWithExactly(createControllerStub.createAPI,
-              [args]);
+            asserts.calledOnceWithExactly(createStrategyFactoryStub.get, [
+              args
+            ]);
 
-            checkNewAPI();
+            asserts.calledOnceWithExactly(createControllerStub.create, [
+              createStrategy
+            ]);
 
-            done();
-          })
-          .catch(function (err) {
-            done(err);
-          });
-      });
-    });
+            asserts.calledOnceWithExactly(setupCommandStub.execute, [{
+              bizGroup: api.organizationId,
+              api: api.id,
+              apiVersion: api.version.id
+            }]);
 
-    it('should run the command for a new API version', function (done) {
-      var args = {
-        bizGroup: 1234,
-        apiId: 1,
-        apiVersion: 'version',
-        rootRamlPath: 'api.raml'
-      };
-      run(function (createCommand) {
-        createCommand.execute(args)
-          .then(function () {
-            asserts.calledOnceWithExactly(createControllerStub.createAPIVersion,
-              [args]);
+            asserts.calledOnceWithoutParameters([
+              messagesStub.settingEnvironment
+            ]);
 
-            checkNewAPI();
+            asserts.calledOnceWithExactly(loggerStub.info, [
+              settingEnvironment
+            ]);
+
+            asserts.calledOnceWithExactly(pushCommandStub.execute, [
+              undefined
+            ]);
 
             done();
           })
@@ -274,33 +306,13 @@ describe('createCommand', function () {
           });
       });
     });
-
-    function checkNewAPI() {
-      asserts.calledOnceWithExactly(setupCommandStub.execute, [{
-        bizGroup: api.organizationId,
-        api: api.id,
-        apiVersion: api.version.id
-      }]);
-
-      asserts.calledOnceWithExactly(pushCommandStub.execute, [undefined]);
-
-      loggerStub.info.calledTwice.should.be.true();
-      loggerStub.info.firstCall.calledWithExactly(creatingAPI)
-        .should.be.true();
-      loggerStub.info.secondCall.calledWithExactly(settingEnvironment)
-        .should.be.true();
-
-      asserts.calledOnceWithoutParameters([
-        messagesStub.creatingAPI,
-        messagesStub.settingEnvironment
-      ]);
-    }
   });
 });
 
 function run(callback) {
   var container = containerFactory.createContainer();
   container.register('createController', createControllerStub);
+  container.register('createStrategyFactory', createStrategyFactoryStub);
   container.register('errors', errorsStub);
   container.register('logger', loggerStub);
   container.register('messages', messagesStub);
