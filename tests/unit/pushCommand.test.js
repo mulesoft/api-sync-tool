@@ -2,7 +2,7 @@
 
 var BPromise = require('bluebird');
 
-require('should');
+var should = require('should');
 var sinon = require('sinon');
 
 var containerFactory  = require('../support/testContainerFactory');
@@ -32,6 +32,7 @@ describe('pushCommand', function () {
     messagesStub.status = sinon.stub().returns(successfulMessage);
     messagesStub.nothingPush = sinon.stub().returns(nothingMessage);
     messagesStub.pushDetailedHelp = sinon.stub();
+    pushControllerStub.forcePush = sinon.stub();
     pushControllerStub.push = sinon.stub();
     loggerStub.info = sinon.stub();
     validateSetupDoneStrategyStub.validate = sinon.stub();
@@ -71,10 +72,52 @@ describe('pushCommand', function () {
   });
 
   describe('parseArgs', function () {
-    it('should parse args and do nothing', function (done) {
+    it('should parse empty args', function (done) {
       run(function (pushCommand) {
-        pushCommand.parseArgs()
+        try {
+          should.deepEqual(pushCommand.parseArgs({}), {
+            force: undefined
+          });
+
+          done();
+        } catch (err) {
+          done(err);
+        }
+      });
+    });
+
+    it('should parse force push args', function (done) {
+      run(function (pushCommand) {
+        try {
+          should.deepEqual(pushCommand.parseArgs({f: true}), {
+            force: true
+          });
+
+          done();
+        } catch (err) {
+          done(err);
+        }
+      });
+    });
+  });
+
+  describe('execute', function () {
+    it('should execute force push with the force argument', function (done) {
+      pushControllerStub.forcePush
+        .returns(BPromise.resolve(pushControllerResult));
+      run(function (pushCommand) {
+        pushCommand.execute({force: true})
           .then(function () {
+            pushControllerStub.forcePush.calledOnce.should.be.true();
+            pushControllerStub.forcePush.firstCall.args.length.should.equal(0);
+
+            messagesStub.status.calledOnce.should.be.true();
+            messagesStub.status.calledWith(pushControllerResult)
+              .should.be.true();
+
+            loggerStub.info.calledOnce.should.be.true();
+            loggerStub.info.calledWith(successfulMessage).should.be.true();
+
             done();
           })
           .catch(function (err) {
@@ -82,9 +125,7 @@ describe('pushCommand', function () {
           });
       });
     });
-  });
 
-  describe('execute', function () {
     it('should execute push and log a successful result', function (done) {
       pushControllerStub.push.returns(BPromise.resolve(pushControllerResult));
 
