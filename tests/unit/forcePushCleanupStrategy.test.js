@@ -13,6 +13,7 @@ var contentGenerator = require('../support/contentGenerator');
 var apiPlatformServiceStub = {};
 var loggerStub = {};
 var messagesStub = {};
+var updateFileStrategyStub = {};
 var workspaceRepositoryStub = {};
 
 describe('forcePushCleanupStrategy', function () {
@@ -20,12 +21,14 @@ describe('forcePushCleanupStrategy', function () {
   var deletingDirectory = 'deletingDirectory';
   var deletingAllFilesMessage = 'deletingAllFilesMessage';
   var deletingFile = 'deletingFile';
+  var uploadingRootRaml = 'uploadingRootRaml';
 
   var apiFilesMetadata;
   var currentWorkspace;
   var directory1;
   var directory2on1;
   var fileOnDirectory2;
+  var originalWorkspace;
   var rootRaml;
   var rootRamlId;
   var updatedWorkspace;
@@ -85,6 +88,7 @@ describe('forcePushCleanupStrategy', function () {
     currentWorkspace.files.push(rootRaml);
     currentWorkspace.directories.push(directory1);
     currentWorkspace.directories.push(directory2on1);
+    originalWorkspace = _.cloneDeep(currentWorkspace);
     updatedWorkspace = _.cloneDeep(currentWorkspace);
     updatedWorkspace.files = [rootRaml];
     updatedWorkspace.directories = [];
@@ -108,6 +112,9 @@ describe('forcePushCleanupStrategy', function () {
     messagesStub.deletingAllFilesMessage =
       sinon.stub().returns(deletingAllFilesMessage);
     messagesStub.deletingFile = sinon.stub().returns(deletingFile);
+    messagesStub.uploadingRootRaml = sinon.stub().returns(uploadingRootRaml);
+
+    updateFileStrategyStub.update = sinon.stub();
 
     workspaceRepositoryStub.get = sinon.stub().returns(
       BPromise.resolve(currentWorkspace));
@@ -121,7 +128,8 @@ describe('forcePushCleanupStrategy', function () {
           asserts.calledOnceWithoutParameters([
             workspaceRepositoryStub.get,
             messagesStub.deletingAllDirectoriesMessage,
-            messagesStub.deletingAllFilesMessage
+            messagesStub.deletingAllFilesMessage,
+            messagesStub.uploadingRootRaml
           ]);
 
           asserts.calledOnceWithExactly(apiPlatformServiceStub.getAllAPIs, [
@@ -135,7 +143,7 @@ describe('forcePushCleanupStrategy', function () {
             currentWorkspace.apiVersion.id
           ]);
 
-          loggerStub.info.callCount.should.equal(5);
+          loggerStub.info.callCount.should.equal(6);
           loggerStub.info.firstCall.calledWithExactly(deletingAllFilesMessage);
           loggerStub.info.secondCall.calledWithExactly(deletingFile);
 
@@ -173,6 +181,13 @@ describe('forcePushCleanupStrategy', function () {
           messagesStub.deletingDirectory.firstCall.calledWithExactly(directory2on1.path);
           messagesStub.deletingDirectory.secondCall.calledWithExactly(directory1.path);
 
+          asserts.calledOnceWithExactly(updateFileStrategyStub.update, [
+            rootRaml.path,
+            _.reject(apiFilesMetadata, 'isDirectory'),
+            currentWorkspace
+          ]);
+
+          loggerStub.info.getCall(5).calledWithExactly(uploadingRootRaml);
           asserts.calledOnceWithExactly(workspaceRepositoryStub.update, [
             updatedWorkspace
           ]);
@@ -192,6 +207,7 @@ function run(callback) {
     container.register('apiPlatformService', apiPlatformServiceStub);
     container.register('logger', loggerStub);
     container.register('messages', messagesStub);
+    container.register('updateFileStrategy', updateFileStrategyStub);
     container.register('workspaceRepository', workspaceRepositoryStub);
 
     container.resolve(callback);
