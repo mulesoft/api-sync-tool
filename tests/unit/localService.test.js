@@ -21,7 +21,9 @@ var changedLocalDeletedRemoteFileName2 = 'api5.raml';
 var deletedLocalExistsRemote = 'api6.raml';
 var deletedLocalDeletedRemote = 'api7.raml';
 var addedLocalFileName = 'schema.json';
-var changedLocalFileName = 'another.json';
+var changedLocalFileNameWithoutAudit = 'another.json';
+var changedLocalFileName = 'changedLocal';
+var changedLocalFileCreatedAgainRemotely = 'api8.raml';
 var addedLocalExistsRemoteFileName = 'schema-other.json';
 
 var existingDirectoryPath = '/schemas';
@@ -35,7 +37,9 @@ var fileList = [
   changedLocalDeletedRemoteFileName1,
   changedLocalDeletedRemoteFileName2,
   addedLocalFileName,
+  changedLocalFileNameWithoutAudit,
   changedLocalFileName,
+  changedLocalFileCreatedAgainRemotely,
   addedLocalExistsRemoteFileName
 ];
 
@@ -50,7 +54,31 @@ var currentWorkspace = contentGenerator.generateWorkspaceWithFiles(7);
 // Add old file metadata to workspace (without audit information).
 currentWorkspace.files.push({
   id: 10,
-  path: changedLocalFileName
+  path: changedLocalFileNameWithoutAudit
+});
+currentWorkspace.files.push({
+  id: 11,
+  path: changedLocalFileCreatedAgainRemotely,
+  audit: {
+    created: {
+      date: '2015-10-05 00:02:00'
+    },
+    updated: {
+      date: '2015-10-05 00:03:00'
+    }
+  }
+});
+currentWorkspace.files.push({
+  id: 11,
+  path: changedLocalFileName,
+  audit: {
+    created: {
+      date: '2015-10-05 00:02:00'
+    },
+    updated: {
+      date: '2015-10-05 00:05:00'
+    }
+  }
 });
 
 // Add existing directory to workspace.
@@ -74,7 +102,7 @@ apiFiles.push({
       date: '2015-10-05 00:05:00'
     },
     updated: {
-      date: '2015-10-05 00:05:00'
+      date: '2015-10-05 00:06:00'
     }
   },
   id: 12,
@@ -91,7 +119,7 @@ apiFiles.push({
     updated: {}
   },
   id: 10,
-  path: changedLocalFileName
+  path: changedLocalFileNameWithoutAudit
 });
 
 // Add changed file to the API files list.
@@ -118,6 +146,30 @@ apiFiles.push({
   },
   id: 12,
   path: deletedLocalExistsRemote
+});
+
+apiFiles.push({
+  audit: {
+    created: {
+      date: '2015-10-05 00:05:00'
+    },
+    updated: {}
+  },
+  id: 13,
+  path: changedLocalFileCreatedAgainRemotely
+});
+
+apiFiles.push({
+  audit: {
+    created: {
+      date: '2015-10-05 00:02:00'
+    },
+    updated: {
+      date: '2015-10-05 00:05:00'
+    }
+  },
+  id: 10,
+  path: changedLocalFileName
 });
 
 describe('localService', function () {
@@ -176,7 +228,9 @@ describe('localService', function () {
               changedLocalChangedRemoteFileName,
               changedLocalDeletedRemoteFileName1,
               changedLocalDeletedRemoteFileName2,
-              changedLocalFileName
+              changedLocalFileNameWithoutAudit,
+              changedLocalFileName,
+              changedLocalFileCreatedAgainRemotely
             ],
             deleted: [deletedLocalExistsRemote, deletedLocalDeletedRemote],
             added: [addedLocalFileName, addedLocalExistsRemoteFileName]
@@ -202,7 +256,11 @@ describe('localService', function () {
               changedLocalDeletedRemoteFileName1,
               changedLocalDeletedRemoteFileName2
             ],
-            changedRemotely: [changedLocalChangedRemoteFileName],
+            changedRemotely: [
+              changedLocalChangedRemoteFileName,
+              changedLocalFileNameWithoutAudit,
+              changedLocalFileCreatedAgainRemotely
+            ],
             deletedRemotely: [unchangedLocalDeletedRemoteFileName],
             deletedNotExists: [deletedLocalDeletedRemote]
           });
