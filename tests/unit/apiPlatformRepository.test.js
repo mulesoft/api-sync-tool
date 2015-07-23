@@ -286,18 +286,20 @@ describe('apiPlatformRepository', function () {
   }));
 
   describe('getAllAPIs', run(function (apiPlatformRepository) {
+    var apis = [{
+      id: 1,
+      name: 'name1',
+
+      versions: [{
+        id: 1,
+        name: 'version1',
+        rootFileId: 1
+      }]
+    }];
     it('should return all APIs', function (done) {
       superagentStub.end.returns(BPromise.resolve({
         body: {
-          apis: [{
-            id: 1,
-            name: 'name1',
-
-            versions: [{
-              id: 1,
-              name: 'version1'
-            }]
-          }]
+          apis: apis
         }
       }));
 
@@ -312,10 +314,7 @@ describe('apiPlatformRepository', function () {
 
           assertReadAPICalls();
 
-          allAPIs.should.be.an.Array();
-          allAPIs[0].should.be.an.Object();
-          allAPIs[0].id.should.equal(1);
-          allAPIs[0].name.should.equal('name1');
+          should.deepEqual(apis, allAPIs);
 
           done();
         })

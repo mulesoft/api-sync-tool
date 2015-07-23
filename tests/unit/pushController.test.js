@@ -12,6 +12,7 @@ var contentGenerator = require('../support/contentGenerator');
 
 var apiPlatformServiceStub = {};
 var errorsStub = {};
+var forcePushCleanupStrategyStub = {};
 var localServiceStub = {};
 var loggerStub = {};
 var messagesStub = {};
@@ -34,6 +35,9 @@ describe('pushController', function () {
 
     errorsStub.ConflictsFoundError = sinon.stub();
 
+    forcePushCleanupStrategyStub.cleanup =
+      sinon.stub().returns(BPromise.resolve());
+
     apiPlatformServiceStub.getAPIFilesMetadata = sinon.stub().returns(
       BPromise.resolve(apiFilesMetadata));
 
@@ -54,6 +58,83 @@ describe('pushController', function () {
     messagesStub.uploadingFile = sinon.stub();
     messagesStub.deletingFile = sinon.stub();
   });
+
+  describe('forcePush', run(function (pushController) {
+    var status;
+    var workspace;
+    beforeEach(function () {
+      var rootRamlPath = 'api.raml';
+      var rootRaml = {
+        path: rootRamlPath,
+        hash: 1
+      };
+      var remoteRootRaml = {
+        path: rootRamlPath,
+        id: 1
+      };
+      status = {
+        addedDirectories: [],
+        deletedDirectories: [],
+        added: [],
+        changed: [rootRaml],
+        deleted: []
+      };
+      workspace = contentGenerator.generateWorkspace();
+      workspace.directories = [];
+      workspace.files = [rootRaml];
+
+      workspaceRepositoryStub.get = sinon.stub().returns(
+        BPromise.resolve(workspace));
+
+      apiPlatformServiceStub.getAPIFilesMetadata = sinon.stub().returns(
+        BPromise.resolve([remoteRootRaml]));
+
+      localServiceStub.getStatus = sinon.stub().returns(status);
+      localServiceStub.getConflicts = sinon.stub().returns({});
+
+      apiPlatformServiceStub.updateAPIFile
+        .returns(BPromise.resolve(rootRaml));
+    });
+
+    it('should run correctly', function (done) {
+      pushController.forcePush()
+        .then(function (output) {
+          asserts.calledOnceWithoutParameters([
+            forcePushCleanupStrategyStub.cleanup
+          ]);
+
+          asserts.calledOnceWithoutParameters([
+            workspaceRepositoryStub.get,
+            localServiceStub.getStatus,
+            localServiceStub.getConflicts,
+            messagesStub.pushProgressChanged
+          ]);
+
+          asserts.calledOnceWithExactly(apiPlatformServiceStub
+              .getAPIFilesMetadata, [
+            currentWorkspace.bizGroup.id,
+            currentWorkspace.api.id,
+            currentWorkspace.apiVersion.id
+          ]);
+
+          asserts.calledOnceWithExactly(workspaceRepositoryStub.update, [
+            workspace
+          ]);
+
+          asserts.onlyThisMethodsCalled(apiPlatformServiceStub, [
+            'getAPIFilesMetadata',
+            'updateAPIFile'
+          ]);
+
+          should.deepEqual(output, status);
+
+          done();
+        })
+        .catch(function (err) {
+          done(err);
+        });
+    });
+  }));
 
   describe('push', run(function (pushController) {
     it('should run correctly', function (done) {
@@ -408,7 +489,7 @@ describe('pushController', function () {
         });
     });
 
-    it ('should fail when conflicts are found', function (done) {
+    it('should fail when conflicts are found', function (done) {
       localServiceStub.getConflicts.returns(BPromise.resolve({
         added: ['api.raml']
       }));
@@ -437,6 +518,7 @@ function run(callback) {
     var container = containerFactory.createContainer();
     container.register('apiPlatformService', apiPlatformServiceStub);
     container.register('errors', errorsStub);
+    container.register('forcePushCleanupStrategy', forcePushCleanupStrategyStub);
     container.register('localService', localServiceStub);
     container.register('workspaceRepository', workspaceRepositoryStub);
     container.register('logger', loggerStub);
