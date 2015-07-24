@@ -189,24 +189,7 @@ describe('pushController', function () {
           currentWorkspace.files[9].path
         ]
       };
-
-      apiPlatformServiceStub.createAPIFile
-        .onFirstCall().returns(BPromise.resolve(currentWorkspace.files[0]))
-        .onSecondCall().returns(BPromise.resolve(currentWorkspace.files[1]))
-        .onThirdCall().returns(BPromise.resolve(currentWorkspace.files[2]))
-        .onCall(3).returns(BPromise.resolve(currentWorkspace.files[3]));
-
-      apiPlatformServiceStub.updateAPIFile
-        .onFirstCall().returns(BPromise.resolve(currentWorkspace.files[4]))
-        .onSecondCall().returns(BPromise.resolve(currentWorkspace.files[5]))
-        .onThirdCall().returns(BPromise.resolve(currentWorkspace.files[6]));
-
-      apiPlatformServiceStub.deleteAPIFile
-        .onFirstCall().returns(BPromise.resolve(currentWorkspace.files[7].path))
-        .onSecondCall().returns(BPromise.resolve(currentWorkspace.files[8].path))
-        .onThirdCall().returns(BPromise.resolve(currentWorkspace.files[9].path));
-
-      localServiceStub.getStatus.returns(BPromise.resolve(status));
+      currentWorkspace.files = currentWorkspace.files.splice(4);
 
       var firstDirectoryResult = {
         path: '/folder1',
@@ -220,6 +203,41 @@ describe('pushController', function () {
         path: '/folder2/folder21',
         id: 102
       };
+
+      var newFiles = contentGenerator.getWorkspaceFilesMetadata(10, 'asdf');
+      var updatedWorkspace = _.cloneDeep(currentWorkspace);
+      updatedWorkspace.directories = [
+        firstDirectoryResult,
+        secondDirectoryResult,
+        thirdDirectoryResult
+      ];
+      updatedWorkspace.files = [
+        newFiles[0],
+        newFiles[1],
+        newFiles[2],
+        newFiles[3],
+        newFiles[4],
+        newFiles[5],
+        newFiles[6]
+      ];
+
+      apiPlatformServiceStub.createAPIFile
+        .onFirstCall().returns(BPromise.resolve(newFiles[0]))
+        .onSecondCall().returns(BPromise.resolve(newFiles[1]))
+        .onThirdCall().returns(BPromise.resolve(newFiles[2]))
+        .onCall(3).returns(BPromise.resolve(newFiles[3]));
+
+      apiPlatformServiceStub.updateAPIFile
+        .onFirstCall().returns(BPromise.resolve(newFiles[4]))
+        .onSecondCall().returns(BPromise.resolve(newFiles[5]))
+        .onThirdCall().returns(BPromise.resolve(newFiles[6]));
+
+      apiPlatformServiceStub.deleteAPIFile
+        .onFirstCall().returns(BPromise.resolve(status.deleted[0]))
+        .onSecondCall().returns(BPromise.resolve(status.deleted[1]))
+        .onThirdCall().returns(BPromise.resolve(status.deleted[2]));
+
+      localServiceStub.getStatus.returns(BPromise.resolve(status));
 
       apiPlatformServiceStub.createAPIDirectory
         .onFirstCall().returns(BPromise.resolve(firstDirectoryResult));
@@ -288,7 +306,7 @@ describe('pushController', function () {
             currentWorkspace.api.id,
             currentWorkspace.apiVersion.id,
             sinon.match({
-              path: currentWorkspace.files[0].path,
+              path: status.added[0],
               parentId: null
             })
           ).should.be.true();
@@ -298,7 +316,7 @@ describe('pushController', function () {
             currentWorkspace.api.id,
             currentWorkspace.apiVersion.id,
             sinon.match({
-              path: currentWorkspace.files[1].path,
+              path: status.added[1],
               parentId: null
             })
           ).should.be.true();
@@ -308,7 +326,7 @@ describe('pushController', function () {
             currentWorkspace.api.id,
             currentWorkspace.apiVersion.id,
             sinon.match({
-              path: currentWorkspace.files[2].path,
+              path: status.added[2],
               parentId: null
             })
           ).should.be.true();
@@ -318,7 +336,7 @@ describe('pushController', function () {
             currentWorkspace.api.id,
             currentWorkspace.apiVersion.id,
             sinon.match({
-              path: currentWorkspace.files[3].path,
+              path: status.added[3],
               parentId: null
             })
           ).should.be.true();
@@ -381,7 +399,7 @@ describe('pushController', function () {
 
           workspaceRepositoryStub.update.calledOnce.should.be.true();
           workspaceRepositoryStub.update.calledWithExactly(
-              currentWorkspace).should.be.true();
+            updatedWorkspace).should.be.true();
 
           messagesStub.pushProgressNew.calledOnce.should.be.true();
           messagesStub.pushProgressNew.firstCall.args.length.should.equal(0);

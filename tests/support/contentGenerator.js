@@ -58,7 +58,7 @@ function generateWorkspaceWithFiles(number) {
   return workspace;
 }
 
-function getWorkspaceFilesMetadata(number) {
+function getWorkspaceFilesMetadata(number, hash) {
   number = number ? number : 10;
   return _.range(1, number + 1)
     .map(function (n) {
@@ -70,7 +70,7 @@ function getWorkspaceFilesMetadata(number) {
           updated: {}
         },
         path: 'api' + n + '.raml',
-        hash: 'asdf' + n
+        hash: hash + 'asdf' + n
       };
     });
 }
