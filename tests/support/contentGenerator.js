@@ -43,7 +43,8 @@ function generateWorkspace() {
       id: 1234
     },
     apiVersion: {
-      id: 1234
+      id: 1234,
+      rootFileId: -1
     },
     bizGroup: {
       id: 1234

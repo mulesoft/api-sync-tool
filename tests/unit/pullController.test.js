@@ -20,6 +20,9 @@ describe('pullController', function () {
 
   var currentWorkspace = contentGenerator.generateWorkspaceWithFiles();
   var filesMetadata = contentGenerator.getWorkspaceFilesMetadata();
+  var remoteFilesMetadata = contentGenerator.getAPIFilesMetadata();
+  var rootRaml = remoteFilesMetadata[0];
+  rootRaml.id = -1;
   var apiFilesResponse = {
     files: filesMetadata,
     directories: []
@@ -31,6 +34,9 @@ describe('pullController', function () {
 
     apiPlatformServiceStub.getAPIFiles = sinon.stub().returns(
       BPromise.resolve(apiFilesResponse));
+
+    apiPlatformServiceStub.getAPIFilesMetadata = sinon.stub().returns(
+      BPromise.resolve(remoteFilesMetadata));
 
     workspaceRepositoryStub.update = sinon.stub().returns(BPromise.resolve());
     loggerStub.info = sinon.stub();
@@ -52,9 +58,18 @@ describe('pullController', function () {
             currentWorkspace.apiVersion.id
           ]);
 
+          asserts.calledOnceWithExactly(apiPlatformServiceStub.getAPIFilesMetadata,
+              [
+            currentWorkspace.bizGroup.id,
+            currentWorkspace.api.id,
+            currentWorkspace.apiVersion.id
+          ]);
+
           asserts.calledOnceWithExactly(workspaceRepositoryStub.update, [
             currentWorkspace
           ]);
+
+          currentWorkspace.rootRamlPath.should.equal(rootRaml.path);
 
           loggerStub.info.calledTwice.should.be.true();
           loggerStub.info.firstCall.calledWithExactly(downloadMessage)

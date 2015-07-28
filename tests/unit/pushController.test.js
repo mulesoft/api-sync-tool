@@ -35,6 +35,7 @@ describe('pushController', function () {
     localServiceStub.getConflicts = sinon.stub();
 
     errorsStub.ConflictsFoundError = sinon.stub();
+    errorsStub.RootRamlDeletedError = sinon.stub();
 
     forcePushCleanupStrategyStub.cleanup =
       sinon.stub().returns(BPromise.resolve());
@@ -91,48 +92,92 @@ describe('pushController', function () {
       apiPlatformServiceStub.getAPIFilesMetadata = sinon.stub().returns(
         BPromise.resolve([remoteRootRaml]));
 
-      localServiceStub.getStatus = sinon.stub().returns(status);
-      localServiceStub.getConflicts = sinon.stub().returns({});
+      localServiceStub.getStatus = sinon.stub().returns(BPromise.resolve(status));
+      localServiceStub.getConflicts = sinon.stub().returns(BPromise.resolve({}));
 
       updateFileStrategyStub.update.returns(BPromise.resolve(rootRaml));
     });
 
-    it('should run correctly', function (done) {
-      pushController.forcePush()
-        .then(function (output) {
-          asserts.calledOnceWithoutParameters([
-            forcePushCleanupStrategyStub.cleanup
-          ]);
+    describe('with root raml in place', function () {
+      it('should run correctly', function (done) {
+        pushController.forcePush()
+          .then(function (output) {
+            asserts.calledOnceWithExactly(forcePushCleanupStrategyStub.cleanup, [
+              undefined
+            ]);
 
-          asserts.calledOnceWithoutParameters([
-            workspaceRepositoryStub.get,
-            localServiceStub.getStatus,
-            localServiceStub.getConflicts,
-            messagesStub.pushProgressChanged
-          ]);
+            asserts.calledOnceWithoutParameters([
+              workspaceRepositoryStub.get,
+              localServiceStub.getStatus,
+              messagesStub.pushProgressChanged
+            ]);
 
-          asserts.calledOnceWithExactly(apiPlatformServiceStub
-              .getAPIFilesMetadata, [
-            currentWorkspace.bizGroup.id,
-            currentWorkspace.api.id,
-            currentWorkspace.apiVersion.id
-          ]);
+            localServiceStub.getConflicts.calledTwice.should.be.true();
+            localServiceStub.getConflicts.firstCall.args.length.should.equal(0);
+            localServiceStub.getConflicts.secondCall.args.length.should.equal(0);
 
-          asserts.calledOnceWithExactly(workspaceRepositoryStub.update, [
-            workspace
-          ]);
+            asserts.calledOnceWithExactly(apiPlatformServiceStub
+                .getAPIFilesMetadata, [
+              currentWorkspace.bizGroup.id,
+              currentWorkspace.api.id,
+              currentWorkspace.apiVersion.id
+            ]);
 
-          asserts.onlyThisMethodsCalled(apiPlatformServiceStub, [
-            'getAPIFilesMetadata'
-          ]);
+            asserts.calledOnceWithExactly(workspaceRepositoryStub.update, [
+              workspace
+            ]);
 
-          should.deepEqual(output, status);
+            asserts.onlyThisMethodsCalled(apiPlatformServiceStub, [
+              'getAPIFilesMetadata'
+            ]);
 
-          done();
-        })
-        .catch(function (err) {
-          done(err);
-        });
+            asserts.notCalled([
+              errorsStub.ConflictsFoundError,
+              errorsStub.RootRamlDeletedError
+            ]);
+
+            should.deepEqual(output, status);
+
+            done();
+          })
+          .catch(function (err) {
+            done(err);
+          });
+      });
+    });
+
+    describe('when root raml is deleted', function () {
+      var rootRamlPath = 'api.raml';
+      beforeEach(function () {
+        localServiceStub.getConflicts = sinon.stub().returns(BPromise.resolve({
+          rootRamlDeleted: rootRamlPath
+        }));
+      });
+
+      it('should fail', function (done) {
+        pushController.forcePush()
+          .then(function () {
+            done('should have failed!');
+          })
+          .catch(function () {
+            asserts.notCalled([
+              forcePushCleanupStrategyStub.cleanup,
+              workspaceRepositoryStub.get,
+              localServiceStub.getStatus,
+              errorsStub.ConflictsFoundError
+            ]);
+
+            errorsStub.RootRamlDeletedError.calledWithNew().should.be.true();
+            asserts.calledOnceWithExactly(errorsStub.RootRamlDeletedError, [
+              rootRamlPath
+            ]);
+
+            done();
+          })
+          .catch(function (err) {
+            done(err);
+          });
+      });
     });
   }));
 
