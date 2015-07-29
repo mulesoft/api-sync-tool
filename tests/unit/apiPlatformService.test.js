@@ -4,6 +4,7 @@ var BPromise = require('bluebird');
 
 var should = require('should');
 var sinon = require('sinon');
+var _ = require('lodash');
 
 var containerFactory  = require('../support/testContainerFactory');
 var contentGenerator = require('../support/contentGenerator');
@@ -35,6 +36,20 @@ var newApi = {
     id: 2
   }
 };
+var rootRamlFile = {
+  id: 1,
+  path: rootRamlPath,
+  audit: {
+    created: {
+      date: '2015-12-12 12:00'
+    },
+    updated: {
+      date: '2015-12-12 12:00'
+    }
+  }
+};
+var expectedAPI = _.cloneDeep(newApi);
+expectedAPI.rootRamlFile = rootRamlFile;
 
 describe('apiPlatformService', function () {
   var directory = '/Users/test';
@@ -88,7 +103,7 @@ describe('apiPlatformService', function () {
       apiPlatformRepositoryStub.createAPI =
         sinon.stub().returns(BPromise.resolve(newApi));
       apiPlatformRepositoryStub.addRootRaml =
-        sinon.stub().returns(BPromise.resolve());
+        sinon.stub().returns(BPromise.resolve(rootRamlFile));
       fileSystemRepositoryStub.getFile =
         sinon.stub().returns(BPromise.resolve(fileData));
 
@@ -126,7 +141,7 @@ describe('apiPlatformService', function () {
       apiPlatformRepositoryStub.createAPIVersion =
         sinon.stub().returns(BPromise.resolve(newApi));
       apiPlatformRepositoryStub.addRootRaml =
-        sinon.stub().returns(BPromise.resolve());
+        sinon.stub().returns(BPromise.resolve(rootRamlFile));
       fileSystemRepositoryStub.getFile =
         sinon.stub().returns(BPromise.resolve(fileData));
 
@@ -539,7 +554,7 @@ function checkCreateAPICalls(api) {
   loggerStub.info.secondCall.calledWithExactly(uploadingRootRaml);
   loggerStub.info.thirdCall.calledWithExactly(rootRamlUploaded);
 
-  should.deepEqual(api, newApi);
+  should.deepEqual(api, expectedAPI);
 }
 
 function run(callback) {
