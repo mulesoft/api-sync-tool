@@ -50,7 +50,15 @@ describe('apiPlatformRepository', function () {
     };
     var response = {
       body: {
-        data: 1
+        id: 1,
+        audit: {
+          created: {
+            date: '2015-12-12 12:00'
+          },
+          updated: {
+            date: '2015-12-12 12:00'
+          }
+        }
       },
       notBody: 1
     };
@@ -65,7 +73,7 @@ describe('apiPlatformRepository', function () {
 
       apiPlatformRepository.addRootRaml(organizationId, apiId, apiVersionId,
           rootRaml)
-        .then(function (body) {
+        .then(function (createdRaml) {
           asserts.calledOnceWithExactly(superagentStub.post, [
             sinon.match(
               '/organizations/' + organizationId +
@@ -83,7 +91,9 @@ describe('apiPlatformRepository', function () {
 
           assertReadAPICalls();
 
-          should.deepEqual(body, response.body);
+          var expectedCreatedRaml = response.body;
+          expectedCreatedRaml.path = rootRaml.path;
+          should.deepEqual(createdRaml, expectedCreatedRaml);
 
           done();
         })

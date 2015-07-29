@@ -3,6 +3,7 @@
 var BPromise = require('bluebird');
 require('should');
 var sinon = require('sinon');
+var _ = require('lodash');
 
 var asserts = require('../support/asserts');
 var containerFactory  = require('../support/testContainerFactory');
@@ -38,13 +39,29 @@ describe('createController', function () {
     '/api.raml',
     '/folder1/x.raml'
   ];
+  var rootRamlFile = {
+    id: 1,
+    audit: {
+      created: {
+        date: '2015-12-12 12:00'
+      },
+      updated: {
+        date: '2015-12-12 12:00'
+      }
+    },
+    path: rootRamlPath
+  };
+  var rootRamlFileWithHash = _.clone(rootRamlFile);
+  rootRamlFileWithHash.hash = rootRamlHash;
+
   var createdApi = {
     id: 2,
     name: newApiName,
     versions: [{
       id: 1,
       name: newApiVersionName
-    }]
+    }],
+    rootRamlFile: rootRamlFile
   };
   var directory = 'pepe';
   var workspace = {
@@ -52,12 +69,7 @@ describe('createController', function () {
   };
   var updatedWorkspace = {
     directory: directory,
-    files: [
-      {
-        path: rootRamlPath,
-        hash: rootRamlHash
-      }
-    ],
+    files: [rootRamlFileWithHash],
     directories: []
   };
 
