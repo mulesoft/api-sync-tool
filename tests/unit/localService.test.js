@@ -245,31 +245,68 @@ describe('localService', function () {
   }));
 
   describe('conflicts', run(function (localService) {
-    it('should return conflicts', function (done) {
-      fileSystemRepositoryStub.getFileHash.returns(BPromise.resolve(fileHash));
+    describe('with rootRaml', function () {
+      it('should return conflicts', function (done) {
+        fileSystemRepositoryStub.getFileHash.returns(BPromise.resolve(fileHash));
 
-      localService.getConflicts()
-        .then(function (conflicts) {
-          should.deepEqual(conflicts, {
-            addedAlreadyExists: [addedLocalExistsRemoteFileName],
-            changedWasDeleted: [
-              changedLocalDeletedRemoteFileName1,
-              changedLocalDeletedRemoteFileName2
-            ],
-            changedRemotely: [
-              changedLocalChangedRemoteFileName,
-              changedLocalFileNameWithoutAudit,
-              changedLocalFileCreatedAgainRemotely
-            ],
-            deletedRemotely: [unchangedLocalDeletedRemoteFileName],
-            deletedNotExists: [deletedLocalDeletedRemote]
+        localService.getConflicts()
+          .then(function (conflicts) {
+            should.deepEqual(conflicts, {
+              addedAlreadyExists: [addedLocalExistsRemoteFileName],
+              changedWasDeleted: [
+                changedLocalDeletedRemoteFileName1,
+                changedLocalDeletedRemoteFileName2
+              ],
+              changedRemotely: [
+                changedLocalChangedRemoteFileName,
+                changedLocalFileNameWithoutAudit,
+                changedLocalFileCreatedAgainRemotely
+              ],
+              deletedRemotely: [unchangedLocalDeletedRemoteFileName],
+              deletedNotExists: [deletedLocalDeletedRemote]
+            });
+
+            done();
+          })
+          .catch(function (err) {
+            done(err);
           });
+      });
+    });
 
-          done();
-        })
-        .catch(function (err) {
-          done(err);
-        });
+    describe('with rootRaml deleted', function () {
+      var rootRamlPath = deletedLocalExistsRemote;
+      beforeEach(function () {
+        currentWorkspace.rootRamlPath = rootRamlPath;
+      });
+
+      it('should return conflicts', function (done) {
+        fileSystemRepositoryStub.getFileHash.returns(BPromise.resolve(fileHash));
+
+        localService.getConflicts()
+          .then(function (conflicts) {
+            should.deepEqual(conflicts, {
+              addedAlreadyExists: [addedLocalExistsRemoteFileName],
+              changedWasDeleted: [
+                changedLocalDeletedRemoteFileName1,
+                changedLocalDeletedRemoteFileName2
+              ],
+              changedRemotely: [
+                changedLocalChangedRemoteFileName,
+                changedLocalFileNameWithoutAudit,
+                changedLocalFileCreatedAgainRemotely
+              ],
+              deletedRemotely: [unchangedLocalDeletedRemoteFileName],
+              deletedNotExists: [deletedLocalDeletedRemote],
+              rootRamlDeleted: rootRamlPath
+            });
+
+            done();
+          })
+          .catch(function (err) {
+            done(err);
+          });
+      });
     });
   }));
 });
