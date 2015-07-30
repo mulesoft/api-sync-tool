@@ -201,8 +201,9 @@ describe('createController', function () {
 
   function assertCommonCreateStrategy(newApi, apiId) {
     newApi.should.equal(createdApi);
+    asserts.calledOnceWithExactly(
+      parametersStrategyStub.getCreateAPIorAPIVersionChoice, [businessGroup]);
     asserts.calledOnceWithoutParameters([
-      parametersStrategyStub.getCreateAPIorAPIVersionChoice,
       userOrganizationServiceStub.getBusinessGroups,
       workspaceRepositoryStub.get
     ]);
