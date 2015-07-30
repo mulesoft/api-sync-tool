@@ -11,13 +11,16 @@ var containerFactory  = require('../support/testContainerFactory');
 var commandFactoryStub = {};
 var commandRunnerStub = {};
 var commandsStub = {};
+var commandStub = {};
 var loggerStub = {};
+var messagesStub = {};
 var omeletteReturnsStub = {};
 var omeletteStub = {};
 var processStub = {};
-var commandStub = {};
+
 var helpMessage = 'help';
 var errorMessage = 'error';
+var unexpectedError = 'unexpectedError';
 
 describe('application', function () {
   beforeEach(function () {
@@ -34,6 +37,8 @@ describe('application', function () {
     loggerStub.info = sinon.stub();
     loggerStub.onComplete = sinon.stub();
     loggerStub.onComplete.onFirstCall().callsArg(1);
+
+    messagesStub.unexpectedError = sinon.stub().returns(unexpectedError);
 
     omeletteReturnsStub.on = sinon.stub();
     omeletteReturnsStub.on.onFirstCall().callsArgOn(1, omeletteReturnsStub);
@@ -111,6 +116,9 @@ describe('application', function () {
             ]);
 
             assertsErrors();
+            asserts.calledOnceWithExactly(loggerStub.debug, [
+              errorMessage
+            ]);
 
             done();
           })
@@ -144,6 +152,50 @@ describe('application', function () {
             ]);
 
             assertsErrors();
+            loggerStub.debug.secondCall
+              .calledWithExactly(errorMessage).should.be.true();
+
+            done();
+          })
+          .catch(function (err) {
+            done(err);
+          });
+      });
+    });
+
+    it('should catch expected errors', function (done) {
+      var error = {
+        applicationError: true
+      };
+
+      commandRunnerStub.run =
+        sinon.stub().returns(BPromise.reject(error));
+
+      var args = {_: ['test']};
+      run(function (application) {
+        application.run(args)
+          .then(function () {
+            done('should fail');
+          })
+          .catch(function (err) {
+            assertSetup(args);
+            err.should.equal(error);
+
+            asserts.calledOnceWithExactly(commandRunnerStub.run, [
+              commandStub,
+              args
+            ]);
+
+            asserts.notCalled([
+              loggerStub.info
+            ]);
+
+            asserts.calledOnceWithExactly(loggerStub.error, [err]);
+            asserts.calledOnceWithExactly(loggerStub.onComplete, [
+              err,
+              sinon.match.func
+            ]);
+            asserts.calledOnceWithExactly(processStub.exit, [1]);
 
             done();
           })
@@ -170,7 +222,7 @@ function assertSetup(args) {
 }
 
 function assertsErrors() {
-  asserts.calledOnceWithExactly(loggerStub.error, [errorMessage]);
+  asserts.calledOnceWithExactly(loggerStub.error, [unexpectedError]);
   asserts.calledOnceWithExactly(loggerStub.onComplete, [
     errorMessage,
     sinon.match.func
@@ -186,6 +238,7 @@ function run(callback) {
     return commandsStub;
   });
   container.register('logger', loggerStub);
+  container.register('messages', messagesStub);
   container.register('omelette', function () {
     return omeletteStub;
   });
