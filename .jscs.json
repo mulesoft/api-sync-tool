@@ -89,14 +89,5 @@
 
   "validateLineBreaks": "LF",
   "validateParameterSeparator": ", ",
-  "validateQuoteMarks": "'",
-
-  "validateJSDoc": {
-    "checkAnnotations": "jsdoc3",
-    "checkParamNames": true,
-    "requireParamTypes": true,
-    "checkRedundantParams": true,
-    "requireReturnTypes": true,
-    "checkTypes": "capitalizedNativeCase"
-  }
+  "validateQuoteMarks": "'"
 }
