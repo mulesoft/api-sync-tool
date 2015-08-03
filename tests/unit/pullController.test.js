@@ -28,25 +28,27 @@ describe('pullController', function () {
     directories: []
   };
 
-  beforeEach(function () {
-    workspaceRepositoryStub.get = sinon.stub().returns(
-      BPromise.resolve(currentWorkspace));
-
-    apiPlatformServiceStub.getAPIFiles = sinon.stub().returns(
-      BPromise.resolve(apiFilesResponse));
-
-    apiPlatformServiceStub.getAPIFilesMetadata = sinon.stub().returns(
-      BPromise.resolve(remoteFilesMetadata));
-
-    workspaceRepositoryStub.update = sinon.stub().returns(BPromise.resolve());
-    loggerStub.info = sinon.stub();
-
-    messagesStub.downloadingAPI = sinon.stub().returns(downloadMessage);
-    messagesStub.finishedDownloadingAPI = sinon.stub().returns(finishMessage);
-  });
-
   describe('getAPIFiles', run(function (pullController) {
+    beforeEach(function () {
+      workspaceRepositoryStub.get = sinon.stub().returns(
+        BPromise.resolve(currentWorkspace));
+
+      apiPlatformServiceStub.getAPIFiles = sinon.stub().returns(
+        BPromise.resolve(apiFilesResponse));
+
+      apiPlatformServiceStub.getAPIFilesMetadata = sinon.stub();
+
+      workspaceRepositoryStub.update = sinon.stub().returns(BPromise.resolve());
+      loggerStub.info = sinon.stub();
+
+      messagesStub.downloadingAPI = sinon.stub().returns(downloadMessage);
+      messagesStub.finishedDownloadingAPI = sinon.stub().returns(finishMessage);
+    });
+
     it('should run correctly', function (done) {
+      apiPlatformServiceStub.getAPIFilesMetadata.returns(
+        BPromise.resolve(remoteFilesMetadata));
+
       pullController.getAPIFiles()
         .then(function (result) {
           asserts.calledOnceWithoutParameters([workspaceRepositoryStub.get,
@@ -78,6 +80,47 @@ describe('pullController', function () {
             .should.be.true();
 
           should.deepEqual(result, apiFilesResponse);
+
+          done();
+        })
+        .catch(function (err) {
+          done(err);
+        });
+    });
+
+    it('should run correctly when API has no files', function (done) {
+      apiPlatformServiceStub.getAPIFilesMetadata.returns(
+        BPromise.resolve([]));
+
+      pullController.getAPIFiles()
+        .then(function () {
+          asserts.calledOnceWithoutParameters([workspaceRepositoryStub.get,
+            messagesStub.downloadingAPI, messagesStub.finishedDownloadingAPI]);
+
+          asserts.calledOnceWithExactly(apiPlatformServiceStub.getAPIFiles, [
+            currentWorkspace.bizGroup.id,
+            currentWorkspace.api.id,
+            currentWorkspace.apiVersion.id
+          ]);
+
+          asserts.calledOnceWithExactly(apiPlatformServiceStub.getAPIFilesMetadata,
+              [
+            currentWorkspace.bizGroup.id,
+            currentWorkspace.api.id,
+            currentWorkspace.apiVersion.id
+          ]);
+
+          asserts.calledOnceWithExactly(workspaceRepositoryStub.update, [
+            currentWorkspace
+          ]);
+
+          currentWorkspace.rootRamlPath.should.equal(rootRaml.path);
+
+          loggerStub.info.calledTwice.should.be.true();
+          loggerStub.info.firstCall.calledWithExactly(downloadMessage)
+            .should.be.true();
+          loggerStub.info.secondCall.calledWithExactly(finishMessage)
+            .should.be.true();
 
           done();
         })
