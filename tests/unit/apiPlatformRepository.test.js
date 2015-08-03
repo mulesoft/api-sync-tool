@@ -316,7 +316,7 @@ describe('apiPlatformRepository', function () {
       apiPlatformRepository.getAllAPIs(workspace.bizGroup.id)
         .then(function (allAPIs) {
           asserts.calledOnceWithExactly(superagentStub.get, [
-            sinon.match('/organizations/' + workspace.bizGroup.id + '/apis/')
+            sinon.match('/organizations/' + workspace.bizGroup.id + '/apis')
           ]);
 
           asserts.calledOnceWithExactly(superagentStub.query,
@@ -344,7 +344,7 @@ describe('apiPlatformRepository', function () {
         })
         .catch(function () {
           asserts.calledOnceWithExactly(superagentStub.get, [
-            sinon.match('/organizations/' + workspace.bizGroup.id + '/apis/')
+            sinon.match('/organizations/' + workspace.bizGroup.id + '/apis')
           ]);
 
           asserts.calledOnceWithExactly(superagentStub.query,
