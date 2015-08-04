@@ -19,11 +19,22 @@ var emptyMessage = 'empty';
 var results = {
   files: [
     {
-      path: '/api.raml',
+      path: '/xapi.raml',
       hash: 'asd1231das'
+    },
+    {
+      path: '/api.raml',
+      hash: 'asdasdf'
     }
   ],
-  directories: []
+  directories: [
+    {
+      path: '/folder2'
+    },
+    {
+      path: '/folder1'
+    }
+  ]
 };
 
 describe('pullCommand', function () {
@@ -93,8 +104,14 @@ describe('pullCommand', function () {
             asserts.calledOnceWithoutParameters([pullControllerStub.getAPIFiles]);
             asserts.calledOnceWithExactly(messagesStub.status,
               [{
-                addedDirectories: [],
-                added: [results.files[0].path]
+                addedDirectories: [
+                  results.directories[1].path,
+                  results.directories[0].path
+                ],
+                added: [
+                  results.files[1].path,
+                  results.files[0].path
+                ]
               }]);
 
             asserts.calledOnceWithExactly(loggerStub.info, [statusMessage]);
