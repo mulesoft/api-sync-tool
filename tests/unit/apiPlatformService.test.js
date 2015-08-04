@@ -249,7 +249,7 @@ describe('apiPlatformService', function () {
             fileSystemRepositoryStub.getFileFullPath, [compressedAPIFilePath]);
 
           asserts.calledOnceWithExactly(decompresserStub.decompressFile,
-            [directory, fileFullPath]);
+            [fileFullPath]);
 
           asserts.calledOnceWithExactly(fileSystemRepositoryStub.removeFile,
             [compressedAPIFilePath]);

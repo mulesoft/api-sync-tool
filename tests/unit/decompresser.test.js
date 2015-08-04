@@ -1,7 +1,5 @@
 'use strict';
 
-var BPromise = require('bluebird');
-
 var should = require('should');
 var sinon = require('sinon');
 
@@ -9,36 +7,35 @@ var asserts = require('../support/asserts');
 var containerFactory  = require('../support/testContainerFactory');
 
 var errorsStub = {};
-var AdmZipStub;
-var zipStub = {};
-var BPromiseStub = {};
-var decompresserResult = 'pepe';
+var fsStub = {};
+var unzipStub = {};
 
 describe('decompresser', function () {
+  var compressedFilePath = 'pepe.zip';
+  var expectedError = {error: 'pepe'};
+  var unzipParameters = {
+    path: '.'
+  };
+  var unzipResult = {};
+
   beforeEach(function () {
-    AdmZipStub = sinon.stub().returns(zipStub);
-    BPromiseStub.promisify = sinon.stub().returnsArg(0);
-    zipStub.extractAllToAsync =
-      sinon.stub().returns(BPromise.resolve(decompresserResult));
+    fsStub.createReadStream = sinon.stub().returnsThis();
+    fsStub.pipe = sinon.stub().returnsThis();
+    fsStub.on = sinon.stub();
+
+    unzipStub.Extract = sinon.stub().returns(unzipResult);
   });
 
   describe('decompressFile', function () {
-    var extractDirectoryPath = 'folder';
-    var compressedFilePath = 'pepe.zip';
-
     it('should decompress a file', function (done) {
+      fsStub.on.onThirdCall().callsArg(1);
+
       run(function (decompresser) {
-        decompresser.decompressFile(extractDirectoryPath, compressedFilePath)
+        decompresser.decompressFile(compressedFilePath)
           .then(function (result) {
-            should.deepEqual(result, decompresserResult);
-            asserts.calledOnceWithExactly(AdmZipStub, [compressedFilePath]);
-            asserts.calledOnceWithExactly(BPromiseStub.promisify, [
-              zipStub.extractAllToAsync
-            ]);
-            asserts.calledOnceWithExactly(zipStub.extractAllToAsync, [
-              extractDirectoryPath,
-              true
-            ]);
+            (new should.Assertion(result)).undefined();
+            assertUnzipping();
+
             done();
           })
           .catch(function (err) {
@@ -47,102 +44,102 @@ describe('decompresser', function () {
       });
     });
 
-    describe('zip failure', function () {
+    describe('decompress failure', function () {
       var expectedError = {error: 'pepe'};
       beforeEach(function () {
-        AdmZipStub = sinon.stub().throws(expectedError);
-        BPromiseStub.reject =
-          sinon.stub().returns(BPromise.reject(expectedError));
         errorsStub.DecompressError = sinon.stub().returns(expectedError);
+
+        fsStub.on.onSecondCall().callsArg(1);
       });
 
       it('should catch the error', function (done) {
         run(function (decompresser) {
-          decompresser.decompressFile(extractDirectoryPath, compressedFilePath)
+          decompresser.decompressFile(compressedFilePath)
             .then(function () {
               done('should have failed!');
             })
             .catch(function (err) {
               should.deepEqual(err, expectedError);
-
-              asserts.calledOnceWithExactly(BPromiseStub.reject, [
-                expectedError
-              ]);
-
-              errorsStub.DecompressError.calledWithNew().should.be.true();
-              asserts.calledOnceWithExactly(errorsStub.DecompressError, [
-                compressedFilePath,
-                expectedError
-              ]);
-
-              asserts.notCalled([
-                BPromiseStub.promisify,
-                zipStub.extractAllToAsync
-              ]);
+              assertUnzipping();
 
               done();
-            }).catch(function (err) {
+            })
+            .catch(function (err) {
               done(err);
             });
         });
       });
     });
 
-    describe('decompress failure', function () {
+    describe('file reading failure', function () {
       var expectedError = {error: 'pepe'};
       beforeEach(function () {
-        BPromiseStub.reject =
-          sinon.stub().returns(BPromise.reject(expectedError));
         errorsStub.DecompressError = sinon.stub().returns(expectedError);
-        zipStub.extractAllToAsync =
-          sinon.stub().returns(BPromise.reject(expectedError));
+
+        fsStub.on.onFirstCall().callsArg(1);
       });
 
       it('should catch the error', function (done) {
         run(function (decompresser) {
-          decompresser.decompressFile(extractDirectoryPath, compressedFilePath)
+          decompresser.decompressFile(compressedFilePath)
             .then(function () {
               done('should have failed!');
             })
             .catch(function (err) {
               should.deepEqual(err, expectedError);
-
-              asserts.calledOnceWithExactly(BPromiseStub.reject, [
-                expectedError
-              ]);
-
-              errorsStub.DecompressError.calledWithNew().should.be.true();
-              asserts.calledOnceWithExactly(errorsStub.DecompressError, [
-                compressedFilePath,
-                expectedError
-              ]);
-
-              asserts.calledOnceWithExactly(AdmZipStub, [compressedFilePath]);
-              asserts.calledOnceWithExactly(BPromiseStub.promisify, [
-                zipStub.extractAllToAsync
-              ]);
-              asserts.calledOnceWithExactly(zipStub.extractAllToAsync, [
-                extractDirectoryPath,
-                true
-              ]);
+              assertUnzipping();
 
               done();
-            }).catch(function (err) {
+            })
+            .catch(function (err) {
+              done(err);
+            });
+        });
+      });
+    });
+
+    describe('unexpected error', function () {
+      beforeEach(function () {
+        fsStub.on.onThirdCall().throws(expectedError);
+      });
+
+      it('should catch the error', function (done) {
+        run(function (decompresser) {
+          decompresser.decompressFile(compressedFilePath)
+            .then(function () {
+              done('should have failed!');
+            })
+            .catch(function (err) {
+              should.deepEqual(err, expectedError);
+              assertUnzipping();
+
+              done();
+            })
+            .catch(function (err) {
               done(err);
             });
         });
       });
     });
   });
+
+  function assertUnzipping() {
+    fsStub.on.calledThrice.should.be.true();
+
+    asserts.calledOnceWithExactly(unzipStub.Extract, [
+      unzipParameters
+    ]);
+
+    asserts.calledOnceWithExactly(fsStub.pipe, [
+      unzipResult
+    ]);
+  }
 });
 
 function run(callback) {
   var container = containerFactory.createContainer();
-
-  container.register('AdmZip', function () {
-    return AdmZipStub;
-  });
-  container.register('BPromise', BPromiseStub);
   container.register('errors', errorsStub);
+  container.register('fs', fsStub);
+  container.register('unzip', unzipStub);
   container.resolve(callback);
 }
