@@ -17,6 +17,8 @@ var messagesStub = {};
 
 var businessGroups = contentGenerator.generateBusinessGroups();
 var apis = contentGenerator.generateApis();
+apis[0].name = '10';
+apis[0].versions[0].name = '10';
 
 var apiDescription = 'api';
 var businessGroupDescription = 'business group';
@@ -193,10 +195,11 @@ describe('createStrategyFactory', function () {
       });
 
       it('should ask again when API name is used', function (done) {
+        var numberUsedApiName = parseInt(usedApiName);
         commandPromptStub.getInput.onFirstCall()
-          .returns(BPromise.resolve(usedApiName));
+          .returns(BPromise.resolve(numberUsedApiName));
         commandPromptStub.getInput.onSecondCall()
-          .returns(BPromise.resolve(usedApiName));
+          .returns(BPromise.resolve(numberUsedApiName));
         commandPromptStub.getInput.onThirdCall()
           .returns(BPromise.resolve(apiName));
 
@@ -278,10 +281,11 @@ describe('createStrategyFactory', function () {
       });
 
       it('should ask again when API version name is used', function (done) {
+        var numberUsedApiVersionName = parseInt(usedApiVersionName);
         commandPromptStub.getInput.onFirstCall()
-          .returns(BPromise.resolve(usedApiVersionName));
+          .returns(BPromise.resolve(numberUsedApiVersionName));
         commandPromptStub.getInput.onSecondCall()
-          .returns(BPromise.resolve(usedApiVersionName));
+          .returns(BPromise.resolve(numberUsedApiVersionName));
         commandPromptStub.getInput.onThirdCall()
           .returns(BPromise.resolve(apiVersionName));
 
@@ -536,8 +540,9 @@ describe('createStrategyFactory', function () {
       });
 
       describe('should fail when', function () {
+        var numberApiName = parseInt(api.name);
         beforeEach(function () {
-          batchParameters.apiName = api.name;
+          batchParameters.apiName = numberApiName;
           strategy = getStrategy(batchParameters);
         });
 
@@ -550,7 +555,7 @@ describe('createStrategyFactory', function () {
               errorsStub.RepeatedAPINameError.calledWithNew().should.be.true();
               asserts.calledOnceWithExactly(errorsStub.RepeatedAPINameError, [
                 api.id,
-                api.name
+                numberApiName
               ]);
 
               done();
@@ -576,9 +581,10 @@ describe('createStrategyFactory', function () {
       });
 
       describe('should fail when', function () {
+        var numberApiVersionName = parseInt(apiVersion.name);
         beforeEach(function () {
           batchParameters.apiId = api.id;
-          batchParameters.apiVersion = apiVersion.name;
+          batchParameters.apiVersion = numberApiVersionName;
           strategy = getStrategy(batchParameters);
         });
 
@@ -593,7 +599,7 @@ describe('createStrategyFactory', function () {
               asserts.calledOnceWithExactly(
                   errorsStub.RepeatedAPIVersionNameError, [
                 apiVersion.id,
-                apiVersion.name
+                numberApiVersionName
               ]);
 
               done();
