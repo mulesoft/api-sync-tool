@@ -12,6 +12,7 @@ var contentGenerator = require('../support/contentGenerator');
 
 var commandPromptStub = {};
 var errorsStub = {};
+var interactiveErrorsStub = {};
 var loggerStub = {};
 var messagesStub = {};
 
@@ -27,6 +28,7 @@ var apiPromptMessage = 'Select API';
 var chooseNewAPIorNewVersionMessage = 'new API or new Version?';
 var apiNamePromptMessage = 'input API name';
 var repeatedAPINameMessage = 'repetead API name';
+var emptyFieldError = 'emptyField';
 var apiVersionNamePromptMessage = 'input API version name';
 var repeatedAPIVersionNameMessage = 'repeated API version name';
 var rootRamlPathPromptMessage = 'select the root RAML path';
@@ -40,8 +42,19 @@ describe('createStrategyFactory', function () {
     commandPromptStub.getInput = sinon.stub();
     commandPromptStub.getRawChoice = sinon.stub();
 
+    errorsStub.EmptyFieldError = sinon.stub();
     errorsStub.RepeatedAPINameError = sinon.stub();
     errorsStub.RepeatedAPIVersionNameError = sinon.stub();
+
+    interactiveErrorsStub.EmptyFieldError = function () {
+      this.message = emptyFieldError;
+    };
+    interactiveErrorsStub.RepeatedAPINameError = function () {
+      this.message = repeatedAPINameMessage;
+    };
+    interactiveErrorsStub.RepeatedAPIVersionNameError = function () {
+      this.message = repeatedAPIVersionNameMessage;
+    };
 
     loggerStub.info = sinon.stub();
 
@@ -59,10 +72,6 @@ describe('createStrategyFactory', function () {
       sinon.stub().returns(apiNamePromptMessage);
     messagesStub.apiVersionNamePromptMessage =
       sinon.stub().returns(apiVersionNamePromptMessage);
-    messagesStub.repeatedAPINameMessage =
-      sinon.stub().returns(repeatedAPINameMessage);
-    messagesStub.repeatedAPIVersionNameMessage =
-      sinon.stub().returns(repeatedAPIVersionNameMessage);
     messagesStub.rootRamlDescription =
       sinon.stub().returns(rootRamlDescription);
     messagesStub.rootRamlPathPromptMessage =
@@ -214,12 +223,40 @@ describe('createStrategyFactory', function () {
             calledXTimesWithoutParameters(
               messagesStub.apiNamePromptMessage, 3);
 
+            loggerStub.info.calledTwice.should.be.true();
+            loggerStub.info
+              .alwaysCalledWithExactly(repeatedAPINameMessage).should.be.true();
+
+            done();
+          })
+          .catch(function (err) {
+            done(err);
+          });
+      });
+
+      it('should ask again when API name is blank', function (done) {
+        var emptyName = ' ';
+        commandPromptStub.getInput.onFirstCall()
+          .returns(BPromise.resolve(emptyName));
+        commandPromptStub.getInput.onSecondCall()
+          .returns(BPromise.resolve(emptyName));
+        commandPromptStub.getInput.onThirdCall()
+          .returns(BPromise.resolve(apiName));
+
+        strategy.getAPIName(apis)
+          .then(function (userApiName) {
+            userApiName.should.equal(apiName);
+
+            commandPromptStub.getInput.calledThrice.should.be.true();
+            commandPromptStub.getInput
+              .calledWithExactly(apiNamePromptMessage).should.be.true();
+
             calledXTimesWithoutParameters(
-              messagesStub.repeatedAPINameMessage, 2);
+              messagesStub.apiNamePromptMessage, 3);
 
             loggerStub.info.calledTwice.should.be.true();
             loggerStub.info
-              .alwaysCalledWithExactly(repeatedAPINameMessage);
+              .alwaysCalledWithExactly(emptyFieldError).should.be.true();
 
             done();
           })
@@ -300,12 +337,41 @@ describe('createStrategyFactory', function () {
             calledXTimesWithoutParameters(
               messagesStub.apiVersionNamePromptMessage, 3);
 
+            loggerStub.info.calledTwice.should.be.true();
+            loggerStub.info
+              .alwaysCalledWithExactly(repeatedAPIVersionNameMessage)
+              .should.be.true();
+
+            done();
+          })
+          .catch(function (err) {
+            done(err);
+          });
+      });
+
+      it('should ask again when API version name is blank', function (done) {
+        var emptyName = ' ';
+        commandPromptStub.getInput.onFirstCall()
+          .returns(BPromise.resolve(emptyName));
+        commandPromptStub.getInput.onSecondCall()
+          .returns(BPromise.resolve(emptyName));
+        commandPromptStub.getInput.onThirdCall()
+          .returns(BPromise.resolve(apiVersionName));
+
+        strategy.getAPIVersionName(apis, usedApi.id)
+          .then(function (userApiVersionName) {
+            userApiVersionName.should.equal(apiVersionName);
+
+            commandPromptStub.getInput.calledThrice.should.be.true();
+            commandPromptStub.getInput
+              .calledWithExactly(apiVersionNamePromptMessage).should.be.true();
+
             calledXTimesWithoutParameters(
-              messagesStub.repeatedAPIVersionNameMessage, 2);
+              messagesStub.apiVersionNamePromptMessage, 3);
 
             loggerStub.info.calledTwice.should.be.true();
             loggerStub.info
-              .alwaysCalledWithExactly(repeatedAPIVersionNameMessage);
+              .alwaysCalledWithExactly(emptyFieldError).should.be.true();
 
             done();
           })
@@ -697,7 +763,9 @@ function run(callback) {
 }
 
 function runForErrors(callback) {
-  makeContainer().resolve(callback);
+  var container = makeContainer();
+  container.register('errors', interactiveErrorsStub);
+  container.resolve(callback);
 }
 
 function makeContainer() {
