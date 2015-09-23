@@ -12,7 +12,7 @@ var csRepositoryStub = {};
 describe('userOrganizationService', function () {
   beforeEach(function () {
     csRepositoryStub.getUserInfo = sinon.stub().returns(BPromise.resolve({
-      memberOfOrganizations: [
+      contributorOfOrganizations: [
         {
           id: 1,
           name: 'bizGroup',
