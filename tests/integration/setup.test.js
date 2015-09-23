@@ -45,7 +45,7 @@ describe('setup', run(function (application) {
 
   var userInfoResponse = {
     body: {
-      memberOfOrganizations: [bizGroup]
+      contributorOfOrganizations: [bizGroup]
     }
   };
 
