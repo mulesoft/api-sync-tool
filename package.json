@@ -18,6 +18,7 @@
   "bin": {
     "api-sync": "bin/index.js"
   },
+  "main": "lib/index.js",
   "files": [
     "bin/",
     "lib/",
