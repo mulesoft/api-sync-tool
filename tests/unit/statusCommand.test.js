@@ -22,7 +22,6 @@ describe('statusCommand', function () {
     messagesStub.nothingStatus = sinon.stub().returns(nothingMessage);
     messagesStub.statusDetailedHelp = sinon.stub();
     statusControllerStub.status = sinon.stub();
-    statusControllerStub.conflicts = sinon.stub();
     loggerStub.info = sinon.stub();
     validateSetupDoneStrategyStub.validate = sinon.stub();
   });
@@ -76,32 +75,34 @@ describe('statusCommand', function () {
 
   describe('execute', function () {
     it('should execute status and log changes', function (done) {
-      var status = {
-        added: [{
-          name: 'api.raml',
-          path: '/api.raml'
-        }],
-        changed: [],
-        unchanged: [],
-        deleted: []
+      var results = {
+        status: {
+          added: [{
+            name: 'api.raml',
+            path: '/api.raml'
+          }],
+          changed: [],
+          unchanged: [],
+          deleted: []
+        },
+        conflicts: {
+          added: [{
+            name: 'api.raml',
+            path: '/api.raml'
+          }],
+          changed: [],
+          unchanged: [],
+          deleted: []
+        }
       };
-      var conflicts = {
-        added: [{
-          name: 'api.raml',
-          path: '/api.raml'
-        }],
-        changed: [],
-        unchanged: [],
-        deleted: []
-      };
-      statusControllerStub.status.returns(BPromise.resolve(status));
-      statusControllerStub.conflicts.returns(BPromise.resolve(conflicts));
+
+      statusControllerStub.status.returns(BPromise.resolve(results));
       run(function (statusCommand) {
         statusCommand.execute()
           .then(function () {
             asserts.calledOnceWithoutParameters([statusControllerStub.status]);
             asserts.calledOnceWithExactly(messagesStub.statusAndConflicts,
-              [status, conflicts]);
+              [results.status, results.conflicts]);
             asserts.calledOnceWithExactly(loggerStub.info, [successfulMessage]);
             done();
           })
@@ -112,25 +113,26 @@ describe('statusCommand', function () {
     });
 
     it('should execute status and log an empty result', function (done) {
-      var status = {
-        added: [],
-        changed: [],
-        unchanged: [{
-          name: 'api.raml',
-          path: '/api.raml'
-        }],
-        deleted: []
+      var results = {
+        status: {
+          added: [],
+          changed: [],
+          unchanged: [{
+            name: 'api.raml',
+            path: '/api.raml'
+          }],
+          deleted: []
+        },
+        conflicts: {}
       };
-      var conflicts = {};
 
-      statusControllerStub.status.returns(BPromise.resolve(status));
-      statusControllerStub.conflicts.returns(BPromise.resolve(conflicts));
+      statusControllerStub.status.returns(BPromise.resolve(results));
 
       run(function (statusCommand) {
         statusCommand.execute()
           .then(function () {
             asserts.calledOnceWithoutParameters([statusControllerStub.status,
-              statusControllerStub.conflicts, messagesStub.nothingStatus]);
+              messagesStub.nothingStatus]);
             asserts.calledOnceWithExactly(loggerStub.info, [nothingMessage]);
             done();
           })
