@@ -65,7 +65,9 @@ describe('apiPlatformRepository', function () {
     var newRootRaml = {
       isDirectory: false,
       name: 'api.raml',
-      data:  data
+      data:  data,
+      apiId: apiId,
+      apiVersionId: apiVersionId
     };
 
     it('should add the root raml', function (done) {
