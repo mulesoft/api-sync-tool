@@ -992,7 +992,7 @@ function assertReadAPICallbacksCalls() {
   superagentCallbacksStub.set.firstCall.calledWithExactly(
     'Authorization', 'Bearer ' + token).should.be.true();
     superagentCallbacksStub.set.secondCall.calledWithExactly(
-    'Accept', 'application/json').should.be.true();
+    'Accept', 'application/zip').should.be.true();
 }
 
 function assertWriteAPICalls(args) {
