@@ -112,22 +112,28 @@ describe('createController', function () {
 
       parametersStrategyStub.getCreateAPIorAPIVersionChoice =
         sinon.stub().returns(BPromise.resolve(true));
-      parametersStrategyStub.getAPIName =
+      parametersStrategyStub.getAPINameInput =
         sinon.stub().returns(BPromise.resolve(newApiName));
+      parametersStrategyStub.getAPIVersionNameInput =
+        sinon.stub().returns(BPromise.resolve(newApiVersionName));
     });
 
     it('should create an API', function (done) {
       run(function (createController) {
         createController.create(parametersStrategyStub)
           .then(function (newApi) {
-            assertCommonCreateStrategy(newApi, undefined);
+            assertCommonCreateStrategy(newApi);
 
-            asserts.calledOnceWithExactly(parametersStrategyStub.getAPIName, [
-              apis
+            asserts.calledOnceWithExactly(parametersStrategyStub.getAPINameInput, [
+              undefined
             ]);
 
             asserts.calledOnceWithoutParameters([
               messagesStub.creatingAPI
+            ]);
+
+            asserts.calledOnceWithExactly(parametersStrategyStub.getAPIVersionNameInput, [
+              undefined
             ]);
 
             asserts.calledOnceWithExactly(loggerStub.info, [
@@ -163,13 +169,18 @@ describe('createController', function () {
         sinon.stub().returns(BPromise.resolve(false));
       parametersStrategyStub.getAPI =
         sinon.stub().returns(BPromise.resolve(existingAPI));
+
+      parametersStrategyStub.getAPINameInput =
+        sinon.stub().returns(BPromise.resolve(newApiName));
+      parametersStrategyStub.getAPIVersionNameInput =
+        sinon.stub().returns(BPromise.resolve(newApiVersionName));
     });
 
     it('should create an API version', function (done) {
       run(function (createController) {
         createController.create(parametersStrategyStub)
           .then(function (newApi) {
-            assertCommonCreateStrategy(newApi, existingAPI.id);
+            assertCommonCreateStrategy(newApi);
 
             asserts.calledOnceWithExactly(parametersStrategyStub.getAPI, [
               apis
@@ -183,13 +194,6 @@ describe('createController', function () {
               creatingAPIVersion
             ]);
 
-            asserts.calledOnceWithExactly(apiPlatformServiceStub.createAPI, [
-              businessGroup.id,
-              newApiName,
-              newApiVersionName,
-              rootRamlPath
-            ]);
-
             done();
           })
           .catch(function (err) {
@@ -199,7 +203,7 @@ describe('createController', function () {
     });
   });
 
-  function assertCommonCreateStrategy(newApi, apiId) {
+  function assertCommonCreateStrategy(newApi) {
     newApi.should.equal(createdApi);
     asserts.calledOnceWithExactly(
       parametersStrategyStub.getCreateAPIorAPIVersionChoice, [businessGroup]);
@@ -215,12 +219,6 @@ describe('createController', function () {
 
     asserts.calledOnceWithExactly(apiPlatformServiceStub.getAllAPIs, [
       businessGroup.id
-    ]);
-
-    asserts.calledOnceWithExactly(parametersStrategyStub
-        .getAPIVersionName, [
-      apis,
-      apiId
     ]);
 
     asserts.calledOnceWithExactly(localServiceStub.getFilesPath, [

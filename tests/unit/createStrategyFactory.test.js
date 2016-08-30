@@ -176,16 +176,15 @@ describe('createStrategyFactory', function () {
       });
     });
 
-    describe('getAPIName', function () {
+    describe('getAPINameInput', function () {
       var apiName = 'newVersion';
-      var usedApiName = apis[0].name;
       beforeEach(function () {
         commandPromptStub.getInput.returns(BPromise.resolve(apiName));
         strategy = getStrategyForErrorCases(interactiveParameters);
       });
 
       it('should return entered API name', function (done) {
-        strategy.getAPIName(apis)
+        strategy.getAPINameInput()
           .then(function (userApiName) {
             userApiName.should.equal(apiName);
 
@@ -203,68 +202,6 @@ describe('createStrategyFactory', function () {
           });
       });
 
-      it('should ask again when API name is used', function (done) {
-        var numberUsedApiName = parseInt(usedApiName);
-        commandPromptStub.getInput.onFirstCall()
-          .returns(BPromise.resolve(numberUsedApiName));
-        commandPromptStub.getInput.onSecondCall()
-          .returns(BPromise.resolve(numberUsedApiName));
-        commandPromptStub.getInput.onThirdCall()
-          .returns(BPromise.resolve(apiName));
-
-        strategy.getAPIName(apis)
-          .then(function (userApiName) {
-            userApiName.should.equal(apiName);
-
-            commandPromptStub.getInput.calledThrice.should.be.true();
-            commandPromptStub.getInput
-              .calledWithExactly(apiNamePromptMessage).should.be.true();
-
-            calledXTimesWithoutParameters(
-              messagesStub.apiNamePromptMessage, 3);
-
-            loggerStub.info.calledTwice.should.be.true();
-            loggerStub.info
-              .alwaysCalledWithExactly(repeatedAPINameMessage).should.be.true();
-
-            done();
-          })
-          .catch(function (err) {
-            done(err);
-          });
-      });
-
-      it('should ask again when API name is blank', function (done) {
-        var emptyName = ' ';
-        commandPromptStub.getInput.onFirstCall()
-          .returns(BPromise.resolve(emptyName));
-        commandPromptStub.getInput.onSecondCall()
-          .returns(BPromise.resolve(emptyName));
-        commandPromptStub.getInput.onThirdCall()
-          .returns(BPromise.resolve(apiName));
-
-        strategy.getAPIName(apis)
-          .then(function (userApiName) {
-            userApiName.should.equal(apiName);
-
-            commandPromptStub.getInput.calledThrice.should.be.true();
-            commandPromptStub.getInput
-              .calledWithExactly(apiNamePromptMessage).should.be.true();
-
-            calledXTimesWithoutParameters(
-              messagesStub.apiNamePromptMessage, 3);
-
-            loggerStub.info.calledTwice.should.be.true();
-            loggerStub.info
-              .alwaysCalledWithExactly(emptyFieldError).should.be.true();
-
-            done();
-          })
-          .catch(function (err) {
-            done(err);
-          });
-      });
-
       describe('errors', function () {
         var error = 'error';
         beforeEach(function () {
@@ -272,7 +209,7 @@ describe('createStrategyFactory', function () {
         });
 
         it('should rethrow errors', function (done) {
-          strategy.getAPIName(apis)
+          strategy.getAPINameInput()
             .then(function () {
               done('should have failed!');
             })
@@ -290,16 +227,13 @@ describe('createStrategyFactory', function () {
 
     describe('getAPIVersionName', function () {
       var apiVersionName = 'newVersion';
-      var usedApi = apis[0];
-      var userApiVersion = usedApi.versions[0];
-      var usedApiVersionName = userApiVersion.name;
       beforeEach(function () {
         commandPromptStub.getInput.returns(BPromise.resolve(apiVersionName));
         strategy = getStrategyForErrorCases(interactiveParameters);
       });
 
       it('should return entered API version name', function (done) {
-        strategy.getAPIVersionName(apis, apis[0].id)
+        strategy.getAPIVersionNameInput()
           .then(function (userApiVersionName) {
             userApiVersionName.should.equal(apiVersionName);
 
@@ -317,69 +251,6 @@ describe('createStrategyFactory', function () {
           });
       });
 
-      it('should ask again when API version name is used', function (done) {
-        var numberUsedApiVersionName = parseInt(usedApiVersionName);
-        commandPromptStub.getInput.onFirstCall()
-          .returns(BPromise.resolve(numberUsedApiVersionName));
-        commandPromptStub.getInput.onSecondCall()
-          .returns(BPromise.resolve(numberUsedApiVersionName));
-        commandPromptStub.getInput.onThirdCall()
-          .returns(BPromise.resolve(apiVersionName));
-
-        strategy.getAPIVersionName(apis, usedApi.id)
-          .then(function (userApiVersionName) {
-            userApiVersionName.should.equal(apiVersionName);
-
-            commandPromptStub.getInput.calledThrice.should.be.true();
-            commandPromptStub.getInput
-              .calledWithExactly(apiVersionNamePromptMessage).should.be.true();
-
-            calledXTimesWithoutParameters(
-              messagesStub.apiVersionNamePromptMessage, 3);
-
-            loggerStub.info.calledTwice.should.be.true();
-            loggerStub.info
-              .alwaysCalledWithExactly(repeatedAPIVersionNameMessage)
-              .should.be.true();
-
-            done();
-          })
-          .catch(function (err) {
-            done(err);
-          });
-      });
-
-      it('should ask again when API version name is blank', function (done) {
-        var emptyName = ' ';
-        commandPromptStub.getInput.onFirstCall()
-          .returns(BPromise.resolve(emptyName));
-        commandPromptStub.getInput.onSecondCall()
-          .returns(BPromise.resolve(emptyName));
-        commandPromptStub.getInput.onThirdCall()
-          .returns(BPromise.resolve(apiVersionName));
-
-        strategy.getAPIVersionName(apis, usedApi.id)
-          .then(function (userApiVersionName) {
-            userApiVersionName.should.equal(apiVersionName);
-
-            commandPromptStub.getInput.calledThrice.should.be.true();
-            commandPromptStub.getInput
-              .calledWithExactly(apiVersionNamePromptMessage).should.be.true();
-
-            calledXTimesWithoutParameters(
-              messagesStub.apiVersionNamePromptMessage, 3);
-
-            loggerStub.info.calledTwice.should.be.true();
-            loggerStub.info
-              .alwaysCalledWithExactly(emptyFieldError).should.be.true();
-
-            done();
-          })
-          .catch(function (err) {
-            done(err);
-          });
-      });
-
       describe('errors', function () {
         var error = 'error';
         beforeEach(function () {
@@ -387,7 +258,7 @@ describe('createStrategyFactory', function () {
         });
 
         it('should rethrow errors', function (done) {
-          strategy.getAPIVersionName(apis, usedApi.id)
+          strategy.getAPIVersionNameInput()
             .then(function () {
               done('should have failed!');
             })
@@ -747,13 +618,6 @@ function getStrategyForErrorCases(parameters) {
 
 function sortByName(objects) {
   return _.sortBy(objects, 'name');
-}
-
-function calledXTimesWithoutParameters(stubFunction, times) {
-  stubFunction.callCount.should.equal(times);
-  _.range(0, times).forEach(function (time) {
-    stubFunction.getCall(time).args.length.should.equal(0);
-  });
 }
 
 function run(callback) {
